@@ -1,13 +1,13 @@
 ---
 name: "game-forge-master"
-description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树、阶段裁剪规则、模板索引与失败回退策略。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
+description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser/Pixi/Canvas/Godot 4)、阶段裁剪规则、模板索引与失败回退策略。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
 ---
 
 # Game Forge Master — AI 游戏生成总纲
 
 本 skill 是整套"AI 生成游戏"流水线的**调度中枢**,本身不直接产出游戏文件,职责是:
 1. 接收用户一句话需求,决定走哪条生成路径
-2. 选择目标引擎(Phaser / Pixi / 纯 Canvas)
+2. 选择目标引擎(Phaser / Pixi / 纯 Canvas / Godot 4)
 3. 裁剪阶段(简单游戏可跳过音频/网络/任务系统)
 4. 串联下游 5 个阶段 skill 的执行顺序
 5. 提供通用模板索引与失败回退策略
@@ -25,7 +25,7 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 **不要**在以下场景调用:
 - 用户只是问"游戏怎么做"(纯咨询,用对话回答即可)
 - 用户要修改已有游戏的某一处代码(直接用 Edit/Write)
-- 用户要做的是 3D 游戏(本方案只覆盖 2D)
+- 用户要做的是 3D 游戏(仅 Godot 4 支持,Web 引擎不覆盖 3D)
 
 ---
 
@@ -69,7 +69,8 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
    ├─ 2D 跑酷/平台/塔防/卡牌/消除 → 默认 Phaser 3
    ├─ 大量粒子/特效/自定义渲染 → Pixi.js
    ├─ 极简(纯文字/几何图形) → 纯 Canvas
-   ├─ 3D 游戏 → 不支持,告知用户超范围
+   ├─ 2D 桌面游戏(需 exe/原生窗口) → Godot 4
+   ├─ 3D 游戏 → Godot 4
    └─ 用户明确指定 → 尊重用户选择
 ```
 
@@ -83,6 +84,9 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | 复杂物理(真实重力/弹簧) | Phaser 3 + Matter.js | Phaser 内置 Matter 集成 |
 | 网格类(消除/三消) | Phaser 3 | 用 Phaser 的 grid + tween 足够 |
 | 弹幕类 | Pixi.js | 大量 sprite 需要 WebGL 高吞吐 |
+| 2D 桌面游戏(需原生窗口/exe) | **Godot 4** | 原生导出 exe/pck,无需浏览器,性能优于 Web |
+| 3D 游戏(任意复杂度) | **Godot 4** | 内置 3D 物理/光照/骨骼动画,AI 可用 GDScript 生成 |
+| 复杂 2D+3D 混合 | **Godot 4** | 统一引擎,2D/3D 混合渲染无需切换 |
 
 ### 决策结果写入
 
@@ -91,6 +95,13 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 平台:Web H5
 引擎:Phaser 3.80.x
 依赖:phaser、axios(如需网络)
+理由:[一句话]
+```
+
+```
+平台:Web H5
+引擎:Godot 4.3
+依赖:godot(无需 npm 依赖)
 理由:[一句话]
 ```
 
@@ -135,6 +146,12 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 ├── phaser/                    # Phaser 默认模板
 ├── pixi/                      # Pixi 模板
 ├── canvas/                    # 纯 Canvas 模板
+├── godot/                    # Godot 4 模板
+│   ├── project.godot.tpl     # 工程配置
+│   ├── Main.tscn.tpl         # 主场景
+│   ├── BootScene.tscn.tpl    # 启动场景
+│   ├── main.gd.tpl           # 主脚本
+│   └── export_presets.cfg.tpl # 导出预设
 └── shared/                    # 三引擎共享文档模板
     ├── GAME_BLUEPRINT.md.tpl
     ├── PRD.md.tpl
@@ -173,7 +190,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
 3. 调用 `game-art-spec`,读取 PRD + TECH_DESIGN,产出 `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md`
 4. **并行**调用 `game-asset-forge` 和 `game-code-forge`,分别产出 `assets/` 和 `src/`
-5. 调用 `game-integrate`,读取 assets + src,产出 `dist/` + `docs/BUILD_REPORT.md`
+5. 调用 `game-integrate`,读取 assets + src(Web 引擎)或 Godot 工程(Godot),产出 `dist/`(Web)或 `export/`(Godot) + `docs/BUILD_REPORT.md`
 6. (可选)若阶段 6 未被裁剪,调用 `game-polish`,读取可运行工程 + `docs/POLISH_REQUEST.md`(如有),产出 `src/effects/` 增量 + `docs/POLISH_REPORT.md`
 
 **不允许跳步**:即使某阶段被裁剪,也必须产出对应的占位文档(如音频裁剪也要写一个最小 AUDIO_SPEC.md 标注"全部静音占位")。
@@ -199,6 +216,10 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | 图集 | `assets/atlases/{atlas_id}.png` + `.json` | game-asset-forge |
 | 音频 | `assets/audio/{type}_{name}.{ext}` | game-asset-forge |
 | 代码 | `src/**/*.ts`、`index.html`、`package.json` | game-code-forge |
+| Godot 场景 | `scenes/**/*.tscn` | game-code-forge |
+| Godot 脚本 | `scripts/**/*.gd` | game-code-forge |
+| Godot 工程 | `project.godot`、`export_presets.cfg` | game-code-forge |
+| Godot 导出产物 | `export/*.{exe,pck,html,zip}` | game-integrate |
 | 构建产物 | `dist/**` | game-integrate |
 | 验收报告 | `docs/BUILD_REPORT.md` | game-integrate |
 | 效果优化需求(可选) | `docs/POLISH_REQUEST.md` | 用户填写 |

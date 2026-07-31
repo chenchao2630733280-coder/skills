@@ -1,6 +1,6 @@
 ---
 name: "game-integrate"
-description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/,执行 npm install、typecheck、构建、浏览器自测,产出 dist/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
+description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4),执行 npm 构建或 godot --headless --export,产出 dist/ 或 export/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
 ---
 
 # Game Integrate — 集成与构建
@@ -17,15 +17,40 @@ description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/,执行 
 - `docs/ASSET_MANIFEST.json`(校验资源完整性)
 - `docs/ASSET_ISSUES.md`(如有,了解已知问题)
 
+**Godot 4 工程输入**(引擎为 Godot 4 时):
+- `project.godot`:工程配置文件(校验存在性)
+- `scenes/*.tscn`:场景文件
+- `scripts/*.gd`:GDScript 脚本
+- `export_presets.cfg`:导出预设
+- `assets/`:复用 game-asset-forge 产出的资源目录
+
 **输出**(固定路径):
 - `dist/`(构建产物)
 - `docs/BUILD_REPORT.md`(验收报告)
+- Godot 4 工程:`export/*.{exe,pck,html,zip}`(导出产物)
+
+---
+
+## references 使用指引
+
+| 文件 | 何时读取 |
+|------|---------|
+| `references/build-report-template.md` | 产出 BUILD_REPORT.md 验收报告时 |
 
 ---
 
 ## 二、执行流程
 
+### 2.0 引擎判定
+
+读取 `docs/GAME_BLUEPRINT.md` 的"3. 平台与引擎"章节,按引擎走不同分支:
+- **Web 引擎(Phaser/Pixi/Canvas)**:走 npm/Vite 流程(§2.1-§2.6 原有步骤)
+- **Godot 4**:走 Godot CLI 流程(§2.7 新增步骤)
+
+### 2.1-2.6 Web 引擎流程
+
 ```
+(Web 引擎)
 1. 校验工程结构完整性
    ├─ package.json 存在
    ├─ index.html 存在
@@ -61,6 +86,56 @@ description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/,执行 
 
 7. 输出 BUILD_REPORT.md
 ```
+
+### 2.7 Godot 4 构建流程(引擎为 Godot 4 时执行)
+
+**步骤 1:校验工程结构完整性**
+- 校验 `project.godot` 存在且 `config_version=5`(Godot 4 格式)
+- 校验 `scenes/Main.tscn` 存在(主场景)
+- 校验 `scripts/main.gd` 或对应入口脚本存在
+- 校验 `export_presets.cfg` 存在(至少一个 runnable 预设)
+
+**步骤 2:校验资源完整性**
+- 对照 `docs/ASSET_MANIFEST.json` 检查 `assets/` 下资源文件存在
+- Godot 资源用 `res://` 协议引用,确认 .tscn/.gd 中的资源路径与实际文件一致
+
+**步骤 3:脚本检查(Godot 的 typecheck)**
+```bash
+godot --headless --check-only --script scripts/main.gd
+```
+- 失败时 AI 自动修复最多 3 轮(检查 GDScript 4.x 语法:@onready/@export/await/typed variables)
+- 仍失败则降级:在 BUILD_REPORT.md 标记"脚本检查未通过,需手动 review",不阻塞导出
+
+**步骤 4:导出构建(替代 npm run build)**
+
+Windows Desktop 导出:
+```bash
+godot --headless --export-release "Windows Desktop" export/Game.exe
+```
+
+HTML5 导出(用于浏览器自测):
+```bash
+godot --headless --export-release "HTML5" export/Web/index.html
+```
+
+- 导出产物校验:检查 `export/Game.exe`(Windows)或 `export/Web/index.html`(HTML5)存在
+- 导出失败时检查 export_presets.cfg 的 preset name 与命令行参数是否一致
+
+**步骤 5:浏览器自测(HTML5 导出时)**
+- 用 `python -m http.server 8080 --directory export/Web` 启动本地服务
+- browser_use agent 访问 `http://localhost:8080/index.html`
+- 截图首页 + 执行基本交互(点击/按键)
+- 记录 Console 错误和警告
+
+**步骤 6:桌面端自测(Windows 导出时)**
+- 直接运行 `export/Game.exe`
+- 等待 5 秒后检查进程是否存活(未崩溃)
+- 如有崩溃,记录退出码和 Godot 错误日志
+- 无法自动化截图时,标记"需手动运行验证"
+
+**步骤 7:输出 BUILD_REPORT.md**
+- 同 Web 引擎流程的验收报告格式,但引擎字段标注 "Godot 4"
+- 导出产物路径记录为 `export/` 而非 `dist/`
 
 ---
 
@@ -154,63 +229,16 @@ npm run build
 
 ## 六、BUILD_REPORT.md 模板
 
-```markdown
-# {游戏名} - 构建验收报告
+> 完整模板已抽离到 `references/build-report-template.md`,产出验收报告时读取该文件。
 
-## 1. 总览
-- 构建时间:{ISO timestamp}
-- 构建结果:{成功/失败}
-- 工程路径:{绝对路径}
-- 引擎:{Phaser 3 / Pixi / Canvas}
-- 代码文件数:{N}
-- 资源文件数:{M}
-
-## 2. 各阶段结果
-
-| 阶段 | 状态 | 耗时 | 备注 |
-|---|---|---|---|
-| 结构校验 | ✅ | 1s | |
-| 资源校验 | ⚠️ | 2s | 2 个缺失,已用占位图替代 |
-| npm install | ✅ | 45s | |
-| typecheck | ✅ | 3s | 修复 2 轮后通过 |
-| 浏览器自测 | ⚠️ | 15s | 首屏正常,1 个 console warning |
-| 构建 | ✅ | 8s | dist/ 产出正常 |
-
-## 3. 浏览器自测截图
-- 首屏:docs/screenshots/01-home.png
-- 游戏画面:docs/screenshots/02-game.png
-- 跳跃交互:docs/screenshots/03-jump.png
-
-## 4. Console 错误/警告
-| 级别 | 信息 | 来源 |
-|---|---|---|
-| warning | Texture 'skin0' not found | BootScene.ts:23 |
-
-## 5. 已知问题(汇总自 ASSET_ISSUES.md)
-- [ ] skin2-jump-3 用占位图,需人工替换
-- [ ] bg-game-parallax 未生成,用纯色背景
-- [ ] typecheck 降级 strict:false(原 5 处 any 未修复)
-
-## 6. 运行指引
-开发:
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
-访问 http://localhost:5173
-
-构建:
-\`\`\`bash
-npm run build
-\`\`\`
-产物在 dist/
-
-## 7. 下一步建议
-1. 替换占位美术资源(见 ASSET_ISSUES.md)
-2. 修复 typecheck 降级项
-3. 补充音频(默认静音占位)
-4. (如需)接入 inject-cdn 部署 CDN
-```
+**必填字段概要**:
+- 总览:游戏名称、引擎、构建结果、自测结果
+- 各阶段结果表:资源/代码/构建/自测的 PASS/FAIL/SKIP
+- 浏览器自测截图(HTML5 导出时)
+- Console 错误清单
+- 已知问题
+- 运行指引(Web/Godot 分别说明)
+- 下一步建议
 
 ---
 
@@ -240,6 +268,14 @@ npm run build
 - 以 ASSET_MANIFEST 为准
 - 修改代码中的引用路径
 - 不修改 manifest
+
+### 4. Godot 4 失败回退
+
+| 场景 | 回退策略 |
+|---|---|
+| Godot 导出失败 | 检查 export_presets.cfg 格式;降级只导出 HTML5(跳过桌面导出) |
+| Godot 脚本检查失败 | 标记需手动 review,不阻塞导出(GDScript 运行时错误不影响编译) |
+| Godot 资源 404 | 检查 res:// 路径;自动用占位图替代 + 标记 |
 
 ---
 
@@ -291,7 +327,7 @@ PRD §2.3 与 GameConfig 顶部注释都声明了数值可玩,但:
    - `obstacles >= 1` → 障碍在生成(逻辑正常)
    - Hero 在障碍到达前能跳跃越过(手动 pointerdown 测试或看跳跃曲线)
 4. **失败处理**:
-   - Hero 持续下坠 → 回到 game-code-forge §十一 Sprite/Body 偏移排查
+   - Hero 持续下坠 → 回到 game-code-forge §十二 Sprite/Body 偏移排查
    - 障碍太密跳不过 → 回到 game-spec §2.3 调整 interval/speed
    - 障碍太高跳不过 → 回到 game-spec §2.3 调整 obstacle.height 或 jumpVelocity
 

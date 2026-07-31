@@ -1,6 +1,6 @@
 ﻿---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas 三引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas/Godot 4 四引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -22,7 +22,24 @@ description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_M
 - `src/**/*.ts`
 - `README.md`
 
-**约束**:不依赖任何可视化编辑器产物(.scene/.prefab/.anim 一律不生成)。所有节点树、动画、UI 用代码定义。
+Godot 4 工程产物(当引擎为 Godot 时,替代上述 Web 工程产物):
+```
+Godot 4 工程:
+- project.godot           # 工程配置
+- export_presets.cfg      # 导出预设
+- scenes/                 # 场景文件
+  ├── Main.tscn           # 主场景
+  ├── BootScene.tscn      # 启动场景
+  └── {SceneName}.tscn    # 各游戏场景
+- scripts/                # GDScript 脚本
+  ├── main.gd             # 主入口
+  ├── BootScene.gd        # 启动逻辑
+  ├── Character.gd        # 角色控制
+  └── {Module}.gd         # 各模块脚本
+- assets/                 # 复用 game-asset-forge 产出(符号链接或复制)
+```
+
+**约束**:不依赖任何可视化编辑器产物(Web 引擎:所有节点树/动画/UI 用代码定义)。Godot 4 例外:生成 .tscn 场景文件(文本格式,AI 可直接生成)和 .gd 脚本,但不依赖 Godot 编辑器交互操作。
 
 ---
 
@@ -78,196 +95,85 @@ description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_M
 
 ---
 
+## references 使用指引
+
+本 Skill 的引擎模板、配置模板和踩坑专题已抽离到 `references/` 目录,按需读取避免全量加载。
+
+| 文件 | 何时读取 |
+|------|---------|
+| `references/engine-phaser-template.md` | 引擎为 Phaser 时 |
+| `references/engine-pixi-template.md` | 引擎为 Pixi 时 |
+| `references/engine-canvas-template.md` | 引擎为 Canvas 时 |
+| `references/engine-godot-template.md` | 引擎为 Godot 4 时 |
+| `references/web-config-template.md` | Web 引擎生成配置文件时 |
+| `references/pitfall-sprite-body-offset.md` | Phaser 角色物理碰撞生成时 |
+| `references/pitfall-balance-validation.md` | 跑酷类游戏数值配置生成时 |
+| `references/pitfall-phaser-text-wrap.md` | Phaser 含中文文字渲染时 |
+| `references/pitfall-atlas-frame-format.md` | Phaser 帧动画图集生成时 |
+
+---
+
 ## 三、Phaser 引擎模板
 
-### 3.1 main.ts
-```typescript
-import Phaser from 'phaser';
-import { GameConfig } from './config/GameConfig';
-import { BootScene } from './scenes/BootScene';
-import { HomeScene } from './scenes/HomeScene';
-import { GameScene } from './scenes/GameScene';
+> 完整模板已抽离到 `references/engine-phaser-template.md`,生成 Phaser 代码时读取该文件。
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  parent: 'game',
-  width: GameConfig.designWidth,
-  height: GameConfig.designHeight,
-  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
-  scene: [BootScene, HomeScene, GameScene],
-  backgroundColor: '#000'
-};
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| 主入口 | main.ts | Phaser.Game 实例配置 |
+| 启动场景 | BootScene.ts | 资源预加载 |
+| 帧动画 | 帧动画注册 | generateFrameNames/Numbers |
+| 角色控制 | Character.ts | CharacterBody + 状态机 |
+| 弹窗系统 | BasePopup | 模态弹窗基类 |
 
-new Phaser.Game(config);
-```
-
-### 3.2 BootScene.ts(资源加载)
-```typescript
-export class BootScene extends Phaser.Scene {
-  constructor() { super('Boot'); }
-  
-  preload(): void {
-    // 读 ASSET_MANIFEST,逐图集加载
-    const manifest = require('../config/AssetManifest');
-    manifest.atlases.forEach(a => {
-      this.load.atlas(a.id, a.output, a.dataOutput);
-    });
-    manifest.audio.forEach(a => {
-      this.load.audio(a.id, a.path);
-    });
-  }
-  
-  create(): void {
-    this.scene.start('Home');
-  }
-}
-```
-
-### 3.3 帧动画注册
-```typescript
-// 在 BootScene.create 中
-const manifest = require('../config/AssetManifest');
-const animDefs = [
-  // 从 TECH_DESIGN 取
-  { key: 'skin0-run', atlas: 'skin0', prefix: 'run_', start: 1, end: 6, fps: 12, repeat: -1 },
-  // ...
-];
-
-animDefs.forEach(def => {
-  this.anims.create({
-    key: def.key,
-    frames: this.anims.generateFrameNames(def.atlas, {
-      prefix: def.prefix, start: def.start, end: def.end, zeroPad: 3
-    }),
-    frameRate: def.fps,
-    repeat: def.repeat
-  });
-});
-```
-
-### 3.4 Character.ts(角色基类)
-```typescript
-export class Character extends Phaser.Physics.Arcade.Sprite {
-  private animPrefix: string;
-  
-  constructor(scene: Phaser.Scene, x: number, y: number, texture: string, animPrefix: string) {
-    super(scene, x, y, texture);
-    this.animPrefix = animPrefix;
-    scene.add.existing(this);
-    scene.physics.add.existing(this);
-  }
-  
-  playRun(): void { this.play(`${this.animPrefix}-run`); }
-  playJump(): void { this.play(`${this.animPrefix}-jump`); }
-}
-```
-
-### 3.5 弹窗系统
-```typescript
-export abstract class BasePopup extends Phaser.GameObjects.Container {
-  protected mask: Phaser.GameObjects.Rectangle;
-  protected content: Phaser.GameObjects.Container;
-  
-  constructor(scene: Phaser.Scene) {
-    super(scene);
-    this.mask = scene.add.rectangle(0, 0, scene.scale.width, scene.scale.height, 0x000000, 0.6)
-      .setInteractive();
-    this.mask.on('pointerdown', () => this.close());
-    this.content = scene.add.container(0, 0);
-    this.add([this.mask, this.content]);
-    this.setVisible(false);
-  }
-  
-  abstract build(): void;
-  
-  show(): void {
-    this.setVisible(true);
-    this.scene.tweens.add({ targets: this.content, scale: { from: 0.8, to: 1 }, duration: 200, ease: 'Back.Out' });
-  }
-  
-  close(): void {
-    this.scene.tweens.add({
-      targets: this.content, scale: 0.8, alpha: 0, duration: 150,
-      onComplete: () => this.destroy()
-    });
-  }
-}
-```
+**Phaser 专属踩坑**(生成时按需读取):
+- Sprite/Body 偏移安全:见 `references/pitfall-sprite-body-offset.md`
+- 中文文字换行:见 `references/pitfall-phaser-text-wrap.md`
+- 图集帧名格式匹配:见 `references/pitfall-atlas-frame-format.md`
 
 ---
 
 ## 四、Pixi.js 引擎模板(关键差异)
 
-```typescript
-// main.ts
-import { Application } from 'pixi.js';
-const app = new Application({ width: 750, height: 1624, backgroundAlpha: 0 });
-document.body.appendChild(app.view);
+> 完整模板已抽离到 `references/engine-pixi-template.md`,生成 Pixi 代码时读取该文件。
 
-// Scene 自己实现
-abstract class Scene {
-  abstract update(dt: number): void;
-  abstract enter(): void;
-  abstract leave(): void;
-}
-
-class SceneManager {
-  private current?: Scene;
-  switch(s: Scene) {
-    this.current?.leave();
-    this.current = s;
-    s.enter();
-  }
-  update(dt: number) { this.current?.update(dt); }
-}
-
-// 帧动画
-const sheet = await Assets.load('assets/atlases/skin0.json');
-const sprite = new AnimatedSprite(sheet.animations['skin0-run']);
-sprite.play();
-```
-
-需自建:
-- 碰撞检测(AABB 工具函数)
-- 输入系统(`app.stage.eventMode = 'static'`)
-- 音频(用 `howler` npm 包)
+| 模块 | 说明 |
+|------|------|
+| Application | 初始化+Ticker |
+| AnimatedSprite | 帧动画播放 |
+| Assets.load | 资源加载 |
 
 ---
 
 ## 五、纯 Canvas 引擎模板(关键差异)
 
-```typescript
-// main.ts
-const canvas = document.getElementById('game') as HTMLCanvasElement;
-canvas.width = 750; canvas.height = 1624;
-const ctx = canvas.getContext('2d')!;
+> 完整模板已抽离到 `references/engine-canvas-template.md`,生成 Canvas 代码时读取该文件。
 
-let lastTime = 0;
-function loop(time: number) {
-  const dt = (time - lastTime) / 1000;
-  lastTime = time;
-  update(dt);
-  render(ctx);
-  requestAnimationFrame(loop);
-}
-requestAnimationFrame(loop);
-
-// 帧动画
-const img = new Image();
-img.src = 'assets/role/skin0/run_001.png';
-let frame = 0;
-setInterval(() => { frame = (frame + 1) % 6; img.src = `assets/role/skin0/run_${String(frame+1).padStart(3,'0')}.png`; }, 83);
-
-// 碰撞 AABB
-function aabb(a: Rect, b: Rect): boolean {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-```
+| 模块 | 说明 |
+|------|------|
+| 主循环 | requestAnimationFrame |
+| 帧动画 | 手动切帧 |
+| 碰撞检测 | AABB |
 
 ---
 
-## 六、生成规则
+## 六、Godot 4 引擎模板
+
+> 完整模板已抽离到 `references/engine-godot-template.md`,生成 Godot 代码时读取该文件。Godot 4 例外:生成 .tscn 场景文件和 .gd 脚本,但不依赖 Godot 编辑器交互操作。
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| 工程配置 | project.godot | config_version=5,input映射 |
+| 主场景 | Main.tscn | format=3,Node2D+GameLayer+UILayer |
+| 主脚本 | main.gd | 场景切换、Toast |
+| 启动场景 | BootScene.gd | ResourceLoader线程加载 |
+| 角色控制 | Character.gd | CharacterBody2D+状态机 |
+| 导出预设 | export_presets.cfg | Windows Desktop + HTML5 |
+
+**关键差异**:Godot 4 与 Web 引擎在入口/脚本/场景/资源/物理/导出/类型检查/3D支持上均不同,详见 `references/engine-godot-template.md` §6.7 差异对比表。
+
+---
+
+## 七、生成规则
 
 ### 1. 严格 TypeScript
 - `strict: true`
@@ -326,101 +232,18 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 七、配置文件生成
+## 八、配置文件生成
 
-### 7.1 package.json
-```json
-{
-  "name": "{game-name}",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "phaser": "^3.80.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0"
-  }
-}
-```
+> Web 引擎配置模板已抽离到 `references/web-config-template.md`,Godot 配置见 `references/engine-godot-template.md`。
 
-### 7.2 tsconfig.json
-```json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2020", "DOM"]
-  },
-  "include": ["src"]
-}
-```
-
-### 7.3 vite.config.ts
-```typescript
-import { defineConfig } from 'vite';
-export default defineConfig({
-  base: './',
-  server: { port: 5173, open: true },
-  build: { outDir: 'dist', assetsInlineLimit: 0 }
-});
-```
-
-### 7.4 index.html
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>{游戏名}</title>
-  <style>
-    * { margin: 0; padding: 0; }
-    body { background: #000; display: flex; justify-content: center; }
-    #game { display: block; }
-  </style>
-</head>
-<body>
-  <div id="game"></div>
-  <script type="module" src="/src/main.ts"></script>
-</body>
-</html>
-```
-
-### 7.5 README.md
-```markdown
-# {游戏名}
-
-## 开发
-npm install
-npm run dev
-
-## 构建
-npm run build
-产物在 dist/
-
-## 技术栈
-- 引擎:{...}
-- 构建:Vite
-- 语言:TypeScript strict
-
-## 文档
-见 docs/ 目录
-```
+| 引擎类型 | 配置文件 | references 文件 |
+|---------|---------|----------------|
+| Web(Phaser/Pixi/Canvas) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
+| Godot 4 | project.godot/export_presets.cfg | `references/engine-godot-template.md` |
 
 ---
 
-## 八、生成顺序
+## 九、生成顺序
 
 按依赖关系顺序生成:
 1. 工程配置文件(package.json/tsconfig/vite.config/index.html)
@@ -436,7 +259,7 @@ npm run build
 
 ---
 
-## 九、交互约定
+## 十、交互约定
 
 1. 读取 4 份输入文档后,**不要问用户**,直接生成
 2. 生成过程分批 Write,每批 5-10 个文件
@@ -445,7 +268,7 @@ npm run build
 
 ---
 
-## 十、质量检查清单
+## 十一、质量检查清单
 
 - [ ] 所有文件已生成(对照 TECH_DESIGN 目录结构)
 - [ ] package.json scripts 完整(dev/build/typecheck)
@@ -455,293 +278,31 @@ npm run build
 - [ ] 所有 PRD 弹窗都有对应文件
 - [ ] 所有 PRD 状态转换都有代码
 - [ ] README 含运行命令
-- [ ] Sprite/Body 偏移安全(见 十一)
-- [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十二)
+- [ ] Sprite/Body 偏移安全(见 十二)
+- [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十三)
 
 ---
 
-## 十一、Sprite/Body 偏移安全(关键踩坑)
+## 十二、Sprite/Body 偏移安全(关键踩坑)
 
-### 11.1 问题背景
+> **Phaser 专属**。完整规范见 `references/pitfall-sprite-body-offset.md`。
 
-ASSET_MANIFEST 声明 `size: [256, 256]` 是**期望尺寸**,但 AI 生图实际常返回 1024×1024 或 1920×1920(详见 game-asset-forge 第十章)。
-若代码按期望尺寸硬编码 body offset,会导致 body 偏移到 sprite 视觉区域外,**角色看似随机下坠消失**。
+核心约束:body.setSize/setOffset 必须在 create 物理后调用,否则偏移无效导致碰撞框错位。
 
-### 11.2 反例(禁止)
+## 十三、数值平衡校验(关键踩坑)
 
-```typescript
-// 反例:假设 texture 是 256×256,硬编码 offset
-body.setSize(80, 140, true);
-body.setOffset(88, 58);  // ← 若 texture 实为 1920×1920,body 会跑到 sprite 左上角外
-```
+> **跨引擎通用**(跑酷类)。完整规范见 `references/pitfall-balance-validation.md`。
 
-### 11.3 正例(推荐)
+核心约束:GameConfig 必须带注释推导链,jumpVelocity/gravity/obstacleInterval/obstacleSpeed 必须可数学验证。
 
-**方案 A:body 居中到 sprite 中心(首选,简单)**
+## 十四、Phaser 中文文字换行(关键踩坑)
 
-```typescript
-// 用 setSize 第 3 参 center=true,让 body 自动居中到 sprite frame 中心
-// 不调 setOffset,与 texture 实际尺寸解耦
-body.setSize(80, 140, true);
-```
+> **Phaser 专属**。完整规范见 `references/pitfall-phaser-text-wrap.md`。
 
-**方案 B:setScale 缩到设计尺寸 + body 居中(视觉效果更好)**
+核心约束:中文文字必须用 `wordWrap.useAdvancedWrap` + 手动按字符切分,否则换行无效。
 
-```typescript
-// 把 1920×1920 缩到 256×256(scale = 设计尺寸 / 实际尺寸)
-this.setScale(GameConfig.hero.scale);  // 配置里写 scale: 0.1333
-body.setSize(80, 140, true);
-```
+## 十五、图集帧名格式匹配(关键踩坑)
 
-**方案 C:加载后 resize texture(根治,但需 sharp/canvas)**
+> **Phaser 专属**。完整规范见 `references/pitfall-atlas-frame-format.md`。
 
-```typescript
-// 在 BootScene.preload 后,用 sharp 把所有 jpg resize 到 manifest.size
-// 详见 game-asset-forge 第十章格式转换脚本
-```
-
-### 11.4 配置约束
-
-GameConfig 里:
-- **必须**保留 `scale` 字段(方案 B 用)
-- **不要**写死 `bodyOffsetX/Y`(已被方案 A 取代,保留会让后人误用)
-- Hero/Obstacle 等所有 Sprite 类**必须**用方案 A 或 B
-
-### 11.5 验收(浏览器实测)
-
-集成后必须用 browser_evaluate 验证:
-- `hero.body.center.x === hero.x` 且 `hero.body.center.y === hero.y`(body 居中)
-- `hero.body.blocked.down === true`(collider 生效)
-- `hero.body.velocity.y === 0`(静止,未下坠)
-
-任一不满足 → 回到 11.3 排查。
-
-### 11.6 适用范围
-
-本规则适用于**所有 Sprite 类**:
-- Character (Hero/Enemy)
-- Obstacle
-- Collectible (金币/道具)
-- Particle Sprite
-
-**不适用**:
-- 用 generateTexture 生成的纯色矩形(texture 尺寸 = 设计尺寸,无偏移问题)
-- UI Text/Button(无 physics body)
-
----
-
-## 十二、数值平衡校验(关键踩坑)
-
-### 12.1 问题背景
-
-PRD §2.3 给出了跳跃/移动/障碍的物理平衡推导,但代码生成时容易:
-- 漏抄 PRD 数值,直接拍脑袋写默认值
-- 只填 GameConfig 字段,不做可玩性校验
-- 没有把推导注释写进 GameConfig,后人调参无从下手
-
-**PoC 踩坑**:gravityY=1200/jumpVelocity=-700/speed=300/interval=800ms 时,滞空期障碍移动 350px > 间距 240px,Hero 永远跳不过去。
-
-### 12.2 强制规则
-
-生成 GameConfig.ts 时:
-1. **必须**从 PRD §2.3 读取推导表,直接抄入 GameConfig 字段值
-2. **必须**在 GameConfig 顶部写推导注释块(公式 + 每档 D/M/R 余量)
-3. **必须**自检四条可玩性约束(见 12.3),任一不满足 → 停止生成,回到 PRD §2.3 修正数值
-
-### 12.3 可玩性约束(硬性,全部满足才可玩)
-
-| 约束 | 公式 | 不满足处理 |
-|---|---|---|
-| 跳得过去 | `H > obstacle.height + 20` | 调大 jumpVelocity 或减小 gravityY |
-| 落得下地 | `D > M` | 增大 interval 或减小 speed |
-| 反应得及 | `R = D - M ≥ 100px` | 增大 interval |
-| **穿越时间够**(关键!) | `T_above > T_cross + 0.3s` | 降低 obstacle.height / 减小 bodyW+obstacleW / 增大 jumpVelocity |
-
-其中:
-```
-T = 2 * |jumpVelocity| / gravityY           (滞空时间)
-H = jumpVelocity² / (2 * gravityY)          (跳跃高度)
-D = speed * interval / 1000                  (障碍间距, interval 单位 ms)
-M = speed * T                                (滞空期障碍移动距离)
-T_above = 2 * sqrt(2*(H - obstacle.height) / gravityY)   (body高于障碍顶的持续时间)
-T_cross = (bodyW + obstacleW) / speed        (障碍穿过body水平范围的时间)
-```
-
-**第 4 条是最容易漏的坑**(PoC 踩过):即使最高点能越过,但 body 在障碍上方的时间太短,
-障碍还没穿过 body 水平范围 Hero 就降落了 → overlap → game over。
-表现:玩家感觉"明明跳过去了但还是撞了"。
-
-### 12.4 GameConfig 注释模板(必须照抄)
-
-```typescript
-// 全局游戏配置常量(对应 PRD 数值设计表)
-//
-// 数值平衡推导(关键 - 含穿越时间校验):
-//   跳跃滞空时间   T = 2 * |jumpVelocity| / gravityY
-//   跳跃最大高度   H = jumpVelocity² / (2 * gravityY)
-//   障碍间距       D = speed * interval / 1000
-//   滞空期移动距离 M = speed * T
-//   body高于障碍顶持续时间 T_above = 2 * sqrt(2*(H - obstacle.height) / gravityY)
-//   障碍穿过body水平范围时间 T_cross = (bodyW + obstacleW) / speed
-//
-// 可玩性约束(硬性,全部满足才可玩):
-//   1. 跳得过去: H > obstacle.height + 20
-//   2. 间距够宽: D > M + 100px (反应余量)
-//   3. 时间够长: T_above > T_cross + 0.3s (穿越余量,关键!)
-//
-// 当前数值:
-//   T = ...   H = ...   T_above = ...
-//   档1: D=..., M=..., 反应余量=... ✓  T_cross=..., 穿越余量=... ✓
-//   档2: ...
-//   档3: ...
-
-export const GameConfig = { ... } as const;
-```
-
-### 12.5 校验失败时的处理
-
-若 PRD §2.3 的推导表本身就不满足约束(常见:PRD 阶段没算清楚):
-1. 不要硬抄错误数值到 GameConfig
-2. 在 GameConfig 顶部注释标注 `// ⚠️ 数值不可玩,详见 ASSET_ISSUES.md`
-3. 在 ASSET_ISSUES.md 追加:
-   ```
-   ## 数值平衡问题
-   - 档 X: 约束 N 不满足
-     D=... M=..., R=...(反应余量不足/或 T_above=... T_cross=..., 穿越余量不足)
-     建议: [具体调参方向]
-   ```
-4. 提示用户回到 game-spec 修正 PRD §2.3
-
-**穿越时间不足的调参优先级**(PoC 经验):
-1. 降低 obstacle.height → 增大 T_above(最有效)
-2. 减小 bodyW + obstacleW → 减小 T_cross
-3. 增大 jumpVelocity / 减小 gravityY → 增大 H → 增大 T_above
-
-### 12.6 适用范围
-
-- 跑酷/无尽奔跑(本 PoC 类型)
-- 平台跳跃(超级马里奥式)
-- 飞行躲避(Flappy Bird 式,把跳跃换成拍动)
-- 任何含"移动障碍 + 角色位移"的游戏
-
-**不适用**:
-- 纯解谜(无实时移动)
-- 回合制(无物理曲线)
-- 三消/消除(无角色位移)
-
-
----
-
-## 十三、Phaser 中文文字换行(关键踩坑)
-
-### 13.1 问题背景
-
-Phaser 的 `wordWrap` 配置默认按**空格分词**,中文文本无空格不会换行,导致:
-- 对话框内长句不换行,文字溢出对话框边界
-- 卡片描述文字超出卡片范围
-- 这在纯英文游戏中不会暴露,但中文游戏是**必现问题**
-
-### 13.2 反例(禁止)
-
-```typescript
-// 反例:wordWrap 不带 useAdvancedWrap,中文不换行
-this.add.text(0, 0, '这是一段很长的中文描述文字...', {
-  fontSize: '22px',
-  wordWrap: { width: 440 },  // ← 中文不会在此换行!
-});
-```
-
-### 13.3 正例(必须)
-
-```typescript
-// 正例:加 useAdvancedWrap: true 启用字符级换行
-this.add.text(0, 0, '这是一段很长的中文描述文字...', {
-  fontSize: '22px',
-  wordWrap: { width: 440, useAdvancedWrap: true },  // ← 中文会按字符换行
-});
-```
-
-### 13.4 强制规则
-
-**所有**含 `wordWrap` 的 text 配置**必须**加 `useAdvancedWrap: true`。
-
-常见位置(逐一检查):
-- 对话框/打字机组件(Typewriter)
-- 卡片描述文字(各类卡片组件)
-- 弹窗提示文字
-- 剧情叙述文字
-- 任何可能出现中文长文本的 Text 对象
-
-### 13.5 适用范围
-
-- 所有 Phaser 3.x 版本
-- 所有含中文/日文/韩文(无空格分词语言)的文本
-- 纯英文文本不受影响(加 useAdvancedWrap 也无副作用)
-
----
-
-## 十四、图集帧名格式匹配(关键踩坑)
-
-### 14.1 问题背景
-
-Phaser 图集 JSON 有两种格式:
-- **Hash 格式**:`frames` 是对象,帧以名称为 key(如 `"swim_001": { frame: {...} }`)
-- **Array 格式**:`frames` 是数组,帧以索引为序
-
-动画注册时必须用对应的 API,否则产生 "Frame not found" 警告:
-- Hash 格式 → 必须用 `generateFrameNames`(按名称查找)
-- Array 格式 → 必须用 `generateFrameNumbers`(按索引查找)
-
-### 14.2 反例(禁止)
-
-```typescript
-// 反例:Hash 格式图集用 generateFrameNumbers,帧名不匹配
-// 图集 JSON 帧名是 "swim_001",但 generateFrameNumbers 按索引 0/1/2/3 查找
-this.anims.create({
-  key: 'char_swim',
-  frames: this.anims.generateFrameNumbers('char_atlas', { start: 0, end: 3 }),
-  // ← 产生 "Frame not found" 警告!
-});
-```
-
-### 14.3 正例(必须)
-
-```typescript
-// 正例:Hash 格式图集用 generateFrameNames,按名称匹配
-this.anims.create({
-  key: 'char_swim',
-  frames: this.anims.generateFrameNames('char_atlas', {
-    prefix: 'swim_',
-    start: 1,
-    end: 4,
-    zeroPad: 3,
-  }),
-  // ← 正确匹配 "swim_001" 到 "swim_004"
-});
-```
-
-### 14.4 判断图集格式
-
-读取图集 JSON 的 `frames` 字段:
-```javascript
-const atlas = JSON.parse(fs.readFileSync('assets/atlases/char_atlas.json'));
-const isHash = !Array.isArray(atlas.frames);  // true = Hash 格式
-```
-
-### 14.5 强制规则
-
-1. game-asset-forge 打包图集时,**统一用 Hash 格式**(JSON Hash),便于按名称查找
-2. game-code-forge 注册动画时,**必须先判断图集格式**:
-   - Hash → `generateFrameNames(prefix, start, end, zeroPad)`
-   - Array → `generateFrameNumbers(start, end)`
-3. 帧名命名规范:`{prefix}_{index:03d}`(如 `swim_001`),zeroPad=3
-
-### 14.6 排查方法
-
-浏览器运行时检查纹理帧:
-```javascript
-const tex = game.textures.get('char_atlas');
-console.log(tex.getFrameNames());  // 查看实际帧名
-console.log(tex.has('swim_001'));  // 检查帧是否存在
-```
-
+核心约束:generateFrameNames 的 prefix/suffix/start/end 必须与 JSON Hash 中的实际帧名完全匹配。
