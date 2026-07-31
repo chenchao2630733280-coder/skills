@@ -1,4 +1,4 @@
----
+﻿---
 name: "game-code-forge"
 description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas 三引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
@@ -628,3 +628,120 @@ export const GameConfig = { ... } as const;
 - 纯解谜(无实时移动)
 - 回合制(无物理曲线)
 - 三消/消除(无角色位移)
+
+
+---
+
+## 十三、Phaser 中文文字换行(关键踩坑)
+
+### 13.1 问题背景
+
+Phaser 的 `wordWrap` 配置默认按**空格分词**,中文文本无空格不会换行,导致:
+- 对话框内长句不换行,文字溢出对话框边界
+- 卡片描述文字超出卡片范围
+- 这在纯英文游戏中不会暴露,但中文游戏是**必现问题**
+
+### 13.2 反例(禁止)
+
+```typescript
+// 反例:wordWrap 不带 useAdvancedWrap,中文不换行
+this.add.text(0, 0, '这是一段很长的中文描述文字...', {
+  fontSize: '22px',
+  wordWrap: { width: 440 },  // ← 中文不会在此换行!
+});
+```
+
+### 13.3 正例(必须)
+
+```typescript
+// 正例:加 useAdvancedWrap: true 启用字符级换行
+this.add.text(0, 0, '这是一段很长的中文描述文字...', {
+  fontSize: '22px',
+  wordWrap: { width: 440, useAdvancedWrap: true },  // ← 中文会按字符换行
+});
+```
+
+### 13.4 强制规则
+
+**所有**含 `wordWrap` 的 text 配置**必须**加 `useAdvancedWrap: true`。
+
+常见位置(逐一检查):
+- 对话框/打字机组件(Typewriter)
+- 卡片描述文字(各类卡片组件)
+- 弹窗提示文字
+- 剧情叙述文字
+- 任何可能出现中文长文本的 Text 对象
+
+### 13.5 适用范围
+
+- 所有 Phaser 3.x 版本
+- 所有含中文/日文/韩文(无空格分词语言)的文本
+- 纯英文文本不受影响(加 useAdvancedWrap 也无副作用)
+
+---
+
+## 十四、图集帧名格式匹配(关键踩坑)
+
+### 14.1 问题背景
+
+Phaser 图集 JSON 有两种格式:
+- **Hash 格式**:`frames` 是对象,帧以名称为 key(如 `"swim_001": { frame: {...} }`)
+- **Array 格式**:`frames` 是数组,帧以索引为序
+
+动画注册时必须用对应的 API,否则产生 "Frame not found" 警告:
+- Hash 格式 → 必须用 `generateFrameNames`(按名称查找)
+- Array 格式 → 必须用 `generateFrameNumbers`(按索引查找)
+
+### 14.2 反例(禁止)
+
+```typescript
+// 反例:Hash 格式图集用 generateFrameNumbers,帧名不匹配
+// 图集 JSON 帧名是 "swim_001",但 generateFrameNumbers 按索引 0/1/2/3 查找
+this.anims.create({
+  key: 'char_swim',
+  frames: this.anims.generateFrameNumbers('char_atlas', { start: 0, end: 3 }),
+  // ← 产生 "Frame not found" 警告!
+});
+```
+
+### 14.3 正例(必须)
+
+```typescript
+// 正例:Hash 格式图集用 generateFrameNames,按名称匹配
+this.anims.create({
+  key: 'char_swim',
+  frames: this.anims.generateFrameNames('char_atlas', {
+    prefix: 'swim_',
+    start: 1,
+    end: 4,
+    zeroPad: 3,
+  }),
+  // ← 正确匹配 "swim_001" 到 "swim_004"
+});
+```
+
+### 14.4 判断图集格式
+
+读取图集 JSON 的 `frames` 字段:
+```javascript
+const atlas = JSON.parse(fs.readFileSync('assets/atlases/char_atlas.json'));
+const isHash = !Array.isArray(atlas.frames);  // true = Hash 格式
+```
+
+### 14.5 强制规则
+
+1. game-asset-forge 打包图集时,**统一用 Hash 格式**(JSON Hash),便于按名称查找
+2. game-code-forge 注册动画时,**必须先判断图集格式**:
+   - Hash → `generateFrameNames(prefix, start, end, zeroPad)`
+   - Array → `generateFrameNumbers(start, end)`
+3. 帧名命名规范:`{prefix}_{index:03d}`(如 `swim_001`),zeroPad=3
+
+### 14.6 排查方法
+
+浏览器运行时检查纹理帧:
+```javascript
+const tex = game.textures.get('char_atlas');
+console.log(tex.getFrameNames());  // 查看实际帧名
+console.log(tex.has('swim_001'));  // 检查帧是否存在
+```
+
