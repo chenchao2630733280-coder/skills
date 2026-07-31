@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品交付流水线总编排"
+  short_description: "产品工作台调度中枢:判定端类型、裁剪阶段、串联PRD→原型→HTML→门户→实施,提供失败回退策略"
+  default_prompt: "Use $product-pipeline-master to orchestrate the full product delivery pipeline: brainstorm → PRD → prototype → HTML → portal → implementation, with device type detection and stage pruning."

@@ -1,0 +1,53 @@
+sources:
+  - name: Google Trends
+    type: search_trend
+    purpose:
+      - 搜索兴趣变化
+      - 地区与时间趋势
+      - 关键词比较
+    notes: 使用相对热度，不应解释为绝对搜索量
+
+  - name: TikTok Creative Center
+    type: short_video_creative_trend
+    purpose:
+      - 创作趋势
+      - 热门素材与广告创意模式
+      - 内容表达方式
+    notes: 广告和创作趋势不能直接等同于短剧题材需求
+
+  - name: GDELT
+    type: global_news_event
+    purpose:
+      - 全球新闻事件量
+      - 主题和情绪变化
+      - 跨语言事件信号
+    notes: 新闻量上升不等于用户喜爱，应与搜索和平台趋势交叉验证
+
+  - name: Official Calendars
+    type: confirmed_event_calendar
+    purpose:
+      - 节日和纪念日
+      - 体育赛事
+      - 行业会议
+      - 已公布政策节点
+    notes: 优先使用事件组织方或政府官方来源
+
+  - name: User Product Data
+    type: first_party
+    purpose:
+      - 收藏率
+      - 二次发散率
+      - 深入研究率
+      - 历史高分选题
+    notes: 对实际产品最重要，应高于泛平台热度
+
+signal_rules:
+  strong_signal:
+    minimum_independent_source_types: 2
+    confidence_range: 60-85
+  confirmed_event:
+    official_source_required: true
+    confidence_range: 80-100
+  weak_signal:
+    confidence_range: 20-55
+    must_use_hypothesis_language: true

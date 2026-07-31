@@ -1,0 +1,4 @@
+interface:
+  display_name: "Screenshot Operation Manual"
+  short_description: "Generate PC and mobile operation manuals from screenshots."
+  default_prompt: "Use $screenshot-operation-manual to generate a complete operation manual from the provided PC or mobile screenshots."

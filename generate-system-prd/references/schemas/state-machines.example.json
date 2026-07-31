@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "state-machines",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "stateMachines": [
+    {
+      "id": "SM-001",
+      "name": "示例状态机",
+      "entityId": "T01",
+      "initialState": "draft",
+      "states": [
+        "draft",
+        "submitted"
+      ],
+      "transitions": [
+        {
+          "from": "draft",
+          "to": "submitted",
+          "trigger": "CMD-CONTRACT-SUBMIT",
+          "ruleIds": [
+            "VR-001"
+          ]
+        }
+      ],
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-4.1"
+      ]
+    }
+  ]
+}

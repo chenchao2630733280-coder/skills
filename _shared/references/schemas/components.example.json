@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "components",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "components": [
+    {
+      "id": "CMP-EXAMPLE-SUMMARY",
+      "name": "概览卡",
+      "usedBy": [
+        "P01"
+      ],
+      "documentRef": "页面原型文档#global-components",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "页面原型文档#global-components"
+      ],
+      "generatedByFallback": false
+    }
+  ]
+}

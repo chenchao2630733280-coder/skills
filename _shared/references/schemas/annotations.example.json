@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "annotations",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "primaryDocument": "output/docs/页面原型文档.md",
+  "pages": [
+    {
+      "pageId": "P01",
+      "specs": [
+        {
+          "id": "S01",
+          "name": "概览",
+          "documentRef": "页面原型文档#page-p01",
+          "selector": ".stat-card--overview",
+          "display": {
+            "source": [
+              "example.name",
+              "example.status"
+            ],
+            "default": "加载数据",
+            "format": "金额千分位；日期YYYY-MM-DD",
+            "visibility": "有查看权限时展示"
+          },
+          "interaction": {
+            "trigger": "点击状态徽标",
+            "result": "打开状态记录 Drawer",
+            "validation": "PERM-EXAMPLE-VIEW",
+            "feedbackProfile": "DEFAULT_READ_FEEDBACK"
+          },
+          "data": {
+            "empty": "--"
+          },
+          "exceptions": [
+            "网络失败可重试",
+            "无权限显示权限状态"
+          ],
+          "ruleIds": [
+            "BR-021",
+            "VR-012"
+          ],
+          "sourceLevel": "CONFIRMED",
+          "sourceRefs": [
+            "页面原型文档#page-p01"
+          ],
+          "generatedByFallback": false,
+          "reverseEngineered": false
+        }
+      ]
+    }
+  ]
+}

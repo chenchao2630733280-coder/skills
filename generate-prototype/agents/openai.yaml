@@ -1,0 +1,4 @@
+interface:
+  display_name: "页面原型文档生成器"
+  short_description: "从 PRD 生成终端感知的页面原型文档"
+  default_prompt: "Use $generate-prototype to generate the page prototype document from this PRD."

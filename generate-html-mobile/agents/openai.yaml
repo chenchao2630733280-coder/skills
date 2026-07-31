@@ -1,0 +1,4 @@
+interface:
+  display_name: "移动端HTML原型生成器"
+  short_description: "生成任务型移动端静态HTML原型页面(综合入口/详情/交易/个人中心等)"
+  default_prompt: "Use $generate-html-mobile to generate mobile HTML prototype pages under output/site/mobile/."

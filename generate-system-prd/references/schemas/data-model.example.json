@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "data-model",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "entities": [
+    {
+      "id": "T01",
+      "name": "业务对象",
+      "owner": "业务域",
+      "fields": [
+        {
+          "name": "businessId",
+          "logicalType": "identifier",
+          "physicalType": null,
+          "required": true,
+          "businessMeaning": "业务唯一标识",
+          "sensitivity": "INTERNAL",
+          "constraints": [
+            "业务范围内唯一"
+          ],
+          "sourceLevel": "CONFIRMED",
+          "sourceRefs": [
+            "PRD-3.2"
+          ],
+          "implementationHints": [
+            "主键与索引策略由系统实施阶段确定"
+          ]
+        }
+      ],
+      "relationships": [],
+      "lifecycle": [],
+      "ruleIds": [],
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-3.2"
+      ]
+    }
+  ]
+}

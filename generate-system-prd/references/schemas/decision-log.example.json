@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "decision-log",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "INFERRED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "decisions": [
+    {
+      "id": "TBD-001",
+      "name": "示例待决策",
+      "status": "OPEN",
+      "owner": "产品负责人",
+      "deadline": null,
+      "blockingGate": null,
+      "recommendedDefault": "采用保守方案",
+      "evidenceRequired": [],
+      "affectedIds": [
+        "P08"
+      ],
+      "sourceLevel": "TBD",
+      "sourceRefs": [
+        "PRD-风险与决策"
+      ]
+    }
+  ]
+}

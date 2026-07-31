@@ -1,0 +1,21 @@
+{
+  "projectRoot": ".",
+  "existingStack": {},
+  "targetStack": {},
+  "modules": [
+    {
+      "id": "MOD-001",
+      "name": "example",
+      "sourceIds": [
+        "P01",
+        "BR-001"
+      ]
+    }
+  ],
+  "commands": {
+    "install": "",
+    "dev": "",
+    "test": "",
+    "build": ""
+  }
+}

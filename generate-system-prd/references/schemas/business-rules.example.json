@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "business-rules",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "businessRules": [
+    {
+      "id": "BR-001",
+      "name": "示例业务规则",
+      "statement": "满足条件后允许提交",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-4.1"
+      ]
+    }
+  ],
+  "validationRules": [
+    {
+      "id": "VR-001",
+      "name": "示例校验规则",
+      "statement": "必填字段完整",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-10.1"
+      ]
+    }
+  ]
+}

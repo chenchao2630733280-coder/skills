@@ -1,0 +1,4 @@
+interface:
+  display_name: "PC管理后台HTML原型生成器"
+  short_description: "生成vue-admin-plus风格PC管理后台静态HTML原型页面"
+  default_prompt: "Use $generate-html-pc-admin to generate PC admin HTML prototype pages under output/site/pc/."

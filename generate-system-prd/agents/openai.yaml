@@ -1,0 +1,4 @@
+interface:
+  display_name: "系统PRD生成器"
+  short_description: "从需求生成结构化系统产品设计文档（PRD）"
+  default_prompt: "Use $generate-system-prd to generate a structured PRD from this requirement description."

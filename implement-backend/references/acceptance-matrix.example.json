@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "sourceId": "P01",
+      "implementation": [],
+      "tests": [],
+      "manualAcceptance": [],
+      "lastResult": "not-run",
+      "risk": "high"
+    }
+  ]
+}

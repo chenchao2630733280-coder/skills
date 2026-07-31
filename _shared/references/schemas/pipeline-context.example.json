@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "pipeline-context",
+  "producer": "pipeline-orchestrator",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "INFERRED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "projectRoot": ".",
+  "recommendedFlow": [
+    "generate-product-brainstorm",
+    "generate-system-prd",
+    "generate-prototype",
+    "generate-html-pages",
+    "generate-portal"
+  ],
+  "strictOrderRequired": false,
+  "artifacts": [
+    {
+      "path": "output/docs/页面原型文档.md",
+      "artifactType": "prototypeDocument",
+      "owner": "generate-prototype",
+      "createdBy": "generate-prototype",
+      "lastUpdatedBy": "generate-prototype",
+      "status": "authoritative",
+      "scope": [
+        "ALL"
+      ],
+      "confidence": "high",
+      "sourceLevel": "CONFIRMED",
+      "generatedByFallback": false,
+      "reverseEngineered": false,
+      "inputRefs": [],
+      "sourceRefs": [],
+      "contentHash": null,
+      "openIssues": []
+    }
+  ],
+  "fallbackEvents": [],
+  "conflicts": [],
+  "openIssues": []
+}

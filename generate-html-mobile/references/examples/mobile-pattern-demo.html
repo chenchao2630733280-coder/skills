@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>移动端抽象设计模式示例</title>
+  <style>
+    :root {
+      --primary: #22b573;
+      --primary-soft: #eaf9f1;
+      --accent: #ff8a4c;
+      --danger: #f04464;
+      --page: #f5f7f6;
+      --surface: #fff;
+      --text: #202523;
+      --muted: #7b8380;
+      --line: #e9eeeb;
+      --radius: 12px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); background: #dfe5e2; }
+    button, input { font: inherit; }
+    .phone { width: min(100%, 420px); min-height: 100vh; margin: 0 auto; background: var(--page); position: relative; padding-bottom: calc(74px + var(--safe-bottom)); }
+    .context-header { padding: 16px 16px 12px; background: linear-gradient(150deg, #eefcf4 0%, #fff 70%); }
+    .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .weather { color: var(--muted); font-size: 13px; }
+    .channels { display: flex; gap: 20px; font-size: 18px; font-weight: 600; }
+    .channels span.active { position: relative; }
+    .channels span.active::after { content: ""; position: absolute; left: 50%; bottom: -8px; width: 24px; height: 3px; border-radius: 99px; background: var(--primary); transform: translateX(-50%); }
+    .icon-btn { width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--text); }
+    .search { margin-top: 18px; display: flex; align-items: center; height: 40px; border-radius: 12px; background: #fff; border: 1px solid #dfe8e3; padding: 0 12px; gap: 8px; }
+    .search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; }
+    .hero { margin: 0 12px; min-height: 132px; border-radius: 14px; padding: 18px; overflow: hidden; position: relative; background: linear-gradient(135deg, #1fb47a, #87dfba); color: #fff; }
+    .hero::after { content: ""; position: absolute; width: 180px; height: 180px; border-radius: 50%; right: -62px; top: -72px; background: rgba(255,255,255,.18); box-shadow: -54px 110px 0 rgba(255,255,255,.10); }
+    .hero h1 { margin: 0 0 8px; font-size: 24px; position: relative; z-index: 1; }
+    .hero p { margin: 0; width: 70%; line-height: 1.5; opacity: .92; position: relative; z-index: 1; }
+    .hero .cta { margin-top: 14px; border: 0; border-radius: 999px; padding: 8px 14px; background: #fff; color: #168d5e; font-weight: 600; position: relative; z-index: 1; }
+    .section { margin: 12px; padding: 14px; border-radius: var(--radius); background: var(--surface); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .section-head h2 { margin: 0; font-size: 17px; }
+    .section-head a { color: var(--muted); font-size: 13px; }
+    .service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 8px; }
+    .service { border: 0; background: transparent; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: var(--text); position: relative; }
+    .service .glyph { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+    .service span:last-child { font-size: 12px; }
+    .badge { position: absolute; top: 0; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--danger); color: #fff; font-size: 10px; display: grid; place-items: center; }
+    .feature-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 10px; }
+    .feature-main, .feature-small { border-radius: 12px; padding: 14px; min-height: 104px; position: relative; overflow: hidden; }
+    .feature-main { grid-row: span 2; background: linear-gradient(145deg, #fff4df, #ffe0b1); }
+    .feature-small:nth-child(2) { background: linear-gradient(145deg, #edf4ff, #dce9ff); }
+    .feature-small:nth-child(3) { background: linear-gradient(145deg, #f7edff, #e9d8ff); }
+    .feature-grid strong { display: block; margin-bottom: 6px; }
+    .feature-grid small { color: var(--muted); line-height: 1.45; }
+    .feature-main::after, .feature-small::after { content: ""; position: absolute; right: -16px; bottom: -22px; width: 78px; height: 78px; border-radius: 24px; transform: rotate(18deg); background: rgba(255,255,255,.45); }
+    .list { display: grid; gap: 12px; }
+    .list-item { display: grid; grid-template-columns: 82px 1fr auto; gap: 12px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+    .list-item:last-child { padding-bottom: 0; border-bottom: 0; }
+    .thumb { width: 82px; height: 70px; border-radius: 10px; background: linear-gradient(145deg, #b9e8d4, #78cfa8); position: relative; overflow: hidden; }
+    .thumb::before { content: ""; position: absolute; left: 10px; bottom: -18px; width: 70px; height: 52px; border-radius: 50% 50% 0 0; background: rgba(255,255,255,.55); }
+    .item-copy strong { display: block; font-size: 15px; margin-bottom: 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .meta { color: var(--muted); font-size: 12px; }
+    .price { color: var(--danger); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .bottom-nav { position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 420px); height: calc(58px + var(--safe-bottom)); padding-bottom: var(--safe-bottom); background: rgba(255,255,255,.96); border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); z-index: 5; backdrop-filter: blur(14px); }
+    .bottom-nav button { border: 0; background: transparent; min-width: 44px; color: var(--muted); font-size: 11px; display: grid; place-items: center; align-content: center; gap: 4px; }
+    .bottom-nav button.active { color: var(--primary); font-weight: 600; }
+    .nav-dot { width: 22px; height: 22px; border: 2px solid currentColor; border-radius: 7px; }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <header class="context-header">
+      <div class="header-row">
+        <span class="weather">24°C · 苏州</span>
+        <div class="channels" aria-label="频道切换"><span>政务</span><span class="active">生活</span></div>
+        <button class="icon-btn" aria-label="消息">◎</button>
+      </div>
+      <label class="search"><span aria-hidden="true">⌕</span><input aria-label="搜索服务" placeholder="搜索服务、活动或内容"></label>
+    </header>
+
+    <section class="hero" aria-label="重点服务">
+      <h1>本周便民服务</h1>
+      <p>将高频任务、重要提醒和一个清晰行动点放在同一视觉焦点中。</p>
+      <button class="cta">立即查看</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>常用服务</h2><a>全部</a></div>
+      <div class="service-grid">
+        <button class="service"><span class="glyph">票</span><span>景点门票</span></button>
+        <button class="service"><span class="glyph">医</span><span>健康服务</span></button>
+        <button class="service"><span class="glyph">车</span><span>实时公交</span><span class="badge">3</span></button>
+        <button class="service"><span class="glyph">缴</span><span>生活缴费</span></button>
+        <button class="service"><span class="glyph">购</span><span>本地商城</span></button>
+        <button class="service"><span class="glyph">证</span><span>办事预约</span></button>
+        <button class="service"><span class="glyph">金</span><span>账户查询</span></button>
+        <button class="service"><span class="glyph">…</span><span>更多服务</span></button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>专题服务</h2><a>更多</a></div>
+      <div class="feature-grid">
+        <article class="feature-main"><strong>城市周末计划</strong><small>大卡承载主主题，小卡补充关联任务。</small></article>
+        <article class="feature-small"><strong>出行提醒</strong><small>实时状态</small></article>
+        <article class="feature-small"><strong>账户服务</strong><small>快捷办理</small></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>附近推荐</h2><a>查看更多</a></div>
+      <div class="list">
+        <article class="list-item"><div class="thumb"></div><div class="item-copy"><strong>园林主题体验活动</strong><div class="meta">4.8 分 · 距离 1.2 km</div></div><div class="price">¥68</div></article>
+        <article class="list-item"><div class="thumb"></div><div class="item-copy"><strong>城市特色伴手礼</strong><div class="meta">本地精选 · 可配送</div></div><div class="price">¥39</div></article>
+      </div>
+    </section>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <button class="active"><span class="nav-dot"></span><span>首页</span></button>
+      <button><span class="nav-dot"></span><span>服务</span></button>
+      <button><span class="nav-dot"></span><span>订单</span></button>
+      <button><span class="nav-dot"></span><span>我的</span></button>
+    </nav>
+  </main>
+</body>
+</html>

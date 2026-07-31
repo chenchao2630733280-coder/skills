@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "sourceId": "BR-001",
+      "type": "businessRule",
+      "status": "planned",
+      "implementationFiles": [],
+      "testFiles": [],
+      "evidence": []
+    }
+  ]
+}

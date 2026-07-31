@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "project",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "project": {
+    "id": "PROJECT-001",
+    "name": "示例系统",
+    "positioning": "示例定位",
+    "scope": [
+      "核心业务域"
+    ],
+    "nonGoals": [],
+    "devices": [
+      "pc"
+    ],
+    "sourceLevel": "CONFIRMED",
+    "sourceRefs": [
+      "PRD-1.1"
+    ]
+  }
+}

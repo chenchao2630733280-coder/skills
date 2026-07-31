@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PC后台导航样式示例 — vue-admin-plus 纵向布局</title>
+  <style>
+    /* ===== Design Tokens（对齐 pc_admin_ui_spec.md） ===== */
+    :root {
+      --sidebar-width: 266px;
+      --sidebar-collapsed-width: 64px;
+      --header-height: 60px;
+      --workspace-tabs-height: 50px;
+      --menu-item-height: 50px;
+      --tag-item-height: 34px;
+
+      /* 背景 */
+      --header-bg: #ffffff;
+      --sidebar-bg: #282c34;
+      --sidebar-text: hsla(0, 0%, 100%, 0.95);
+      --sidebar-active-bg: #1890ff;
+      --sidebar-active-text: #ffffff;
+      --page-bg: #f6f8f9;
+      --base-bg: #f5f7fa;
+
+      /* 文字 */
+      --text-primary: #303133;
+      --text-regular: #606266;
+      --text-secondary: #909399;
+      --text-placeholder: #c0c4cc;
+
+      /* 边框 */
+      --nav-border: #e4e7ed;
+      --border-base: #dcdfe6;
+      --border-lighter: #ebeef5;
+
+      /* 主色 + 功能色 */
+      --primary: #1890ff;
+      --primary-hover: #40a9ff;
+      --primary-light-8: #e6f7ff;
+      --primary-light-9: #f0f9ff;
+      --success: #13ce66;
+      --warning: #ffba00;
+      --danger: #ff6700;
+      --error: #ff4d4f;
+
+      /* 圆角 / 阴影 / 控件 */
+      --radius: 2.5px;
+      --shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+      --control-height: 32px;
+      --transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+      --font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-width: 1280px; min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text-primary);
+      background: var(--page-bg);
+      font: 400 14px/1.5 var(--font-family);
+    }
+    button { font: inherit; color: inherit; }
+    a { color: inherit; text-decoration: none; }
+    .num { font-variant-numeric: tabular-nums; }
+
+    /* ===== 侧边栏（深色，全高） ===== */
+    .admin-sidebar {
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 900;
+      width: var(--sidebar-width);
+      overflow-x: hidden; overflow-y: auto;
+      background: var(--sidebar-bg);
+      transition: width var(--transition);
+    }
+    .admin-sidebar::-webkit-scrollbar { width: 6px; }
+    .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+
+    .brand-area {
+      display: flex; align-items: center; gap: 10px;
+      min-width: 0; height: var(--header-height);
+      padding: 0 20px;
+      color: var(--sidebar-text);
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .brand-logo {
+      display: inline-flex; align-items: center; justify-content: center;
+      flex: 0 0 32px; width: 32px; height: 32px;
+      border-radius: var(--radius);
+      color: #fff; background: var(--primary);
+    }
+    .brand-logo svg { width: 20px; height: 20px; }
+    .brand-name {
+      overflow: hidden;
+      font-size: 16px; font-weight: 600;
+      white-space: nowrap; text-overflow: ellipsis;
+    }
+
+    .sidebar-menu { padding: 8px 0 16px; }
+    .menu-group-toggle,
+    .menu-link {
+      width: 100%;
+      border: 0; background: transparent;
+      color: var(--sidebar-text);
+      text-align: left; text-decoration: none;
+      transition: background 0.2s ease;
+    }
+    .menu-group-toggle {
+      display: flex; align-items: center; gap: 8px;
+      height: var(--menu-item-height);
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .menu-icon {
+      flex: 0 0 18px; width: 18px; height: 18px;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: inherit;
+    }
+    .menu-icon svg { width: 18px; height: 18px; }
+    .menu-group-title,
+    .menu-link-label {
+      min-width: 0; overflow: hidden;
+      white-space: nowrap; text-overflow: ellipsis;
+    }
+    .menu-caret {
+      flex: 0 0 auto; margin-left: auto;
+      transition: transform 0.18s ease;
+      display: inline-flex; align-items: center;
+    }
+    .menu-group.is-open .menu-caret { transform: rotate(180deg); }
+    .menu-group:not(.is-open) .menu-submenu { display: none; }
+    .menu-link {
+      display: flex; align-items: center; gap: 8px;
+      height: var(--menu-item-height);
+      padding: 0 16px 0 38px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .menu-link .menu-icon { flex: 0 0 16px; width: 16px; height: 16px; }
+    .menu-link .menu-icon svg { width: 16px; height: 16px; }
+    .menu-group-toggle:hover,
+    .menu-link:hover { background: rgba(255, 255, 255, 0.06); }
+    .menu-link.is-active {
+      color: var(--sidebar-active-text);
+      background: var(--sidebar-active-bg);
+      font-weight: 500;
+    }
+    .menu-group-toggle:focus-visible,
+    .menu-link:focus-visible {
+      outline: 2px solid rgba(24, 144, 255, 0.5);
+      outline-offset: -2px;
+    }
+
+    /* ===== 工作区（右侧） ===== */
+    .admin-workspace {
+      min-width: 0;
+      margin-left: var(--sidebar-width);
+      padding-top: var(--header-height); /* 为 fixed 顶栏留出空间，避免遮挡 tabs 和内容 */
+      transition: margin-left var(--transition);
+    }
+    .admin-header {
+      position: fixed; top: 0; left: var(--sidebar-width); right: 0; z-index: 1000;
+      display: flex; align-items: center;
+      height: var(--header-height);
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--nav-border);
+      transition: left var(--transition);
+    }
+    .header-main {
+      display: flex; align-items: center; min-width: 0; width: 100%;
+      padding: 0 16px 0 12px;
+    }
+    .header-icon-btn,
+    .workspace-apps-btn,
+    .user-trigger {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 0; background: transparent;
+      cursor: pointer;
+      border-radius: var(--radius);
+      color: var(--text-regular);
+    }
+    .header-icon-btn { width: 40px; height: 40px; }
+    .header-icon-btn:hover,
+    .workspace-apps-btn:hover,
+    .user-trigger:hover { background: var(--base-bg); color: var(--text-primary); }
+    .header-icon-btn:focus-visible,
+    .workspace-apps-btn:focus-visible,
+    .user-trigger:focus-visible {
+      outline: 2px solid rgba(24, 144, 255, 0.5);
+      outline-offset: 1px;
+    }
+
+    .header-breadcrumb {
+      display: flex; align-items: center; min-width: 0;
+      margin-left: 6px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    .header-breadcrumb a { color: var(--text-secondary); }
+    .header-breadcrumb a:hover { color: var(--primary); }
+    .breadcrumb-separator { margin: 0 6px; color: var(--text-placeholder); }
+    .breadcrumb-current { color: var(--text-primary); }
+
+    /* 页头工具区顺序：搜索 → 刷新 → 通知 → 全屏 → 语言 → 主题 → 用户头像 */
+    .header-actions {
+      display: flex; align-items: center; gap: 4px;
+      margin-left: auto;
+    }
+    .msg-badge { position: relative; }
+    .msg-badge .dot {
+      position: absolute; top: 8px; right: 8px;
+      width: 6px; height: 6px;
+      border: 1px solid #fff; border-radius: 50%;
+      background: var(--error);
+    }
+    .user-trigger {
+      gap: 8px; min-height: 40px; padding: 0 8px 0 6px;
+      color: var(--text-regular);
+    }
+    .user-avatar {
+      flex: 0 0 30px; width: 30px; height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1890ff, #36cfc9);
+      color: #fff; font-size: 12px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .user-name { font-size: 14px; }
+
+    /* ===== 工作区页签栏 ===== */
+    .workspace-tabs {
+      position: sticky; top: var(--header-height); z-index: 800;
+      display: flex; align-items: flex-end;
+      height: var(--workspace-tabs-height);
+      padding-left: 20px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--nav-border);
+    }
+    .workspace-tabs-list {
+      display: flex; align-items: flex-end;
+      min-width: 0; overflow: hidden;
+    }
+    .workspace-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: var(--tag-item-height);
+      padding: 0 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      font-size: 13px;
+      transition: var(--transition);
+    }
+    .workspace-tab:hover { color: var(--text-primary); }
+    .workspace-tab.is-active { color: var(--primary); background: var(--primary-light-8); }
+    .workspace-tab .tab-icon { display: inline-flex; width: 14px; height: 14px; }
+    .workspace-tab .tab-icon svg { width: 14px; height: 14px; }
+    .workspace-tab .tab-close {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px; margin-left: 2px;
+      border-radius: 50%;
+      color: var(--text-placeholder);
+      font-size: 12px; line-height: 1;
+    }
+    .workspace-tab .tab-close:hover { color: var(--text-secondary); background: rgba(0, 0, 0, 0.06); }
+    .workspace-apps-btn { width: 50px; height: 49px; margin-left: auto; }
+
+    /* ===== 主内容区 ===== */
+    .admin-main {
+      min-height: calc(100vh - var(--header-height) - var(--workspace-tabs-height));
+      padding: 20px;
+      background: var(--page-bg);
+    }
+    .page-surface {
+      min-height: 620px;
+      padding: 20px;
+      background: var(--header-bg);
+      border: 1px solid var(--nav-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* 查询卡片（VabQueryForm 风格） */
+    .filter-card {
+      padding: 16px 20px;
+      background: var(--header-bg);
+      border: 1px solid var(--nav-border);
+      border-radius: var(--radius);
+    }
+    .filter-row {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .filter-pill {
+      height: var(--control-height);
+      padding: 0 14px;
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius);
+      background: var(--header-bg);
+      color: var(--text-regular);
+      cursor: pointer;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+    .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-pill.is-active {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+    }
+    .filter-text { font-size: 14px; color: var(--text-secondary); }
+    /* 操作按钮组固定在末位（spec §7.3：查询 primary、重置 default） */
+    .filter-actions {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-left: auto; /* 推到行末 */
+    }
+    .filter-btn {
+      height: var(--control-height);
+      padding: 0 16px;
+      border: 1px solid var(--border-base);
+      border-radius: var(--radius);
+      background: var(--header-bg);
+      color: var(--text-regular);
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-btn--primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .filter-btn--primary:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      color: #fff;
+    }
+
+    /* 区块标题 */
+    .title-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 46px; margin-top: 20px; padding: 0 4px;
+      font-size: 16px; font-weight: 600;
+      color: var(--text-primary);
+    }
+    .title-bar__sub { font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+
+    /* 统计卡片：一行 4 个（span="6"） */
+    .stats {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .stat {
+      min-height: 96px; padding: 20px;
+      border: 1px solid var(--nav-border);
+      border-radius: var(--radius);
+      background: var(--header-bg);
+      box-shadow: var(--shadow);
+    }
+    .stat small {
+      display: block;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+    .stat strong {
+      display: block; margin-top: 8px;
+      color: var(--text-primary);
+      font-size: 22px; font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 图表卡片 */
+    .chart {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid var(--nav-border);
+      border-radius: var(--radius);
+      background: var(--header-bg);
+      box-shadow: var(--shadow);
+    }
+    .chart-title {
+      font-size: 16px; font-weight: 600;
+      color: var(--text-primary);
+    }
+    .bars {
+      display: flex; align-items: end; gap: 16px;
+      height: 210px; padding: 20px 12px 0;
+      border-bottom: 1px solid var(--border-lighter);
+    }
+    .bar {
+      width: 32px;
+      background: var(--primary);
+      border-radius: var(--radius) var(--radius) 0 0;
+      transition: background 0.2s ease;
+    }
+    .bar:hover { background: var(--primary-hover); }
+
+    /* ===== 折叠态 ===== */
+    body.sidebar-collapsed { --sidebar-width: var(--sidebar-collapsed-width); }
+    body.sidebar-collapsed .admin-header { left: var(--sidebar-collapsed-width); }
+    body.sidebar-collapsed .brand-name,
+    body.sidebar-collapsed .menu-group-title,
+    body.sidebar-collapsed .menu-link-label,
+    body.sidebar-collapsed .menu-caret { opacity: 0; pointer-events: none; }
+    body.sidebar-collapsed .brand-area { justify-content: center; padding-inline: 0; }
+    body.sidebar-collapsed .menu-group-toggle,
+    body.sidebar-collapsed .menu-link { justify-content: center; padding-inline: 0; }
+
+    @media (max-width: 1439px) {
+      .admin-main { padding: 16px; }
+      .page-surface { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="admin-sidebar" aria-label="主菜单">
+      <a class="brand-area" href="#">
+        <span class="brand-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="2.5"/><circle cx="7" cy="13" r="2.5"/><circle cx="17" cy="13" r="2.5"/><circle cx="12" cy="18" r="2.5"/></svg>
+        </span>
+        <span class="brand-name">太湖旅游通后台管理</span>
+      </a>
+      <nav class="sidebar-menu">
+        <!-- 数据概览 -->
+        <section class="menu-group is-open">
+          <button class="menu-group-toggle" type="button" aria-expanded="true">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+            <span class="menu-group-title">数据概览</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu">
+            <a class="menu-link is-active" href="#" aria-current="page">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+              <span class="menu-link-label">数据概览</span>
+            </a>
+            <a class="menu-link" href="#">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+              <span class="menu-link-label">流量分析</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- 运营管理 -->
+        <section class="menu-group">
+          <button class="menu-group-toggle" type="button" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+            <span class="menu-group-title">运营管理</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu">
+            <a class="menu-link" href="#">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L9 18l-5-5"/></svg></span>
+              <span class="menu-link-label">内容审核</span>
+            </a>
+            <a class="menu-link" href="#">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+              <span class="menu-link-label">素材库</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- 资讯管理 -->
+        <section class="menu-group">
+          <button class="menu-group-toggle" type="button" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6z"/></svg></span>
+            <span class="menu-group-title">资讯管理</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu"></div>
+        </section>
+
+        <!-- 景点门票 -->
+        <section class="menu-group">
+          <button class="menu-group-toggle" type="button" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8v13a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8"/><path d="M1 3h22v5H1zM10 12h4"/></svg></span>
+            <span class="menu-group-title">景点门票</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu"></div>
+        </section>
+
+        <!-- 订单管理 -->
+        <section class="menu-group">
+          <button class="menu-group-toggle" type="button" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 14h6M9 11h6"/></svg></span>
+            <span class="menu-group-title">订单管理</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu"></div>
+        </section>
+
+        <!-- 营销管理 -->
+        <section class="menu-group is-open">
+          <button class="menu-group-toggle" type="button" aria-expanded="true">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></span>
+            <span class="menu-group-title">营销管理</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu">
+            <a class="menu-link" href="#">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4M4 6v12c0 1.1.9 2 2 2h14v-4M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span>
+              <span class="menu-link-label">优惠券管理</span>
+            </a>
+            <a class="menu-link" href="#">
+              <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+              <span class="menu-link-label">分销管理</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- 系统设置 -->
+        <section class="menu-group">
+          <button class="menu-group-toggle" type="button" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+            <span class="menu-group-title">系统设置</span>
+            <span class="menu-caret" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg></span>
+          </button>
+          <div class="menu-submenu"></div>
+        </section>
+      </nav>
+    </aside>
+
+    <section class="admin-workspace">
+      <header class="admin-header">
+        <div class="header-main">
+          <button class="header-icon-btn" id="sidebar-toggle" type="button" aria-label="折叠菜单">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          <div class="header-breadcrumb">
+            <a href="#">数据概览</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">数据概览</span>
+          </div>
+          <!-- 工具区顺序：搜索 → 刷新 → 通知 → 全屏 → 用户头像 -->
+          <div class="header-actions">
+            <button class="header-icon-btn" type="button" aria-label="搜索">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35"/></svg>
+            </button>
+            <button class="header-icon-btn" type="button" aria-label="刷新">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </button>
+            <button class="header-icon-btn msg-badge" type="button" aria-label="通知">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+              <span class="dot"></span>
+            </button>
+            <button class="header-icon-btn" type="button" aria-label="全屏">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </button>
+            <button class="user-trigger" type="button">
+              <span class="user-avatar" aria-hidden="true">CC</span>
+              <span class="user-name">chenchao</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 10 5 5 5-5"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="workspace-tabs">
+        <div class="workspace-tabs-list">
+          <a class="workspace-tab is-active" href="#">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+            <span>数据概览</span>
+          </a>
+          <a class="workspace-tab" href="#">
+            <span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4M4 6v12c0 1.1.9 2 2 2h14v-4M18 12a2 2 0 0 0 0 4h4v-4z"/></svg></span>
+            <span>优惠券管理</span>
+            <span class="tab-close" aria-label="关闭">×</span>
+          </a>
+        </div>
+        <button class="workspace-apps-btn" type="button" aria-label="应用入口">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="5" height="5"/><rect x="15" y="4" width="5" height="5"/><rect x="4" y="15" width="5" height="5"/><rect x="15" y="15" width="5" height="5"/></svg>
+        </button>
+      </div>
+
+      <main class="admin-main">
+        <div class="page-surface">
+          <!-- 查询卡片 -->
+          <div class="filter-card">
+            <div class="filter-row">
+              <span class="filter-text">日期范围</span>
+              <button class="filter-pill">今日</button>
+              <button class="filter-pill is-active">近7日</button>
+              <button class="filter-pill">近30日</button>
+              <button class="filter-pill num">2026/07/22 00:00:00</button>
+              <span class="filter-text">至</span>
+              <button class="filter-pill num">2026/07/29 23:59:59</button>
+              <!-- 操作按钮固定在末位：查询（primary）、重置（default） -->
+              <span class="filter-actions">
+                <button class="filter-btn filter-btn--primary" type="button">查询</button>
+                <button class="filter-btn" type="button">重置</button>
+              </span>
+            </div>
+          </div>
+
+          <!-- 区块标题 -->
+          <div class="title-bar">
+            <span>交易/销售口径（按支付时间）</span>
+            <span class="title-bar__sub">单位：人民币 / 元</span>
+          </div>
+
+          <!-- 统计卡片：一行 4 个 -->
+          <div class="stats">
+            <div class="stat">
+              <small>总交易额（GMV）</small>
+              <strong class="num">¥137,002.67</strong>
+            </div>
+            <div class="stat">
+              <small>核销/完成总金额</small>
+              <strong class="num">¥105,120.00</strong>
+            </div>
+            <div class="stat">
+              <small>退款总金额</small>
+              <strong class="num" style="color:var(--error)">¥13,162.67</strong>
+            </div>
+            <div class="stat">
+              <small>待核销/完成总金额</small>
+              <strong class="num" style="color:var(--warning)">¥18,720.00</strong>
+            </div>
+          </div>
+
+          <!-- 图表卡片 -->
+          <div class="chart">
+            <div class="chart-title">分天趋势</div>
+            <div class="bars">
+              <div class="bar" style="height:48%"></div>
+              <div class="bar" style="height:57%"></div>
+              <div class="bar" style="height:68%"></div>
+              <div class="bar" style="height:43%"></div>
+              <div class="bar" style="height:78%"></div>
+              <div class="bar" style="height:55%"></div>
+              <div class="bar" style="height:82%"></div>
+              <div class="bar" style="height:63%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:88%"></div>
+              <div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:75%"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var STORAGE_KEY = 'pc-admin-sidebar-collapsed';
+
+      // 从本地存储恢复折叠态
+      try {
+        if (localStorage.getItem(STORAGE_KEY) === '1') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      } catch (e) { /* ignore */ }
+
+      // 折叠按钮
+      var toggle = document.getElementById('sidebar-toggle');
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          var collapsed = document.body.classList.toggle('sidebar-collapsed');
+          try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch (e) { /* ignore */ }
+        });
+      }
+
+      // 菜单组展开/折叠
+      document.querySelectorAll('.menu-group-toggle').forEach(function (button) {
+        button.addEventListener('click', function () {
+          var group = button.closest('.menu-group');
+          var open = group.classList.toggle('is-open');
+          button.setAttribute('aria-expanded', String(open));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

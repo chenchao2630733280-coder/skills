@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "html-build-report",
+  "producer": "generate-html-pages",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "mode": "STANDARD",
+  "result": "PASS",
+  "outputs": [
+    {
+      "pageId": "P01",
+      "device": "pc",
+      "path": "output/site/pc/P01-example-detail.html",
+      "contentHash": null,
+      "trust": "trustedGeneratedHtml",
+      "applicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied"
+      ],
+      "annotationMode": "BOUND"
+    }
+  ],
+  "checks": [],
+  "unstructuredItems": [],
+  "fallbackArtifacts": [],
+  "openIssues": []
+}

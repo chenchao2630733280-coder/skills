@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "portal-build-report",
+  "producer": "generate-portal",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "mode": "FULL_PREVIEW",
+  "result": "PASS",
+  "entry": "output/site/index.html",
+  "pageCoverage": {
+    "available": [
+      "P08"
+    ],
+    "missing": []
+  },
+  "annotationCapability": "AVAILABLE",
+  "htmlTrust": {
+    "trusted": [
+      "P08:pc"
+    ],
+    "untrusted": []
+  },
+  "checks": [],
+  "openIssues": []
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "navigation",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "edges": [
+    {
+      "id": "NAV-P01-SUBMIT",
+      "sourceId": "P01",
+      "actionId": "ACT-P01-SUBMIT",
+      "targetType": "overlay",
+      "targetId": "OV-P01-SUBMIT",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "页面原型文档#page-p01"
+      ],
+      "generatedByFallback": false
+    },
+    {
+      "id": "NAV-OV-P01-CONFIRM",
+      "sourceId": "OV-P01-SUBMIT",
+      "actionId": "ACT-P01-CONFIRM-SUBMIT",
+      "targetType": "command",
+      "targetId": "CMD-EXAMPLE-SUBMIT",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "页面原型文档#global-overlays"
+      ],
+      "generatedByFallback": false
+    }
+  ]
+}

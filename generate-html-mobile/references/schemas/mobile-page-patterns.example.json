@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "artifactType": "mobile-page-pattern",
+  "pageId": "M01",
+  "title": "页面标题",
+  "archetype": "service-home",
+  "density": "standard",
+  "chrome": {
+    "globalChannelTabs": false,
+    "topBar": "contextual",
+    "localTabs": false,
+    "bottomNavigation": true,
+    "stickyPrimaryAction": false
+  },
+  "primaryTask": "进入高频服务",
+  "hero": {
+    "enabled": true,
+    "type": "campaign",
+    "assetPolicy": "css-or-project-owned-assets",
+    "maxCopyLines": 3
+  },
+  "serviceGrid": {
+    "enabled": true,
+    "columns": 4,
+    "visibleItemLimit": 12,
+    "showAllEntry": true
+  },
+  "sections": [
+    {
+      "type": "feature-cards",
+      "title": "专题服务",
+      "layout": "asymmetric-grid",
+      "itemCount": 3
+    },
+    {
+      "type": "content-list",
+      "title": "最新内容",
+      "layout": "media-list",
+      "itemCount": 4
+    }
+  ],
+  "states": [
+    "normal",
+    "loading",
+    "empty",
+    "error"
+  ],
+  "accessibility": {
+    "minTouchTarget": 44,
+    "zoomAllowed": true,
+    "safeAreaAware": true
+  }
+}

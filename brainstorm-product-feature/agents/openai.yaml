@@ -1,0 +1,4 @@
+interface:
+  display_name: "产品功能脑暴"
+  short_description: "在写 PRD 前探索、质疑并完善早期功能构想"
+  default_prompt: "Use $brainstorm-product-feature to explore and refine this feature idea before PRD writing."

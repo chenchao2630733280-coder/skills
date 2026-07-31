@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "permissions",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "permissions": [
+    {
+      "id": "PERM-001",
+      "name": "查看业务对象",
+      "roles": [
+        "role-user"
+      ],
+      "dataScope": "self",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-7.1"
+      ]
+    }
+  ]
+}

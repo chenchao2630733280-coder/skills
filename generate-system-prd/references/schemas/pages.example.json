@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "pages",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "registryStatus": "authoritative",
+  "_stageNote": "PRD 阶段快照：仅注册页面身份（ID/名称/路由/端侧/类型/模块）与核心动作意图 actionIntents；archetypeId、level、applicableStates、actionIds、specIds、componentIds、overlayIds、documentSection 等字段由 generate-prototype 阶段富化，updatedBy 同步追加。富化后完整结构示例见工作台 _shared/references/schemas/pages.example.json。",
+  "pages": [
+    {
+      "id": "P08",
+      "title": "合同详情",
+      "moduleId": "contract",
+      "objectType": "routePage",
+      "type": "detail",
+      "route": "/contracts/:contractId",
+      "devices": [
+        "pc"
+      ],
+      "coreTask": "查看合同及当前业务状态",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-2.3",
+        "PRD-8.2"
+      ],
+      "generatedByFallback": false,
+      "reverseEngineered": false,
+      "aliases": [],
+      "actionIntents": [
+        {
+          "name": "提交审核",
+          "targetType": "command",
+          "targetId": "CMD-CONTRACT-SUBMIT",
+          "sourceLevel": "CONFIRMED",
+          "sourceRefs": [
+            "BR-021"
+          ]
+        }
+      ]
+    }
+  ]
+}

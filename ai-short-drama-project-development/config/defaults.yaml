@@ -1,0 +1,17 @@
+project_type: 竖屏短剧
+target_platform: 中文短剧平台
+target_audience: 18—40岁大众用户
+episode_count: 60
+episode_duration: 1—3分钟
+story_mode: 强情节连续剧
+budget: 中低成本
+main_cast_count: 6—8
+main_location_count: 4—6
+core_emotions:
+  - 爽感
+  - 悬疑
+  - 情感拉扯
+episode_structure: 开场钩子—冲突推进—结尾卡点
+ending_mode: 完整结局，可保留续作空间
+output_stage_count: 8
+initial_detailed_episodes: 10

@@ -1,0 +1,4 @@
+interface:
+  display_name: "原型演示门户生成器"
+  short_description: "生成三栏总控演示门户，集成导航、跨端预览与 PRD 标注"
+  default_prompt: "Use $generate-portal to generate the demo portal index.html for the HTML prototypes under output/site/."

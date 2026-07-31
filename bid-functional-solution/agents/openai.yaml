@@ -1,0 +1,4 @@
+interface:
+  display_name: "标书功能建设方案"
+  short_description: "把需规或截图文件夹重组为标书功能建设方案模块"
+  default_prompt: "Use $bid-functional-solution to generate a bid-ready 功能建设方案 from this requirements document or screenshot folder."

@@ -1,0 +1,17 @@
+{
+  "tasks": [
+    {
+      "id": "TASK-001",
+      "sliceId": "SLICE-001",
+      "title": "Implement one vertical slice",
+      "sourceIds": [
+        "P01",
+        "BR-001"
+      ],
+      "dependencies": [],
+      "targetFiles": [],
+      "verificationCommands": [],
+      "status": "todo"
+    }
+  ]
+}

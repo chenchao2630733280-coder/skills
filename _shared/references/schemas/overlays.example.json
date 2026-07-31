@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "overlays",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "overlays": [
+    {
+      "id": "OV-P01-SUBMIT",
+      "name": "提交确认",
+      "type": "modal",
+      "openedBy": [
+        "ACT-P01-SUBMIT"
+      ],
+      "fields": [
+        {
+          "name": "reason",
+          "logicalType": "text",
+          "required": false
+        }
+      ],
+      "confirmActionId": "ACT-P01-CONFIRM-SUBMIT",
+      "documentRef": "页面原型文档#global-overlays",
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "页面原型文档#global-overlays"
+      ],
+      "generatedByFallback": false
+    }
+  ]
+}

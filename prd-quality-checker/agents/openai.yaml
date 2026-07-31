@@ -1,0 +1,6 @@
+interface:
+  display_name: "PRD 审核与完善"
+  short_description: "支持 Audit 审核与 Improve 逐题完善，并输出质量门禁"
+  default_prompt: "使用 $prd-quality-checker 处理我的 PRD；默认执行 Audit 审核，如我需要逐题补全则切换 Improve，并基于原文证据输出质量门禁。"
+policy:
+  allow_implicit_invocation: true

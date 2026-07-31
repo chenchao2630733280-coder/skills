@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "page-archetypes",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "INFERRED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "template",
+  "archetypes": [
+    {
+      "id": "PC-LIST",
+      "inherits": [
+        "PAGE_BASE_STATES",
+        "LIST_BASE_STATES",
+        "DEFAULT_PAGINATION_PC"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "empty",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "PC-FORM",
+      "inherits": [
+        "PAGE_BASE_STATES",
+        "FORM_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied",
+        "validationError",
+        "submitting",
+        "success"
+      ]
+    },
+    {
+      "id": "PC-DETAIL",
+      "inherits": [
+        "PAGE_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "PC-DASHBOARD",
+      "inherits": [
+        "PAGE_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "empty",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "M-LIST",
+      "inherits": [
+        "PAGE_BASE_STATES",
+        "LIST_BASE_STATES",
+        "DEFAULT_PAGINATION_MOBILE"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "empty",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "M-FORM",
+      "inherits": [
+        "PAGE_BASE_STATES",
+        "FORM_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied",
+        "validationError",
+        "submitting",
+        "success"
+      ]
+    },
+    {
+      "id": "M-DETAIL",
+      "inherits": [
+        "PAGE_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "M-CHAT",
+      "inherits": [
+        "PAGE_BASE_STATES",
+        "CHAT_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "empty",
+        "error",
+        "permissionDenied",
+        "offline",
+        "reconnecting"
+      ]
+    },
+    {
+      "id": "PREVIEW",
+      "inherits": [
+        "PAGE_BASE_STATES"
+      ],
+      "defaultApplicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied"
+      ]
+    },
+    {
+      "id": "COMPONENT",
+      "inherits": [],
+      "defaultApplicableStates": [
+        "normal"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "actions",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "actions": [
+    {
+      "id": "ACT-P01-SUBMIT",
+      "sourceObjectId": "P01",
+      "element": "提交",
+      "conditions": [
+        "status=draft",
+        "PERM-EXAMPLE-SUBMIT"
+      ],
+      "trigger": [
+        "click",
+        "keyboard"
+      ],
+      "targetType": "overlay",
+      "targetId": "OV-P01-SUBMIT",
+      "feedbackProfile": "DEFAULT_WRITE_FEEDBACK",
+      "successOverride": "提交后刷新状态",
+      "failureOverride": null,
+      "ruleIds": [
+        "VR-012"
+      ],
+      "sourceRefs": [
+        "页面原型文档#page-p01"
+      ],
+      "sourceLevel": "CONFIRMED",
+      "generatedByFallback": false,
+      "reverseEngineered": false
+    },
+    {
+      "id": "ACT-P01-CONFIRM-SUBMIT",
+      "sourceObjectId": "OV-P01-SUBMIT",
+      "element": "确认提交",
+      "conditions": [
+        "VR-012"
+      ],
+      "trigger": [
+        "click",
+        "keyboard"
+      ],
+      "targetType": "command",
+      "targetId": "CMD-EXAMPLE-SUBMIT",
+      "feedbackProfile": "DEFAULT_WRITE_FEEDBACK",
+      "successOverride": "关闭弹窗并刷新 P01",
+      "failureOverride": null,
+      "ruleIds": [
+        "BR-021",
+        "VR-012"
+      ],
+      "sourceRefs": [
+        "页面原型文档#global-overlays"
+      ],
+      "sourceLevel": "CONFIRMED",
+      "generatedByFallback": false,
+      "reverseEngineered": false
+    }
+  ]
+}

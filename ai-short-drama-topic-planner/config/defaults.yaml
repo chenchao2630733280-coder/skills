@@ -1,0 +1,45 @@
+target_platform: 中文短剧平台
+target_market: 中国大陆
+target_audience: 18—40岁大众用户
+mode: 混合模式
+innovation_level: 1—5级混合
+episode_count: 60
+episode_duration: 1—3分钟
+budget: 中低成本
+output_count: 12
+
+diversity:
+  strength: high
+  avoid_history_similarity: true
+  max_shared_core_variable_ratio: 0.30
+  minimum_genres: 6
+  minimum_viewing_motivations: 8
+  minimum_protagonist_types: 6
+  minimum_rule_sources: 6
+  minimum_relationship_structures: 6
+  minimum_endings: 5
+  similarity_rewrite_threshold: 60
+  similarity_reject_threshold: 75
+
+viewing_motivation:
+  required_primary: 1
+  required_secondary: 2
+  require_episode_1_question: true
+  require_episode_1_reward: true
+  require_episode_3_payoff: true
+  require_episode_10_payoff: true
+  require_midpoint_shift: true
+  require_long_term_payoff: true
+
+trend_radar:
+  enabled: true
+  regions:
+    - 中国大陆
+    - 全球可转译信号
+  recent_signal_days: 90
+  future_horizon_months: 12
+  minimum_source_types_for_strong_signal: 2
+  require_observation_date: true
+  require_confidence: true
+  require_expiry_risk: true
+  require_story_without_trend: true

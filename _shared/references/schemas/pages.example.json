@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "pages",
+  "producer": "generate-system-prd",
+  "updatedBy": [
+    "generate-prototype"
+  ],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "registryStatus": "authoritative",
+  "_stageNote": "原型富化后快照：在 PRD 注册的页面身份基础上补充 archetypeId、level、applicableStates、actionIds、specIds、componentIds、overlayIds 与 documentSection；PRD 阶段快照见 generate-system-prd/references/schemas/pages.example.json。",
+  "pages": [
+    {
+      "id": "P01",
+      "title": "示例页面",
+      "moduleId": "example-module",
+      "objectType": "routePage",
+      "type": "detail",
+      "route": "/example/:id",
+      "devices": [
+        "pc"
+      ],
+      "coreTask": "查看示例数据及当前状态",
+      "archetypeId": "PC-DETAIL",
+      "level": "L2",
+      "applicableStates": [
+        "normal",
+        "loading",
+        "error",
+        "permissionDenied"
+      ],
+      "notApplicableStates": [
+        "empty"
+      ],
+      "actionIds": [
+        "ACT-P01-SUBMIT"
+      ],
+      "specIds": [
+        "S01"
+      ],
+      "componentIds": [
+        "CMP-EXAMPLE-SUMMARY"
+      ],
+      "overlayIds": [
+        "OV-P01-SUBMIT"
+      ],
+      "documentSection": {
+        "beginMarker": "<!-- PAGE:P01:BEGIN -->",
+        "heading": "P01 示例页面",
+        "anchor": "page-p01",
+        "endMarker": "<!-- PAGE:P01:END -->",
+        "contentHash": null
+      },
+      "sourceLevel": "CONFIRMED",
+      "sourceRefs": [
+        "PRD-2.3",
+        "页面原型文档#page-p01"
+      ],
+      "generatedByFallback": false,
+      "reverseEngineered": false,
+      "aliases": [],
+      "actionIntents": [
+        {
+          "name": "提交",
+          "targetType": "command",
+          "targetId": "CMD-EXAMPLE-SUBMIT",
+          "sourceLevel": "CONFIRMED",
+          "sourceRefs": [
+            "BR-021"
+          ]
+        }
+      ]
+    }
+  ]
+}

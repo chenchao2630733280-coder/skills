@@ -1,0 +1,217 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "design-tokens",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "INFERRED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "template",
+  "profile": "Vue Admin Plus",
+  "profileRole": "fallback",
+  "version": "1.3",
+  "_note": "fallback 默认值，已与 _shared/references/pc_admin_ui_spec.md 和 generate-html-pc-admin/references/pc-admin-navigation-style.md 对齐（vue-admin-plus / Element Plus 纵向布局：深色侧栏 #282c34、主色 #1890ff、圆角 2.5px、顶栏 60px、侧栏 266px、标签页栏 50px）。项目 design-tokens.json 优先于本默认值。",
+  "precedence": [
+    "user-instruction",
+    "project-design-tokens",
+    "prototype-document-overrides",
+    "confirmed-project-design-system",
+    "skill-default"
+  ],
+  "pc": {
+    "colors": {
+      "primary": "#1890ff",
+      "primaryHover": "#40a9ff",
+      "success": "#13ce66",
+      "warning": "#ffba00",
+      "error": "#ff4d4f",
+      "info": "#1890ff",
+      "textPrimary": "#303133",
+      "textSecondary": "#606266",
+      "textPlaceholder": "#909399",
+      "border": "#dcdfe6",
+      "tableBorder": "#ebeef5",
+      "tableHeaderBg": "#f5f7fa",
+      "pageBg": "#f6f8f9",
+      "container": "#ffffff",
+      "headerBg": "#ffffff",
+      "sidebarBg": "#282c34",
+      "navText": "#bfcbd9",
+      "navMuted": "#8a9bae",
+      "navActive": "#1890ff",
+      "navActiveBg": "#1f2d3d",
+      "brandAccent": "#1890ff"
+    },
+    "layout": {
+      "sidebarWidth": 266,
+      "headerHeight": 60,
+      "contentPadding": 20,
+      "sidebarCollapsedWidth": 64,
+      "workspaceTabsHeight": 50,
+      "menuItemHeight": 50,
+      "cardGap": 20
+    },
+    "radius": {
+      "base": 2.5,
+      "navigation": 2.5
+    },
+    "shadow": {
+      "base": "0 1px 4px rgba(0,21,41,0.08)"
+    },
+    "typography": {
+      "body": [
+        14,
+        400
+      ]
+    },
+    "table": {
+      "rowHeight": [
+        56,
+        60
+      ]
+    }
+  },
+  "mobile": {
+    "viewport": {
+      "baseline": [
+        375,
+        812
+      ],
+      "validationWidths": [
+        390,
+        414,
+        430
+      ],
+      "contentMaxWidth": 480
+    },
+    "colors": {
+      "primary": "#1890ff",
+      "primaryHover": "#40a9ff",
+      "primarySoft": "#e6f7ff",
+      "success": "#13ce66",
+      "warning": "#ffba00",
+      "error": "#ff6700",
+      "info": "#1890ff",
+      "textTitle": "#202523",
+      "textBody": "#626A67",
+      "textAuxiliary": "#8B9390",
+      "textPlaceholder": "#B7BDBA",
+      "pageBg": "#F5F7F6",
+      "cardBg": "#FFFFFF",
+      "divider": "#E7ECE9",
+      "mask": "rgba(0, 0, 0, 0.48)"
+    },
+    "layout": {
+      "pagePadding": [
+        12,
+        16
+      ],
+      "sectionGap": [
+        12,
+        16
+      ],
+      "cardPadding": [
+        12,
+        16
+      ],
+      "navBarHeight": 46,
+      "searchHeight": 40,
+      "tabBarHeight": 56,
+      "primaryActionHeight": 48,
+      "serviceGridColumns": [
+        4,
+        5
+      ],
+      "categoryRailWidth": [
+        76,
+        92
+      ]
+    },
+    "radius": {
+      "card": 12,
+      "control": 10,
+      "small": 8,
+      "pill": 999,
+      "sheetTop": 16
+    },
+    "typography": {
+      "pageTitle": [
+        20,
+        600
+      ],
+      "sectionTitle": [
+        17,
+        600
+      ],
+      "itemTitle": [
+        15,
+        600
+      ],
+      "body": [
+        14,
+        400
+      ],
+      "caption": [
+        12,
+        400
+      ],
+      "keyNumber": [
+        22,
+        700
+      ]
+    },
+    "icon": {
+      "navigation": [
+        22,
+        24
+      ],
+      "service": [
+        28,
+        36
+      ],
+      "inline": [
+        18,
+        22
+      ]
+    },
+    "media": {
+      "heroAspectRatio": [
+        2.6,
+        3.2
+      ],
+      "listThumbnail": [
+        88,
+        112
+      ]
+    },
+    "interaction": {
+      "minTouchTarget": [
+        44,
+        44
+      ],
+      "adjacentControlGap": 8,
+      "motionDuration": [
+        180,
+        240
+      ],
+      "zoomAllowed": true,
+      "safeAreaAware": true
+    },
+    "elevation": {
+      "card": "none-or-border",
+      "floating": "0 6px 20px rgba(32, 37, 35, 0.08)"
+    },
+    "assetPolicy": {
+      "analysisScreenshotsPackaged": false,
+      "allowedFallbacks": [
+        "local-svg",
+        "css-gradient",
+        "geometric-shape",
+        "neutral-placeholder"
+      ],
+      "remoteCdnDefault": false
+    }
+  }
+}

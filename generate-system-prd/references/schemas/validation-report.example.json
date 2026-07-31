@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "validation-report",
+  "producer": "generate-system-prd",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "CONFIRMED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "authoritative",
+  "checks": [
+    {
+      "id": "CHK-PAGE-REF",
+      "name": "页面引用一致性",
+      "status": "PASS",
+      "evidence": [
+        "pages.json中的目标ID存在"
+      ],
+      "openIssues": [],
+      "affectedIds": [
+        "P08"
+      ],
+      "nextAction": null
+    },
+    {
+      "id": "CHK-DB-PHYSICAL",
+      "name": "物理数据库正确性",
+      "status": "NOT_REVIEWED",
+      "evidence": [
+        "当前仅完成逻辑数据模型"
+      ],
+      "openIssues": [
+        "数据库选型和索引尚未技术评审"
+      ],
+      "affectedIds": [
+        "T01"
+      ],
+      "nextAction": "交由系统实施阶段评审"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.1",
+  "artifactType": "prototype-profile",
+  "producer": "generate-prototype",
+  "updatedBy": [],
+  "generatedAt": null,
+  "sourceRefs": [],
+  "sourceLevel": "INFERRED",
+  "generatedByFallback": false,
+  "reverseEngineered": false,
+  "status": "template",
+  "mode": "compact",
+  "primaryDocument": "output/docs/页面原型文档.md",
+  "singleDocumentRequired": true,
+  "splitDocuments": false,
+  "pageSectionMarkers": {
+    "begin": "<!-- PAGE:{pageId}:BEGIN -->",
+    "end": "<!-- PAGE:{pageId}:END -->",
+    "required": true
+  },
+  "lineBudgets": {
+    "L1": {
+      "min": 10,
+      "max": 25
+    },
+    "L2": {
+      "min": 25,
+      "max": 55
+    },
+    "L3": {
+      "min": 50,
+      "max": 110
+    }
+  },
+  "markdown": {
+    "isPrimaryArtifact": true,
+    "includeBaseStateMatricesOnce": true,
+    "includeDefaultFeedbackPerAction": false,
+    "includeEmptySections": false,
+    "includeNoOverlayStatements": false,
+    "includeCoreNavigation": true
+  },
+  "json": {
+    "role": "auxiliary",
+    "mayAddBusinessSemanticsAbsentFromMarkdown": false,
+    "schemaVersion": "2.1"
+  },
+  "diagrams": {
+    "ascii": "conditional",
+    "mermaid": "conditional"
+  },
+  "fallback": {
+    "enabled": true,
+    "minimalUpstreamCompletion": true,
+    "temporaryIdPrefix": "TMP-PROTOTYPE-P",
+    "markInferredAndTbd": true,
+    "provenanceFile": "output/spec/pipeline-context.json"
+  }
+}

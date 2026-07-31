@@ -1,0 +1,4 @@
+interface:
+  display_name: "软著文档生成器"
+  short_description: "从PC后台或移动端截图生成软著说明书DOCX"
+  default_prompt: "Use $ruanzhu-doc-generator to generate software copyright documentation from screenshots."
