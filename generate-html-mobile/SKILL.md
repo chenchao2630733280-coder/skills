@@ -24,7 +24,7 @@ description: "仅生成任务型移动端HTML原型页面(综合入口/内容发
 - 系统 PRD：定义移动端终端类型、功能、数据和业务规则。
 - 页面原型文档：定义移动端页面清单、字段、交互和流转。
 - UI 设计规范（可选）：定义品牌色、字体、间距、圆角及组件样式；存在时优先使用。
-- 上游 JSON 工件（优先）：见 §五 信息来源。
+- 上游 JSON 工件（优先）：见 §七 信息来源。
 
 ---
 
@@ -62,244 +62,48 @@ output/site/mobile/
 
 ### 3.2 移动端 common.css
 
-**CSS变量体系：**
+> 完整的 CSS 变量体系、组件类名索引和默认视觉约束已抽离到 `references/mobile-tokens-and-classes.md`，生成移动端 common.css 和页面专属样式时读取该文件。
 
-```css
-:root {
-  /* 品牌色与语义色与 PC 端 pc-admin-navigation-style.md 保持一致（双端共享） */
-  --m-primary: #1890ff;
-  --m-primary-hover: #40a9ff;
-  --m-primary-soft: #e6f7ff;
-  --m-success: #13ce66;
-  --m-warning: #ffba00;
-  --m-danger: #ff6700;
-  --m-info: #1890ff;
-  --m-bg: #F5F7F6;
-  --m-card-bg: #FFFFFF;
-  --m-text-primary: #202523;
-  --m-text-regular: #626A67;
-  --m-text-auxiliary: #8B9390;
-  --m-text-placeholder: #B7BDBA;
-  --m-border: #E7ECE9;
-  --m-mask: rgba(0, 0, 0, 0.48);
-
-  --m-edge-padding: 16px;
-  --m-section-gap: 12px;
-  --m-card-padding: 14px;
-  --m-card-radius: 12px;
-  --m-control-radius: 10px;
-  --m-pill-radius: 999px;
-
-  --m-nav-bar-height: 46px;
-  --m-search-height: 40px;
-  --m-tab-bar-height: 56px;
-  --m-primary-action-height: 48px;
-  --m-touch-target: 44px;
-
-  --m-safe-top: env(safe-area-inset-top, 0px);
-  --m-safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-```
-
-**按实际页面需要覆盖的样式模块：**
-
-| 模块 | 类名 | 说明 |
-|------|------|------|
-| 页面骨架 | `.m-layout` `.m-page` `.m-content` `.m-safe-bottom` | 单列内容区，支持安全区和固定底栏占位 |
-| 上下文头部 | `.m-context-header` `.m-channel-tabs` `.m-weather` `.m-header-actions` | 一级首页使用的天气/定位、频道、消息和搜索组合 |
-| 普通顶部栏 | `.m-nav-bar` `.m-nav-bar-left/right/title` `.m-icon-btn` | 二级页返回、标题和操作 |
-| 搜索 | `.m-search` `.m-search-input` `.m-search-submit` | 36-40px 高；按任务配置占位文案 |
-| 底部主导航 | `.m-tab-bar` `.m-tab-bar-item` `.active` `.m-tab-badge` | 仅用于4-5个稳定一级入口 |
-| 局部Tab | `.m-local-tabs` `.m-local-tab` `.active` | 页面内筛选；支持横向滚动 |
-| 运营位 | `.m-hero` `.m-hero-copy` `.m-hero-action` `.m-carousel-dots` | 使用项目资产或CSS/SVG，不复制参考图 |
-| 服务宫格 | `.m-service-grid` `.m-service-item` `.m-service-icon` `.m-service-badge` | 默认4列或5列，超过15项提供“全部” |
-| 模块标题 | `.m-section-head` `.m-section-title` `.m-section-more` | 标题16-17px，右侧可放“更多” |
-| 内容卡片 | `.m-card` `.m-card-list` `.m-feature-grid` `.m-media-card` | 12px圆角、轻边界、低阴影 |
-| 图文列表 | `.m-media-list` `.m-media-item` `.m-thumb` `.m-item-main/meta` | 景点、专家、活动、新闻等 |
-| 分类检索 | `.m-category-strip` `.m-sort-bar` `.m-category-rail` `.m-result-pane` | 横向一级分类 + 排序 + 左侧二级分类 |
-| 上下文展开层 | `.m-context-popover` `.m-context-grid` `.m-mask-layer` | 分类或筛选在当前页展开，保留上下文 |
-| 商品条目 | `.m-product-item` `.m-product-price` `.m-add-cart` `.m-promo` | 横向商品卡和加购按钮 |
-| 数量步进器 | `.m-stepper` `.m-stepper-btn` `.m-stepper-value` | 按钮至少40×40px |
-| 购物车 | `.m-merchant-group` `.m-cart-item` `.m-cart-summary` | 按商家分组，底部结算栏 |
-| 订单 | `.m-order-tabs` `.m-order-card` `.m-order-status` `.m-order-actions` | 状态Tab、订单卡和主次操作 |
-| 个人中心 | `.m-profile-hero` `.m-profile-avatar` `.m-shortcut-card` `.m-menu-group` | 渐变头部、状态快捷卡、分组菜单 |
-| 公共账户 | `.m-institution-bar` `.m-account-card` `.m-sensitive-value` `.m-service-query-grid` | 机构身份、脱敏余额、办理入口 |
-| 实时信息 | `.m-realtime-hero` `.m-live-card` `.m-live-value` `.m-inline-expand` | 公交、排队、物流等实时状态 |
-| 表单 | `.m-form-section` `.m-form-row` `.m-form-label/input` | 单列分组表单 |
-| 详情 | `.m-detail-hero` `.m-detail-summary` `.m-detail-section` `.m-detail-row` | 媒体区、核心信息、纵向分区 |
-| 标签 | `.m-tag` `.m-tag-primary/success/warning/danger/info` | 浅色胶囊，文字表达状态 |
-| 固定操作 | `.m-sticky-action` `.m-bottom-actions` | 考虑底部导航和安全区 |
-| Drawer/面板 | `.m-drawer` `.m-bottom-sheet` `.m-action-sheet` | 轻量选择使用；复杂任务进入全屏页 |
-| 状态 | `.m-skeleton` `.m-empty-state` `.m-error-state` `.m-offline-state` | 按页面适用性生成 |
-| 反馈 | `.m-toast` `.m-dialog` `.m-alert` | 成功轻提示，风险操作明确确认 |
-
-### 3.2.1 移动端默认视觉约束
-
-- 以 `375×812` 为最低设计基准，同时在 390-430px 宽度下验证；内容最大宽度建议 480px。
-- 页面左右边距默认 12-16px；模块间距 12-16px；卡片内边距 12-16px。
-- 页面背景使用浅灰绿或项目浅色，容器为白色；优先靠层级和留白分组，不大量使用边框。
-- 卡片默认圆角12px，小控件8-10px，胶囊999px；只有悬浮卡、底部栏和叠层卡使用轻阴影。
-- 页面标题18-20px/600，模块标题16-17px/600，正文14px，辅助文字12-13px。
-- 关键金额、余额、到站时间、数量等使用18-24px/600-700和等宽数字。
-- 点击区域不小于44×44px；相邻小按钮间距至少8px。
-- 底部固定区域必须加安全区，并为内容增加等高 `padding-bottom`。
-- viewport 必须允许缩放：`width=device-width, initial-scale=1, viewport-fit=cover`。
-- 项目内只使用一套SVG图标；不得使用Emoji充当业务图标。
-- 分析截图只用于提炼规则，不进入 Skill 包和最终页面。无授权资产时用本地SVG、CSS渐变、几何图形或中性占位。
+**核心约束摘要**：
+- 品牌色与语义色与 PC 端 `pc-admin-navigation-style.md` 保持一致（双端共享）
+- 设计基准 `375×812`，在 390-430px 验证；点击区域≥44×44px
+- viewport 必须允许缩放：`width=device-width, initial-scale=1, viewport-fit=cover`
+- 项目内只使用一套 SVG 图标；不得使用 Emoji 充当业务图标
 
 ### 3.3 移动端 navbar.js
 
-**建议导出的变量和函数：**
+> 完整的函数签名规范和 TAB_BAR_ITEMS 数据结构模板已抽离到 `references/mobile-navbar-template.md`，生成移动端 navbar.js 时读取该文件。
 
-- `ACTIVE_TAB`：当前底部主导航标识；无底部主导航时为空。
-- `MOBILE_PAGE_META`：页面标题、原型、顶部栏类型、是否展示底部主导航、是否有固定操作。
-- `TAB_BAR_ITEMS`：仅在PRD定义4-5个稳定一级入口时配置，否则为空数组。
-- `renderMobileHeader()`：按 `contextual / standard / search` 类型渲染头部。
-- `renderTabBar()`：有配置且当前页允许时渲染，无配置时不占位。
-- `bindLocalTabs()`：绑定页面局部Tab和 `aria-selected`。
-- `bindContextPopover()`：绑定分类/筛选上下文展开层、遮罩和焦点恢复。
-- `syncSafeAreaSpacing()`：根据底部主导航、固定操作栏更新内容底部占位。
-
-**TAB_BAR_ITEMS 数据结构：**
-
-```javascript
-var TAB_BAR_ITEMS = [
-  { id: 'home', icon: 'home', label: '首页', href: 'P02-home.html' },
-  { id: 'service', icon: 'grid', label: '服务', href: 'P03-service.html' },
-  { id: 'order', icon: 'receipt', label: '订单', href: 'P04-order.html', badge: 2 },
-  { id: 'mine', icon: 'user', label: '我的', href: 'P05-mine.html' }
-];
-```
+**导出函数清单**：`ACTIVE_TAB` / `MOBILE_PAGE_META` / `TAB_BAR_ITEMS` / `renderMobileHeader()` / `renderTabBar()` / `bindLocalTabs()` / `bindContextPopover()` / `syncSafeAreaSpacing()`
 
 > 底部主导航不是默认必选项。二级页、详情页、全屏表单和结算页通常隐藏它；辅助入口优先放在页面内、Drawer或底部面板。
 
 ### 3.4 移动端页面结构
 
-**业务页面通用结构：**
+> 完整的业务页面通用 HTML 结构模板和结构约束已抽离到 `references/mobile-page-skeleton.md`，生成移动端 HTML 页面时读取该文件。
 
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>{页面标题} - {系统名称}</title>
-  <link rel="stylesheet" href="common.css">
-  <style>/* 页面专属样式 */</style>
-</head>
-<body>
-  <script>
-    var ACTIVE_TAB = '{tab-id-or-empty}';
-    var MOBILE_PAGE_META = {
-      title: '{页面标题}',
-      archetype: '{service-home|media-list|commerce-category|detail|cart|orders|profile|public-account|realtime}',
-      header: '{contextual|standard|search|immersive}',
-      showTabBar: true,
-      hasStickyAction: false
-    };
-  </script>
-
-  <div class="m-layout">
-    <header id="mobileHeaderContainer"></header>
-
-    <main class="m-content" id="mainContent">
-      <!-- 按页面原型生成内容 -->
-    </main>
-
-    <div id="stickyActionContainer"></div>
-    <nav class="m-tab-bar" id="tabBarContainer" aria-label="主导航"></nav>
-  </div>
-
-  <script src="navbar.js"></script>
-</body>
-</html>
-```
-
-**结构约束：**
-
-- 一级首页可使用上下文头部，不强制传统标题栏。
-- 二级列表和普通详情使用返回顶部栏；沉浸详情可让媒体区靠近顶部，但返回和操作必须可见。
-- 页面局部Tab属于内容筛选，不与全局频道重复。
-- 底部主导航只出现在一级页面；固定主操作存在时要判断是否隐藏底部主导航。
-- 登录页使用全屏表单，不使用主导航。
-- 禁止 `maximum-scale=1` 和 `user-scalable=no`。
+**结构约束摘要**：
+- 一级首页可使用上下文头部；二级列表和普通详情使用返回顶部栏
+- 底部主导航只出现在一级页面；固定主操作存在时判断是否隐藏底部主导航
+- 登录页使用全屏表单，不使用主导航
+- 禁止 `maximum-scale=1` 和 `user-scalable=no`
 
 ### 3.5 移动端按页面原型生成
 
-#### 综合入口首页
+> 9 种移动端原型 + 表单页的详细生成规则已抽离到 `references/mobile-archetype-specs.md`，按页面 archetypeId 选择对应原型并读取该文件对应章节。
 
-1. 上下文头部 → 搜索或主运营位 → 高频服务宫格 → 专题卡 → 内容列表 → 底部主导航。
-2. 服务宫格默认4列或5列，首屏8-15项；超过上限提供“全部”。
-3. 运营位只保留一个主标题、一个副标题和一个行动点；无项目素材时使用CSS/SVG。
-4. 模块可使用大卡+小卡的不对称布局，但必须有明确阅读顺序。
-5. 首页允许较高信息密度，但每个模块之间必须有标题、背景或间距分组。
-
-#### 内容发现首页
-
-1. 搜索 → 主题运营位 → 快捷分类 → 推荐卡或横向滚动内容 → 新闻/活动列表。
-2. 图片用于真实对象；无资产时使用中性占位，不把文字模拟成海报截图。
-3. 横向滚动内容必须露出下一张卡片的一部分，提示可滑动。
-
-#### 分类检索页
-
-1. 返回/搜索栏 → 横向一级分类 → 排序筛选 → 左侧二级分类 + 右侧结果。
-2. 左侧分类宽76-92px，右侧结果自适应；选中态只使用一种主要强调方式。
-3. “全部分类”或复杂筛选优先使用当前页展开层和遮罩，保持上下文。
-4. 商品条目包含图片、标题、促销/标签、价格和加购；加购按钮触控区域≥44px。
-
-#### 图文列表页
-
-1. 顶部栏 → 局部Tab/筛选 → 图文列表 → 加载更多。
-2. 缩略图88-112px；内容区只突出一个价值信号，如评分、价格、距离、时间或状态。
-3. 标签1-3个，辅助信息12-13px；列表使用分隔线或卡片间距二选一。
-4. 默认整条可进入详情；收藏、加购等次操作不得挤压标题。
-
-#### 沉浸详情页
-
-1. 媒体区 → 核心信息 → 评分/标签/位置 → 纵向详情分区 → 固定主操作。
-2. 核心信息顺序：标题 → 状态/评分 → 地址或规格 → 价格/主操作。
-3. 电话、导航、分享、收藏使用图标+短标签；图标按钮有 `aria-label`。
-4. 长详情支持折叠，底部固定操作为内容预留空间。
-
-#### 交易原型:购物车与订单
-
-**购物车：**
-1. 标题+管理 → 商家分组 → 商品条目 → 固定结算栏；底部主导航按业务决定保留。
-2. 数量步进器按钮至少40×40px，禁用态清晰。
-3. 结算栏包含全选、合计和主按钮，并计算安全区与主导航高度。
-
-**订单：**
-1. 标题 → 状态Tab → 订单卡列表。
-2. 商家名在左、状态在右；商品内容居中；金额和操作在底部。
-3. 每卡最多1个主操作+1个次操作，其他收纳“更多”。
-
-#### 个人中心
-
-1. 浅色渐变头部 → 头像与身份 → 状态快捷卡 → 分组菜单 → 底部主导航。
-2. 状态快捷卡建议4-5项，可轻微叠压头部和页面。
-3. 菜单行高52-56px，左图标、中文案、右箭头。
-4. 允许保留留白，不用无关推荐填满页面。
-
-#### 公共账户
-
-1. 机构身份 → 账户概览 → 核心办理按钮 → 2列信息卡/4列查询宫格。
-2. 余额、账号默认脱敏并提供显示/隐藏。
-3. 视觉正式克制，少用促销式高饱和插画和文案。
-4. 权限不足、未授权、数据延迟必须有明确状态。
-
-#### 实时信息
-
-1. 场景化头部 → 搜索 → 最近对象 → 实时列表 → 行内展开详情。
-2. 到站时间、排队时长、物流节点等关键数字优先；方向、站距、更新时间为辅助。
-3. 实时状态同时使用文字、图标和颜色；离线/延迟明确提示。
-4. 展开详情保持在当前列表内，避免简单查看被迫跳页。
-
-#### 表单与办理页
-
-1. 返回+标题 → 分组单列表单 → 说明/附件 → 底部固定操作。
-2. 每行标签和输入关系清晰；复杂选择使用全屏选择页或底部面板。
-3. 键盘弹出时主按钮不能遮住当前字段；校验错误靠近字段展示。
-4. 支持中断恢复时将草稿状态写入本地或按PRD处理。
+| 原型 | archetypeId | 核心结构 |
+|------|-------------|---------|
+| 综合入口首页 | service-home | 上下文头部→搜索/运营位→服务宫格→专题卡→内容列表→底部主导航 |
+| 内容发现首页 | content-home | 搜索→主题运营位→快捷分类→推荐卡/横向滚动→新闻列表 |
+| 分类检索页 | category-search | 返回/搜索栏→横向一级分类→排序筛选→左侧二级分类+右侧结果 |
+| 图文列表页 | media-list | 顶部栏→局部Tab/筛选→图文列表→加载更多 |
+| 沉浸详情页 | detail | 媒体区→核心信息→评分/标签/位置→纵向详情分区→固定主操作 |
+| 交易原型(购物车+订单) | cart/orders | 购物车:商家分组→商品条目→结算栏；订单:状态Tab→订单卡列表 |
+| 个人中心 | profile | 渐变头部→头像身份→状态快捷卡→分组菜单→底部主导航 |
+| 公共账户 | public-account | 机构身份→账户概览→核心办理按钮→信息卡/查询宫格 |
+| 实时信息 | realtime | 场景化头部→搜索→最近对象→实时列表→行内展开详情 |
+| 表单与办理页 | form | 返回+标题→分组单列表单→说明/附件→底部固定操作 |
 
 ### 3.6 移动端状态与动效
 
@@ -331,7 +135,7 @@ var TAB_BAR_ITEMS = [
 
 ### Step 2：读取上游工件与文档
 
-1. **优先读取上游 JSON 工件**（见 §五）：`pages.json`、`navigation.json`、`annotations.json`、`actions.json`、`overlays.json`、`components.json`、`permissions.json`、`state-machines.json`、`design-tokens.json`、`pipeline-context.json`
+1. **优先读取上游 JSON 工件**（见 §七）：`pages.json`、`navigation.json`、`annotations.json`、`actions.json`、`overlays.json`、`components.json`、`permissions.json`、`state-machines.json`、`design-tokens.json`、`pipeline-context.json`
 2. 工件缺失的字段回退到 PRD、页面原型文档和用户提供的 UI 设计规范提取
 3. 建立 `pageId → 规格` 映射表，记录每个字段的 `sourceLevel`（CONFIRMED/INFERRED/FALLBACK）和 `sourceRefs`
 4. 对每个移动端页面记录核心任务、页面原型（archetypeId）、导航层级、内容密度和固定区域
@@ -340,15 +144,15 @@ var TAB_BAR_ITEMS = [
 
 按移动端输出到 `output/site/mobile/`：
 
-1. **移动端 common.css**：按 `design-tokens.json` 生成 Token；缺失项使用移动端默认 Token（基准见 §3.2 CSS 变量体系）
-2. **移动端 navbar.js**：根据 `navigation.json` 生成底部 Tab 配置（`TAB_BAR_ITEMS`）和导航渲染函数（`renderMobileHeader`、`renderTabBar`、`bindLocalTabs`、`bindContextPopover`、`syncSafeAreaSpacing`）
+1. **移动端 common.css**：按 `design-tokens.json` 生成 Token；缺失项使用移动端默认 Token（基准见 `references/mobile-tokens-and-classes.md`）
+2. **移动端 navbar.js**：根据 `navigation.json` 生成底部 Tab 配置（`TAB_BAR_ITEMS`）和导航渲染函数（详见 `references/mobile-navbar-template.md`）
 
 > 不生成 `index.html`。总控台由 `generate-portal` skill 独占输出。
 
 ### Step 4：逐页生成移动端 HTML
 
 1. 按 `pages.json` 页面清单逐页生成移动端 HTML
-2. 移动端先按 `archetypeId` 选择页面原型（service-home/content-home/category-search/media-list/detail/cart/orders/profile/public-account/realtime）与导航层级，再生成对应 HTML 结构（详见 §3.5）
+2. 移动端先按 `archetypeId` 选择页面原型，再生成对应 HTML 结构（详见 `references/mobile-archetype-specs.md`）；页面骨架模板见 `references/mobile-page-skeleton.md`
 3. 双端场景下移动端与 PC 端同名页面内容对应但布局不同
 4. 从 `annotations.json`/`overlays.json`/`actions.json` 提取字段、筛选、卡片列、弹窗（移动端优先 Drawer，复杂任务使用全屏页）、操作，填充示例数据
 5. 所有跳转链接指向移动端内的正确页面文件
@@ -418,13 +222,11 @@ var TAB_BAR_ITEMS = [
 5. **数据真实感**：示例数据合理，金额格式正确
 6. **交互可用**：弹窗可打开关闭，Tab可切换，表单可输入
 7. **移动端体验**：页面原型与任务匹配；点击区域≥44px；固定底栏不遮挡内容；允许浏览器缩放
-8. **图标一致性**：全项目只使用一套图标体系，不混用Emoji和不同图标库
-9. **资源合规**：分析用截图不进入Skill或输出；仅使用项目授权资产、本地SVG、CSS图形或中性占位
-10. **零占位符**：所有 HTML 文件中不得出现"开发中"、"敬请期待"等占位文案（详见 5.1）
-11. **交互可用性**：文件/图片上传可触发文件选择并显示预览或回填文件名；详情/编辑弹窗可打开并填充数据；删除等危险操作有二次确认（详见 §六）
-12. **图标体系统一**：全项目只使用一套图标体系，优先内联 SVG；禁止混用 Emoji、FontAwesome、Ant Design Icons 等多套图标库；菜单、消息、用户、折叠等图标均使用内联 SVG
-13. **viewport 一致**：移动端使用 `width=device-width, initial-scale=1, viewport-fit=cover`；禁止 `maximum-scale=1` 和 `user-scalable=no`，必须允许浏览器缩放
-14. **资源合规**：分析用截图只用于提炼规则，不复制、不裁切、不压缩、不打包进 Skill 或输出页面；不复刻截图中的品牌 Logo、专属插画、商品图、人物图、广告图和原文案；仅使用项目授权资产，缺失时使用本地 SVG、CSS 渐变、几何图形或中性占位
+8. **图标体系统一**：全项目只使用一套图标体系，优先内联 SVG；禁止混用 Emoji、FontAwesome、Ant Design Icons 等多套图标库；菜单、消息、用户、折叠等图标均使用内联 SVG
+9. **资源合规**：分析用截图只用于提炼规则，不复制、不裁切、不压缩、不打包进 Skill 或输出页面；不复刻截图中的品牌 Logo、专属插画、商品图、人物图、广告图和原文案；仅使用项目授权资产，缺失时使用本地 SVG、CSS 渐变、几何图形或中性占位
+10. **viewport 一致**：移动端使用 `width=device-width, initial-scale=1, viewport-fit=cover`；禁止 `maximum-scale=1` 和 `user-scalable=no`，必须允许浏览器缩放
+11. **零占位符**：所有 HTML 文件中不得出现"开发中"、"敬请期待"等占位文案（详见 5.1）
+12. **交互可用性**：文件/图片上传可触发文件选择并显示预览或回填文件名；详情/编辑弹窗可打开并填充数据；删除等危险操作有二次确认（详见 §六）
 
 ---
 
@@ -499,6 +301,10 @@ var TAB_BAR_ITEMS = [
 | 文件 | 相对路径 | 用途 |
 |------|------|------|
 | 移动端产品设计规范 | `references/mobile-product-design-standards.md` | 移动端原型选择与设计基准（必读） |
+| 移动端视觉Token与组件类名 | `references/mobile-tokens-and-classes.md` | CSS变量体系+组件类名索引+默认视觉约束（生成common.css时读取） |
+| 移动端navbar.js模板 | `references/mobile-navbar-template.md` | 函数签名规范+TAB_BAR_ITEMS数据结构（生成navbar.js时读取） |
+| 移动端页面骨架模板 | `references/mobile-page-skeleton.md` | 业务页面通用HTML结构+结构约束（生成HTML时读取） |
+| 移动端页面原型生成规则 | `references/mobile-archetype-specs.md` | 9种原型+表单页详细生成规则（按archetypeId按需读取） |
 | 移动端页面原型示例 | `references/schemas/mobile-page-patterns.example.json` | 记录 archetype 选择结果的数据结构 |
 | 移动端原型演示 | `references/examples/mobile-pattern-demo.html` | 检查抽象后的移动端设计语言 |
 | 交互实现模式 | `../generate-html-pages/references/interaction-patterns.md` | Toast/Modal/上传/CRUD/排序代码模板（跨端共享） |
