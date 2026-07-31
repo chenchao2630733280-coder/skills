@@ -1,10 +1,85 @@
-# AI 游戏生成 Skill 集合
+# AI Agent Skills 技能集合
 
-> 通过 8 个 skill 串联成一条流水线,让 AI 基于一句话需求端到端生成可一键运行的游戏工程。所有产物纯文本/二进制资源,**零编辑器依赖**。可选阶段 6 在可玩游戏基础上叠加视觉效果打磨。
+> 一套面向 AI 编码助手的 skill 集合，覆盖 **AI 游戏生成、产品需求与系统交付、前端原型、文档/标书生成、短剧策划** 等场景。每个 skill 目录内含 `SKILL.md` 作为技能定义；`_shared/` 为公共引用与校验脚本，本身不是独立 skill。
 
 ---
 
-## 一、Skill 清单
+## 一、技能总览（按领域分组）
+
+### 1. AI 游戏生成流水线（game-*）
+由一句话需求端到端生成可运行游戏工程，纯文本产物、零编辑器依赖。
+`game-forge-master`(调度) → `game-blueprint` → `game-spec` → `game-art-spec` → (`game-asset-forge` ∥ `game-code-forge`) → `game-integrate` → `game-polish`(可选)
+详见 [第三节](#三ai-游戏生成流水线详情)。
+
+### 2. 产品交付流水线（product-pipeline / system-prd / implement-* / generate-*）
+由需求生成系统 PRD、工程实施蓝图、前后端与数据层实现、集成测试到部署交付的完整软件交付链路；另含前端原型与演示门户生成。
+`product-pipeline-master`(调度) → `generate-system-prd` → `plan-system-implementation` → (`implement-data-layer` / `implement-backend` / `implement-frontend`) → `integrate-system` → `test-and-harden-system` → `package-and-deploy-system`
+旁线：`generate-prototype` → `generate-html-pages`(→ `generate-html-pc-admin` / `generate-html-mobile`) → `generate-portal`；质量门禁 `prd-quality-checker`。
+详见 [第四节](#四产品交付流水线详情)。
+
+### 3. 文档与标书（doc / bid）
+- `bid-functional-solution`：将 PRD/需求/截图/原型转为投标用「标书功能建设方案」Word 文档。
+- `ruanzhu-doc-generator`：由产品截图生成中文软著产品说明书 DOCX（区分 PC 后台与移动端）。
+- `screenshot-operation-manual`：由截图/录屏生成 PC 后台与移动端操作手册（DOCX/PDF/MD/HTML）。
+
+### 4. 短剧策划（ai-short-drama-*）
+- `ai-short-drama-topic-planner`：AI 短剧高概念选题策划，生成/筛选/评估/发散差异化选题并叠加趋势雷达。
+- `ai-short-drama-project-development`：选题确认后的项目开发总监，将选题转化为可拍摄的项目开发方案。
+
+### 5. 其他 / 垂直
+- `frontend-design`：为新建/重构 UI 提供独特、有意图的视觉设计指导（配色、排版、布局、签名元素）。
+- `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
+- `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
+- `rd-init`：由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目。
+- `pet-health-product-simulator`：模拟/测试中文宠物主人健康分诊对话机器人产品交互（非兽医诊断）。
+
+---
+
+## 二、完整技能清单
+
+| 技能目录 | 职责(一句话) | 输入 | 输出 |
+|---|---|---|---|
+| ai-short-drama-project-development | 短剧选题确认后的项目开发总监，将选题转化为可拍摄、可进入剧本创作的项目开发方案 | 已确认短剧选题/高概念/故事梗概/人物设定/世界规则 | 项目理解、选题复核、故事发动机、人物关系、整剧阶段大纲、情绪曲线、分集大纲、风险诊断、评分等文本 |
+| ai-short-drama-topic-planner | AI 短剧高概念选题策划师，生成/筛选/评估/发散差异化选题并叠加趋势雷达 | 目标平台/市场/用户/题材偏好/选题模式/数量/多样性/趋势雷达配置 | 创意策略、趋势雷达、候选选题(含评分)、变量分布、推荐结论、结构化 JSON |
+| bid-functional-solution | 将 PRD/需求/截图/原型转化为投标用「标书功能建设方案」Word 文档 | PRD/需规/Word/PDF/截图文件夹/原型图/已有 DOCX | `.docx` 标书功能建设方案(图片/功能说明/功能描述三段式) |
+| brainstorm-product-feature | 编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD | 功能名称/草案概念/开发原因/用户流程/目标用户/约束/参考资料 | 功能构想评估摘要(定义、场景、价值、最小闭环、方案对比、假设、风险、下一步) |
+| build-working-system | 可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统 | 现有 PRD、页面规格、原型、部分代码、技术栈 | 实施计划、任务板、追溯矩阵、各层实现报告、集成/测试/发布清单(`output/build/`) |
+| frontend-design | 为新建/重构 UI 提供独特、有意图的视觉设计指导 | 设计 brief / 产品主题、受众、页面单一任务 | 设计计划(Token 系统:色板/字体/布局/签名元素)与最终前端代码 |
+| game-art-spec | AI 游戏流水线阶段3：由 PRD+技术设计产出美术规范与机读资源清单 | `docs/PRD.md`、`docs/TECH_DESIGN.md` | `docs/ART_SPEC.md`、`docs/ASSET_MANIFEST.json`、`docs/AUDIO_SPEC.md` |
+| game-asset-forge | AI 游戏流水线阶段4a：消费资源清单生成图片/图集打包/音频占位 | `docs/ASSET_MANIFEST.json`、`docs/ART_SPEC.md` | `assets/`(role/ui/bg/atlases/audio)、`docs/ASSET_ISSUES.md` |
+| game-blueprint | AI 游戏流水线阶段1：由一句话需求生成一页纸游戏蓝图 | 用户一句话需求(可选参考游戏/截图/素材) | `docs/GAME_BLUEPRINT.md` |
+| game-code-forge | AI 游戏流水线阶段4b：消费 PRD+设计+清单生成完整可运行工程代码 | `docs/GAME_BLUEPRINT.md`、`docs/PRD.md`、`docs/TECH_DESIGN.md`、`docs/ASSET_MANIFEST.json` | `src/**/*.ts`、`index.html`、`package.json`、`tsconfig.json`、`vite.config.ts`、`README.md` |
+| game-forge-master | AI 游戏生成总纲调度中枢(引擎选择/阶段裁剪/串联下游)，本身不产出文件 | 用户一句话游戏需求 | 调度下游各阶段产物(固定路径)，本 skill 不直接产出业务文件 |
+| game-integrate | AI 游戏流水线阶段5：集成构建与浏览器自测，产出可运行构建与验收报告 | `assets/`、`src/`、`index.html`、`docs/ASSET_MANIFEST.json` | `dist/`、`docs/BUILD_REPORT.md`(含数值平衡实测) |
+| game-polish | AI 游戏流水线阶段6(可选)：在可运行游戏上叠加视觉/手感/反馈效果打磨 | `docs/POLISH_REQUEST.md`、可运行工程、`GameConfig.ts`(只读) | `src/effects/` 增量效果代码、`docs/POLISH_REPORT.md` |
+| game-spec | AI 游戏流水线阶段2：由蓝图生成详细 PRD 与技术设计 | `docs/GAME_BLUEPRINT.md` | `docs/PRD.md`、`docs/TECH_DESIGN.md` |
+| generate-html-mobile | 任务型移动端静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/mobile/`(common.css、navbar.js、PXX-*.html) |
+| generate-html-pages | 多端静态原型生成路由器，判端并调度 PC/移动端子 skill，汇总构建报告 | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`、`output/site/mobile/`、`output/site/build-report.json` |
+| generate-html-pc-admin | PC 管理后台静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`(common.css、sidebar.js、PXX-*.html) |
+| generate-portal | 原型演示与标注总控台生成器(三栏布局+iframe 预览+PRD 标注) | 产品设计方案.md、页面原型文档.md、annotations.json、build-report.json、已生成 HTML | `output/site/index.html`(独立门户，独占) |
+| generate-prototype | 由系统 PRD 生成终端感知的标准化页面原型文档(UI/UX 交互规格) | 系统产品设计文档(PRD) | `{系统名称}-页面原型文档.md` + 可选 `output/spec/annotations.json` 等 JSON |
+| generate-system-prd | 由需求生成标准化系统产品设计文档(13章+附录，多端适配) | 产品名称/目标/端类型/范围/目标用户/核心场景等(可来自脑暴结论) | `{产品名称}-产品设计方案-V{版本号}.md` + 可选 `output/spec/*.json` |
+| implement-backend | 按垂直切片实现生产级后端 API/服务/校验/权限/测试 | 架构文件、business-rules.json、permissions.json、data-model.json、已实现数据层 | 后端源码、API 契约、测试、backend-implementation-report.md、更新追溯表 |
+| implement-data-layer | 实现可迁移/可验证/可回滚的数据层(Schema/迁移/Repository) | architecture.json、实施计划、data-model.json、business-rules.json、现有 Schema/迁移 | 数据层代码、database-implementation-report.md、schema-snapshot.json、更新追溯表 |
+| implement-frontend | 将页面规格与静态原型实现为生产级前端(集成真实 API/类型/权限/测试) | pages.json、annotations.json、design-tokens.json、原型 HTML、架构与后端契约 | 前端源码、主题配置、API 客户端、测试、frontend-implementation-report.md、更新追溯表 |
+| integrate-system | 将前后端/数据层/认证/权限/外部服务联调成可运行端到端系统 | API 契约、各已实现层、环境配置 | integration-report.md、environment-matrix.md、contract-drift.json、更新追溯表 |
+| package-and-deploy-system | 将已测系统整理为可重复构建/可运维的交付物(容器/CI/回滚文档) | 发布门禁文件、测试报告、构建产物 | 基础设施文件(infra/deploy/.github)、release-manifest.json、deployment-report.md、operations-runbook.md、handoff-checklist.md |
+| pet-health-product-simulator | 模拟/测试中文宠物主人健康分诊对话机器人产品交互(非兽医诊断) | 交互模式(模拟/脚本/QA/场景/交接)+ 参考契约/协议/风险模型 | 对话流程脚本、QA 报告、场景用例、状态机/API/UI 需求(实现交接) |
+| plan-system-implementation | 由 PRD/原型/仓库生成可执行的工程实施蓝图(架构/切片/任务板) | output/spec/*.json、PRD、原型、当前代码仓库 | implementation-plan.md、architecture.json、task-board.json、traceability.json、risk-register.md、ADR 决策记录 |
+| prd-quality-checker | 在下游工作前基于证据审核 PRD 质量，输出门禁报告(Audit/Improve) | 主 PRD/需求基线、关联清单、产品配置、可选上下文 | Markdown 门禁报告(READY/CONDITIONAL/NOT_READY)+ 可选 JSON + AI 开发准备度附录 |
+| product-pipeline-master | 产品工作台总编排调度中枢(端判定/阶段裁剪/串联下游)，本身不产出文件 | 用户需求 | 调度下游 6 主线 + 3 旁线 skill 产物(固定路径)，本 skill 不直接产出业务文件 |
+| rd-init | 由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目 | "初步需求如下："后的需求文本 | .rd-init-brief.md、project.yaml、workflow_state.yaml、asset_map.json、项目说明(不生成 PRD/代码) |
+| ruanzhu-doc-generator | 由产品截图生成中文软著产品说明书 DOCX(区分 PC 后台与移动端) | 截图文件夹 + 可选 PRD/README/产品事实 | `(管理后台)产品说明书.docx`/`(移动端)产品说明书.docx`(混合时两份) |
+| screenshot-operation-manual | 由截图/录屏生成 PC 后台与移动端操作手册(DOCX/PDF/MD/HTML) | 截图/录屏/截图文件夹、平台分类 | manual_spec.json + 操作手册.docx(封面、目录、模块说明、步骤、FAQ) |
+| test-and-harden-system | 运行并提升单元/集成/端到端/安全/性能等检查，修复阻塞缺陷并出验收报告 | 已实现系统、PRD、各层报告、测试配置 | acceptance-matrix.json、test-report.md、security-review.md、performance-smoke.md、release-blockers.json |
+
+---
+
+## 三、AI 游戏生成流水线（详情）
+
+通过 8 个 skill 串联成一条流水线，让 AI 基于一句话需求端到端生成可一键运行的游戏工程。所有产物纯文本/二进制资源，**零编辑器依赖**。可选阶段 6 在可玩游戏基础上叠加视觉效果打磨。
+
+### 3.1 Skill 清单
 
 | 序号 | Skill 名 | 职责 | 输入 | 输出 |
 |---|---|---|---|---|
@@ -17,9 +92,7 @@
 | 5 | game-integrate | 集成构建联调 + 验收报告 | assets + src | `dist/**` + `docs/BUILD_REPORT.md` |
 | 6 | game-polish(可选) | 视觉/手感/反馈效果打磨 | 可运行工程 + POLISH_REQUEST(可选) | `src/effects/**` + `docs/POLISH_REPORT.md` |
 
----
-
-## 二、流水线总览
+### 3.2 流水线总览
 
 ```
 用户一句话需求
@@ -43,51 +116,34 @@
 [6] game-polish (可选)   → src/effects/** + docs/POLISH_REPORT.md
 ```
 
----
+### 3.3 使用方式
 
-## 三、使用方式
+- **完整流程(推荐)**：直接说「用 AI 生成一个游戏：…」或「按流水线生成游戏工程」，总纲 skill 自动调度后续阶段。
+- **单阶段调用**：跳过总纲直接调用某阶段 skill（适用于已有部分产物的增量生成）：
+  - 「生成游戏蓝图」→ game-blueprint
+  - 「生成游戏 PRD」→ game-spec
+  - 「生成美术规范」→ game-art-spec
+  - 「生成游戏资源」→ game-asset-forge
+  - 「生成游戏代码」→ game-code-forge
+  - 「集成构建游戏」→ game-integrate
+  - 「优化游戏效果/加特效/打磨动画」→ game-polish
 
-### 方式 1:完整流程(推荐)
-直接说"用 AI 生成一个游戏:..." 或 "按流水线生成游戏工程"。总纲 skill 会自动调度后续阶段。
+### 3.4 关键设计点
 
-### 方式 2:单阶段调用
-跳过总纲,直接调用某个阶段 skill(适用于已有部分产物的增量生成):
-- "生成游戏蓝图" → 调用 game-blueprint
-- "生成游戏 PRD" → 调用 game-spec
-- "生成美术规范" → 调用 game-art-spec
-- "生成游戏资源" → 调用 game-asset-forge
-- "生成游戏代码" → 调用 game-code-forge
-- "集成构建游戏" → 调用 game-integrate
-- "优化游戏效果/加特效/打磨动画" → 调用 game-polish
+1. **ASSET_MANIFEST.json 是中枢契约**：美术 skill 与代码 skill 的唯一桥梁。代码 skill 只读 JSON，不读美术文档；美术 skill 只产出 JSON。两阶段完全解耦。
+2. **三引擎支持**：默认 Phaser 3，总纲根据游戏类型自动选择：
+   - Phaser 3：2D 跑酷/平台/塔防/卡牌/消除(默认)
+   - Pixi.js：大量粒子/特效/自定义渲染
+   - 纯 Canvas：极简游戏(2048/几何)
+3. **失败不阻塞**：所有失败都允许继续，降级方案：
+   - 生图失败 → 占位图(纯色 + 文字标识)
+   - 切图失败 → 散图降级
+   - 音频失败 → 静音占位
+   - typecheck 失败 → 降级 strict:false
+   - 失败项汇总到 `docs/ASSET_ISSUES.md` 和 `docs/BUILD_REPORT.md`，供人工后补。
+4. **固定路径契约**：所有 skill 必须按固定路径读写，不允许自定义。详见 game-forge-master 的「产物路径总表」。
 
----
-
-## 四、关键设计点
-
-### 1. ASSET_MANIFEST.json 是中枢契约
-美术 skill 与代码 skill 的唯一桥梁。代码 skill 只读 JSON,不读美术文档;美术 skill 只产出 JSON。两阶段完全解耦。
-
-### 2. 三引擎支持
-默认 Phaser 3,总纲根据游戏类型自动选择:
-- Phaser 3:2D 跑酷/平台/塔防/卡牌/消除(默认)
-- Pixi.js:大量粒子/特效/自定义渲染
-- 纯 Canvas:极简游戏(2048/几何)
-
-### 3. 失败不阻塞
-所有失败都允许继续,降级方案:
-- 生图失败 → 占位图(纯色 + 文字标识)
-- 切图失败 → 散图降级
-- 音频失败 → 静音占位
-- typecheck 失败 → 降级 strict:false
-
-失败项汇总到 `docs/ASSET_ISSUES.md` 和 `docs/BUILD_REPORT.md`,供人工后补。
-
-### 4. 固定路径契约
-所有 skill 必须按固定路径读写,不允许自定义。详见 game-forge-master 的"八、产物路径总表"。
-
----
-
-## 五、产物路径总表
+### 3.5 产物路径总表
 
 ```
 {项目根}/
@@ -128,11 +184,9 @@
 └── README.md                   # [4b]
 ```
 
----
+### 3.6 典型场景示例
 
-## 六、典型场景示例
-
-### 场景 1:新春赛马跑酷游戏
+**场景 1：新春赛马跑酷游戏**
 ```
 用户:用 AI 生成一个新春赛马跑酷小游戏,带 6 套皮肤和抽奖
 [0] 总纲:复杂度 ★★★★,引擎 Phaser 3,音频走静音占位
@@ -144,7 +198,7 @@
 [5] 集成:npm install → typecheck → 浏览器自测 → build → dist/
 ```
 
-### 场景 2:极简消除游戏
+**场景 2：极简消除游戏**
 ```
 用户:做个三消游戏
 [0] 总纲:复杂度 ★★,引擎 Phaser 3,跳过 audio
@@ -156,34 +210,68 @@
 [5] 集成:构建完成
 ```
 
----
+### 3.7 约束与限制
 
-## 七、约束与限制
-
-### 1. 不支持的类型
-- 3D 游戏(本方案只覆盖 2D)
-- 强物理引擎游戏(如真实刚体碰撞,虽可加 Matter.js 但 AI 生成质量不稳)
-- MMORPG 等大型多人游戏
-
-### 2. AI 生图限制
-- 逐帧动画跨帧风格一致性是主要难点,有降级路径但建议人工 review
-- 复杂场景(多角色同框 + 复杂光影)成功率低
-- 单游戏美术资源上限 200 张图,超出建议拆期
-
-### 3. AI 音频限制
-- 默认全部静音占位,需人工后补
-- AI 生成音频质量不稳定,BGM 不建议 AI 生成
-
-### 4. 网络与签名
-- 网络层需用户提供接口契约(URL/参数/返回)
-- 复杂签名(如双重 md5 + SM4)需用户给参考实现
-- 私有 SDK(如 SZDApi)需用户提供 .d.ts 类型定义
+1. **不支持的类型**：3D 游戏；强物理引擎游戏(如真实刚体碰撞)；MMORPG 等大型多人游戏。
+2. **AI 生图限制**：逐帧动画跨帧风格一致性是主要难点；复杂场景(多角色同框 + 复杂光影)成功率低；单游戏美术资源上限 200 张图。
+3. **AI 音频限制**：默认全部静音占位；BGM 不建议 AI 生成。
+4. **网络与签名**：网络层需用户提供接口契约；复杂签名需用户给参考实现；私有 SDK 需用户提供 .d.ts 类型定义。
 
 ---
 
-## 八、各 Skill 详细规范
+## 四、产品交付流水线（详情）
 
-详见各 skill 目录下的 SKILL.md:
+由 `product-pipeline-master` 总编排，覆盖「需求 → PRD → 工程实施 → 实现 → 集成 → 测试 → 部署」的完整软件交付链路，并提供前端原型与演示门户生成、PRD 质量门禁等旁线能力。
+
+### 4.1 主链路
+
+```
+用户需求
+   ↓
+[master] product-pipeline-master(调度)
+   ↓
+generate-system-prd        → {产品}-产品设计方案-Vx.md + output/spec/*.json
+   ↓
+plan-system-implementation → implementation-plan.md / architecture.json / task-board.json / traceability.json
+   ↓  (三实现可并行)
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ implement-data-  │  │ implement-backend│  │ implement-front- │
+│   layer          │  │                  │  │   end            │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+   ↓
+integrate-system          → integration-report.md / contract-drift.json
+   ↓
+test-and-harden-system    → test-report.md / security-review.md / acceptance-matrix.json
+   ↓
+package-and-deploy-system → release-manifest.json / deployment-report.md / operations-runbook.md
+```
+
+### 4.2 旁线（前端原型与演示）
+
+```
+generate-prototype        → {系统}-页面原型文档.md + output/spec/annotations.json
+   ↓
+generate-html-pages(路由)
+   ├─ generate-html-pc-admin   → output/site/pc/
+   └─ generate-html-mobile     → output/site/mobile/
+   ↓
+generate-portal            → output/site/index.html (演示门户,独占)
+```
+
+### 4.3 质量门禁
+
+- `prd-quality-checker`：在下游工作前基于证据审核 PRD 质量，输出 `READY / CONDITIONAL / NOT_READY` 门禁报告。
+- `frontend-design`：在生成/重构前端前提供视觉设计 Token 系统（色板/字体/布局/签名元素）。
+- `brainstorm-product-feature`：PRD 前的功能脑暴与构想评估（第零阶段）。
+- `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型一次性转为可运行、已测试、可部署系统（与 product-pipeline-master 互补的另一种编排视角）。
+
+---
+
+## 五、各 Skill 详细规范
+
+详见各 skill 目录下的 `SKILL.md`：
+
+**AI 游戏生成流水线**
 - [game-forge-master](./game-forge-master/SKILL.md)
 - [game-blueprint](./game-blueprint/SKILL.md)
 - [game-spec](./game-spec/SKILL.md)
@@ -192,3 +280,39 @@
 - [game-code-forge](./game-code-forge/SKILL.md)
 - [game-integrate](./game-integrate/SKILL.md)
 - [game-polish](./game-polish/SKILL.md)
+
+**产品交付流水线**
+- [product-pipeline-master](./product-pipeline-master/SKILL.md)
+- [generate-system-prd](./generate-system-prd/SKILL.md)
+- [plan-system-implementation](./plan-system-implementation/SKILL.md)
+- [implement-data-layer](./implement-data-layer/SKILL.md)
+- [implement-backend](./implement-backend/SKILL.md)
+- [implement-frontend](./implement-frontend/SKILL.md)
+- [integrate-system](./integrate-system/SKILL.md)
+- [test-and-harden-system](./test-and-harden-system/SKILL.md)
+- [package-and-deploy-system](./package-and-deploy-system/SKILL.md)
+- [generate-prototype](./generate-prototype/SKILL.md)
+- [generate-html-pages](./generate-html-pages/SKILL.md)
+- [generate-html-pc-admin](./generate-html-pc-admin/SKILL.md)
+- [generate-html-mobile](./generate-html-mobile/SKILL.md)
+- [generate-portal](./generate-portal/SKILL.md)
+- [prd-quality-checker](./prd-quality-checker/SKILL.md)
+- [frontend-design](./frontend-design/SKILL.md)
+- [brainstorm-product-feature](./brainstorm-product-feature/SKILL.md)
+- [build-working-system](./build-working-system/SKILL.md)
+- [rd-init](./rd-init/SKILL.md)
+
+**文档与标书**
+- [bid-functional-solution](./bid-functional-solution/SKILL.md)
+- [ruanzhu-doc-generator](./ruanzhu-doc-generator/SKILL.md)
+- [screenshot-operation-manual](./screenshot-operation-manual/SKILL.md)
+
+**短剧策划**
+- [ai-short-drama-topic-planner](./ai-short-drama-topic-planner/SKILL.md)
+- [ai-short-drama-project-development](./ai-short-drama-project-development/SKILL.md)
+
+**其他 / 垂直**
+- [pet-health-product-simulator](./pet-health-product-simulator/SKILL.md)
+
+**公共引用**
+- [_shared/](./_shared/)（公共 schema、UI 设计标准、校验脚本，非独立 skill）
