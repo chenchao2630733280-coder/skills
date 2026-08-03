@@ -1,6 +1,6 @@
 ﻿---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas/Godot 4 四引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas/Godot 4/Unity 五引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -39,11 +39,26 @@ Godot 4 工程:
 - assets/                 # 复用 game-asset-forge 产出(符号链接或复制)
 ```
 
-**约束**:不依赖任何可视化编辑器产物(Web 引擎:所有节点树/动画/UI 用代码定义)。Godot 4 例外:生成 .tscn 场景文件(文本格式,AI 可直接生成)和 .gd 脚本,但不依赖 Godot 编辑器交互操作。
+Unity 工程产物(当引擎为 Unity 时,替代上述 Web 工程产物):
+```
+Unity 工程:
+- ProjectSettings/ProjectVersion.txt         # Unity 版本标识(2022.3 LTS)
+- Assets/Scripts/Runtime/*.cs                # 运行时脚本(MonoBehaviour)
+- Assets/Scripts/Runtime/{ProjectName}.asmdef # 运行时程序集定义
+- Assets/Scripts/Editor/SceneBuilder.cs      # 场景程序化构建
+- Assets/Scripts/Editor/BuildScript.cs       # 构建入口(供 -executeMethod 调用)
+- Assets/Scripts/Editor/{ProjectName}.Editor.asmdef  # Editor 程序集
+- Assets/Scenes/*.unity                      # 场景文件(由 SceneBuilder 程序化生成)
+- Packages/manifest.json                     # 包依赖
+- {ProjectName}.csproj                       # 工程文件(Unity 重新生成会覆盖)
+- assets/                                    # 复用 game-asset-forge 产出,放入 Assets/Resources/
+```
+
+**约束**:不依赖任何可视化编辑器产物(Web 引擎:所有节点树/动画/UI 用代码定义)。Godot 4 例外:生成 .tscn 场景文件(文本格式,AI 可直接生成)和 .gd 脚本,但不依赖 Godot 编辑器交互操作。Unity 例外:生成 .cs 脚本与工程配置,.unity 场景文件由 Editor/SceneBuilder.cs 在 batchmode 首次导入时程序化构建,AI 不直接写 YAML 场景文件。
 
 ---
 
-## 二、通用工程结构(三引擎通用)
+## 二、通用工程结构(Web 三引擎通用;Godot/Unity 见各自 references 模板)
 
 ```
 {项目名}/
@@ -105,6 +120,7 @@ Godot 4 工程:
 | `references/engine-pixi-template.md` | 引擎为 Pixi 时 |
 | `references/engine-canvas-template.md` | 引擎为 Canvas 时 |
 | `references/engine-godot-template.md` | 引擎为 Godot 4 时 |
+| `references/engine-unity-template.md` | 引擎为 Unity 时 |
 | `references/web-config-template.md` | Web 引擎生成配置文件时 |
 | `references/pitfall-sprite-body-offset.md` | Phaser 角色物理碰撞生成时 |
 | `references/pitfall-balance-validation.md` | 跑酷类游戏数值配置生成时 |
@@ -173,7 +189,27 @@ Godot 4 工程:
 
 ---
 
-## 七、生成规则
+## 七、Unity 引擎模板
+
+> 完整模板已抽离到 `references/engine-unity-template.md`,生成 Unity 代码时读取该文件。Unity 例外:生成 .cs 脚本与工程配置,.unity 场景文件由 Editor/SceneBuilder.cs 在 batchmode 首次导入时程序化构建,AI 不直接写 YAML 场景文件。
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| 工程版本 | ProjectVersion.txt | Unity 2022.3 LTS 标识 |
+| 程序集定义 | {ProjectName}.asmdef | Runtime 程序集,与 Editor 分离 |
+| 主入口 | UnityMain.cs | MonoBehaviour,场景初始化与首场景加载 |
+| 启动场景 | BootScene.cs | 异步加载+进度条 |
+| 角色控制 | CharacterController.cs | Rigidbody2D+Animator 状态机 |
+| 全局状态 | GameManager.cs | 单例+状态机+分数 |
+| 场景构建 | Editor/SceneBuilder.cs | 程序化生成 .unity 场景(替代手写 YAML) |
+| 构建入口 | Editor/BuildScript.cs | 供 -executeMethod 调用,Windows/WebGL |
+| 包依赖 | Packages/manifest.json | 2D/3D 包按需裁剪 |
+
+**关键差异**:Unity 与 Godot/Web 引擎在入口/脚本语言/场景格式/资源加载/物理/导出/类型检查/工程识别上均不同,详见 `references/engine-unity-template.md` §7.12 差异对比表。
+
+---
+
+## 八、生成规则
 
 ### 1. 严格 TypeScript
 - `strict: true`
@@ -232,21 +268,22 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 八、配置文件生成
+## 九、配置文件生成
 
-> Web 引擎配置模板已抽离到 `references/web-config-template.md`,Godot 配置见 `references/engine-godot-template.md`。
+> Web 引擎配置模板已抽离到 `references/web-config-template.md`,Godot 配置见 `references/engine-godot-template.md`,Unity 配置见 `references/engine-unity-template.md`。
 
 | 引擎类型 | 配置文件 | references 文件 |
 |---------|---------|----------------|
 | Web(Phaser/Pixi/Canvas) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
 | Godot 4 | project.godot/export_presets.cfg | `references/engine-godot-template.md` |
+| Unity | ProjectVersion.txt/manifest.json/.asmdef/.csproj | `references/engine-unity-template.md` |
 
 ---
 
-## 九、生成顺序
+## 十、生成顺序
 
-按依赖关系顺序生成:
-1. 工程配置文件(package.json/tsconfig/vite.config/index.html)
+按依赖关系顺序生成(Web 引擎步骤;Godot/Unity 引擎时按对应 references 模板的目录结构生成,顺序一致但文件替换为 .gd/.cs):
+1. 工程配置文件(Web:package.json/tsconfig/vite.config/index.html;Godot:project.godot/export_presets.cfg;Unity:ProjectVersion.txt/manifest.json/.asmdef/.csproj)
 2. config/ 层(GameConfig/AssetManifest/SkinConfig)
 3. utils/ 层(eventBus/tween/storage)
 4. types/ 层
@@ -259,7 +296,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 十、交互约定
+## 十一、交互约定
 
 1. 读取 4 份输入文档后,**不要问用户**,直接生成
 2. 生成过程分批 Write,每批 5-10 个文件
@@ -268,7 +305,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 十一、质量检查清单
+## 十二、质量检查清单
 
 - [ ] 所有文件已生成(对照 TECH_DESIGN 目录结构)
 - [ ] package.json scripts 完整(dev/build/typecheck)
@@ -278,30 +315,30 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - [ ] 所有 PRD 弹窗都有对应文件
 - [ ] 所有 PRD 状态转换都有代码
 - [ ] README 含运行命令
-- [ ] Sprite/Body 偏移安全(见 十二)
-- [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十三)
+- [ ] Sprite/Body 偏移安全(见 十三)
+- [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十四)
 
 ---
 
-## 十二、Sprite/Body 偏移安全(关键踩坑)
+## 十三、Sprite/Body 偏移安全(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-sprite-body-offset.md`。
 
 核心约束:body.setSize/setOffset 必须在 create 物理后调用,否则偏移无效导致碰撞框错位。
 
-## 十三、数值平衡校验(关键踩坑)
+## 十四、数值平衡校验(关键踩坑)
 
 > **跨引擎通用**(跑酷类)。完整规范见 `references/pitfall-balance-validation.md`。
 
 核心约束:GameConfig 必须带注释推导链,jumpVelocity/gravity/obstacleInterval/obstacleSpeed 必须可数学验证。
 
-## 十四、Phaser 中文文字换行(关键踩坑)
+## 十五、Phaser 中文文字换行(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-phaser-text-wrap.md`。
 
 核心约束:中文文字必须用 `wordWrap.useAdvancedWrap` + 手动按字符切分,否则换行无效。
 
-## 十五、图集帧名格式匹配(关键踩坑)
+## 十六、图集帧名格式匹配(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-atlas-frame-format.md`。
 

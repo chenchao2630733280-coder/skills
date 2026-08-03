@@ -1,13 +1,13 @@
 ---
 name: "game-forge-master"
-description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser/Pixi/Canvas/Godot 4)、阶段裁剪规则、模板索引与失败回退策略。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
+description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser/Pixi/Canvas/Godot 4/Unity)、阶段裁剪规则、模板索引与失败回退策略。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
 ---
 
 # Game Forge Master — AI 游戏生成总纲
 
 本 skill 是整套"AI 生成游戏"流水线的**调度中枢**,本身不直接产出游戏文件,职责是:
 1. 接收用户一句话需求,决定走哪条生成路径
-2. 选择目标引擎(Phaser / Pixi / 纯 Canvas / Godot 4)
+2. 选择目标引擎(Phaser / Pixi / 纯 Canvas / Godot 4 / Unity)
 3. 裁剪阶段(简单游戏可跳过音频/网络/任务系统)
 4. 串联下游 5 个阶段 skill 的执行顺序
 5. 提供通用模板索引与失败回退策略
@@ -25,7 +25,7 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 **不要**在以下场景调用:
 - 用户只是问"游戏怎么做"(纯咨询,用对话回答即可)
 - 用户要修改已有游戏的某一处代码(直接用 Edit/Write)
-- 用户要做的是 3D 游戏(仅 Godot 4 支持,Web 引擎不覆盖 3D)
+- 用户要做的是 3D 游戏(仅 Godot 4 / Unity 支持,Web 引擎不覆盖 3D)
 
 ---
 
@@ -70,7 +70,8 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
    ├─ 大量粒子/特效/自定义渲染 → Pixi.js
    ├─ 极简(纯文字/几何图形) → 纯 Canvas
    ├─ 2D 桌面游戏(需 exe/原生窗口) → Godot 4
-   ├─ 3D 游戏 → Godot 4
+   ├─ 3D 游戏(中小型/开源优先) → Godot 4
+   ├─ 3D 复杂游戏/需 Unity 生态/跨平台工业级发布 → Unity
    └─ 用户明确指定 → 尊重用户选择
 ```
 
@@ -85,8 +86,11 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | 网格类(消除/三消) | Phaser 3 | 用 Phaser 的 grid + tween 足够 |
 | 弹幕类 | Pixi.js | 大量 sprite 需要 WebGL 高吞吐 |
 | 2D 桌面游戏(需原生窗口/exe) | **Godot 4** | 原生导出 exe/pck,无需浏览器,性能优于 Web |
-| 3D 游戏(任意复杂度) | **Godot 4** | 内置 3D 物理/光照/骨骼动画,AI 可用 GDScript 生成 |
+| 3D 游戏(中小型/开源优先) | **Godot 4** | 内置 3D 物理/光照/骨骼动画,AI 可用 GDScript 生成 |
 | 复杂 2D+3D 混合 | **Godot 4** | 统一引擎,2D/3D 混合渲染无需切换 |
+| 3D 复杂游戏/需 Unity 生态 | **Unity** | 工业级 3D 渲染、Asset Store 资源、跨平台发布最强 |
+| 需要 C# 生态/现有 Unity 团队 | **Unity** | C# 生态成熟,团队技能复用 |
+| 移动端重度 3D 游戏 | **Unity** | iOS/Android 3D 性能优化最成熟,发布链路最完整 |
 
 ### 决策结果写入
 
@@ -102,6 +106,13 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 平台:Web H5
 引擎:Godot 4.3
 依赖:godot(无需 npm 依赖)
+理由:[一句话]
+```
+
+```
+平台:Windows Desktop(或 iOS/Android/WebGL)
+引擎:Unity 2022.3 LTS
+依赖:unity(需宿主安装 Unity Editor,无 npm 依赖)
 理由:[一句话]
 ```
 
@@ -152,7 +163,17 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 │   ├── BootScene.tscn.tpl    # 启动场景
 │   ├── main.gd.tpl           # 主脚本
 │   └── export_presets.cfg.tpl # 导出预设
-└── shared/                    # 三引擎共享文档模板
+├── unity/                    # Unity 模板
+│   ├── ProjectVersion.txt.tpl # Unity 版本标识
+│   ├── UnityMain.cs.tpl      # 主入口脚本
+│   ├── BootScene.cs.tpl      # 启动场景脚本
+│   ├── CharacterController.cs.tpl # 角色控制
+│   ├── GameManager.cs.tpl    # 全局状态
+│   ├── SceneBuilder.cs.tpl   # 场景程序化构建(Editor)
+│   ├── BuildScript.cs.tpl    # 构建入口(Editor)
+│   ├── {ProjectName}.asmdef.tpl # 程序集定义
+│   └── manifest.json.tpl     # 包依赖
+└── shared/                    # 五引擎共享文档模板
     ├── GAME_BLUEPRINT.md.tpl
     ├── PRD.md.tpl
     ├── TECH_DESIGN.md.tpl
@@ -177,6 +198,8 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | 代码 typecheck 失败 | AI 自动修复 3 轮,仍失败则降级 strict:false + 标记 |
 | 浏览器自测失败 | 输出失败清单 + 截图,不阻塞构建 |
 | 资源加载 404 | 自动用占位图替代 + 标记 |
+| Unity Editor 未安装 | 标记"需宿主安装 Unity 2022.3 LTS",代码与配置仍产出,构建延后到宿主环境 |
+| Unity .unity 场景生成失败 | 降级:SceneBuilder 仅生成 Main 场景,BootScene 用代码动态创建 |
 
 **所有失败都允许继续往下走**,失败项汇总到 `docs/BUILD_REPORT.md` 的"已知问题"章节,供人工后补。
 
@@ -190,7 +213,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
 3. 调用 `game-art-spec`,读取 PRD + TECH_DESIGN,产出 `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md`
 4. **并行**调用 `game-asset-forge` 和 `game-code-forge`,分别产出 `assets/` 和 `src/`
-5. 调用 `game-integrate`,读取 assets + src(Web 引擎)或 Godot 工程(Godot),产出 `dist/`(Web)或 `export/`(Godot) + `docs/BUILD_REPORT.md`
+5. 调用 `game-integrate`,读取 assets + src(Web 引擎)或 Godot 工程(Godot)或 Unity 工程(Unity),产出 `dist/`(Web)或 `export/`(Godot)或 `Build/`(Unity) + `docs/BUILD_REPORT.md`
 6. (可选)若阶段 6 未被裁剪,调用 `game-polish`,读取可运行工程 + `docs/POLISH_REQUEST.md`(如有),产出 `src/effects/` 增量 + `docs/POLISH_REPORT.md`
 
 **不允许跳步**:即使某阶段被裁剪,也必须产出对应的占位文档(如音频裁剪也要写一个最小 AUDIO_SPEC.md 标注"全部静音占位")。
@@ -220,6 +243,11 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | Godot 脚本 | `scripts/**/*.gd` | game-code-forge |
 | Godot 工程 | `project.godot`、`export_presets.cfg` | game-code-forge |
 | Godot 导出产物 | `export/*.{exe,pck,html,zip}` | game-integrate |
+| Unity 脚本 | `Assets/Scripts/Runtime/**/*.cs` | game-code-forge |
+| Unity Editor 脚本 | `Assets/Scripts/Editor/**/*.cs` | game-code-forge |
+| Unity 场景 | `Assets/Scenes/*.unity` | game-code-forge(由 SceneBuilder 生成) |
+| Unity 工程配置 | `ProjectSettings/ProjectVersion.txt`、`Packages/manifest.json`、`*.asmdef` | game-code-forge |
+| Unity 导出产物 | `Build/*.{exe,html}` | game-integrate |
 | 构建产物 | `dist/**` | game-integrate |
 | 验收报告 | `docs/BUILD_REPORT.md` | game-integrate |
 | 效果优化需求(可选) | `docs/POLISH_REQUEST.md` | 用户填写 |

@@ -95,12 +95,44 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 
 ---
 
+## references 使用指引
+
+设计原则采用两层分类体系,先读总览做品类决策,再按需读取对应原则文件。
+
+| 文件 | 何时读取 |
+|------|---------|
+| `references/design-principles-overview.md` | **总入口**。生成核心玩法循环前必读,按决策树确定品类+叠加通用原则 |
+| `references/design-principles-instant-feedback.md` | 品类判定为"即时反馈类"(超休闲/混合休闲)时读取 |
+| `references/design-principles-value-reveal.md` | 品类判定为"价值揭示类"(赌石/开箱/鉴定)时读取 |
+| `references/design-principles-puzzle.md` | 品类判定为"思考顿悟类"(解谜/逻辑推理)时读取 |
+| `references/design-principles-monetization.md` | 通用原则。涉及 F2P/IAA/IAP/通行证 任意一项时读取 |
+| `references/design-principles-economy.md` | 通用原则。涉及属性/资源/货币/成长曲线 任意一项时读取 |
+
+---
+
 ## 三、生成规则
 
 ### 1. 引擎选择
 读取 game-forge-master 的引擎决策树,根据"5. 核心机制清单"自动选择,写入"3. 平台与引擎"。
 
-### 2. 复杂度评级
+### 2. 核心玩法循环设计
+生成"4. 核心玩法循环"前,**先读取 `references/design-principles-overview.md`**:
+
+1. 按 overview §二 品类决策树确定**唯一主品类**:
+   - ① 即时反馈类(超休闲/混合休闲)→ 读 `design-principles-instant-feedback.md`
+   - ② 价值揭示类(赌石/开箱/鉴定)→ 读 `design-principles-value-reveal.md`
+   - ③ 思考顿悟类(解谜/逻辑推理)→ 读 `design-principles-puzzle.md`
+   - 都不属于 → 按常规玩法设计
+
+2. 按 overview §三 检查是否需叠加**通用原则**:
+   - 涉及 F2P/IAA/IAP/通行证 → 叠加读 `design-principles-monetization.md`
+   - 涉及属性/资源/货币/成长曲线 → 叠加读 `design-principles-economy.md`
+
+3. 按 overview §四 叠加规则,品类原则指导核心循环,通用原则指导变现与数值。
+
+4. 按各原则文件的"生成蓝图时的应用流程"章节,映射原则到机制,填写核心玩法循环。
+
+### 3. 复杂度评级
 按以下表打分,累计定级:
 
 | 维度 | 1 分 | 2 分 | 3 分 | 4 分 | 5 分 |
@@ -113,7 +145,7 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 
 总分对应:5-8 → ★,9-12 → ★★,13-17 → ★★★,18-22 → ★★★★,23+ → ★★★★★
 
-### 3. 范围边界
+### 4. 范围边界
 "做什么"必须可执行,"不做"必须明确拒绝。常见"不做"项:
 - 不做账号系统(用临时 token)
 - 不做服务端(纯前端)
@@ -121,7 +153,7 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 - 不做多语言
 - 不做新手引导(除非用户要)
 
-### 4. 阶段裁剪建议
+### 5. 阶段裁剪建议
 根据复杂度自动填,见 game-forge-master 第四节"阶段裁剪规则"。
 
 ---
@@ -145,4 +177,7 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 - [ ] 范围边界"不做"≥3 项
 - [ ] 复杂度评级与各维度打分一致
 - [ ] 阶段裁剪建议与评级对应
+- [ ] (品类原则)按 overview 决策树选定的品类,其核心原则机制都存在
+- [ ] (通用原则-变现)变现锚点长在核心循环上,不卖纯数值变强,档位分层
+- [ ] (通用原则-数值)成长曲线边际递减+阶梯跃升,产出消耗闭环,免费可玩付费加速
 - [ ] 文档无 TODO/占位文字

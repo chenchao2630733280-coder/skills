@@ -9,7 +9,7 @@
 - 构建时间:{ISO timestamp}
 - 构建结果:{成功/失败}
 - 工程路径:{绝对路径}
-- 引擎:{Phaser 3 / Pixi / Canvas / Godot 4}
+- 引擎:{Phaser 3 / Pixi / Canvas / Godot 4 / Unity}
 - 代码文件数:{N}
 - 资源文件数:{M}
 
@@ -57,6 +57,14 @@ npm run build
 - 桌面端:双击 `export/Game.exe` 或 `godot --path .` 在编辑器中运行
 - 浏览器:`python -m http.server 8080 --directory export/Web` 后访问 `http://localhost:8080`
 - 编辑器调试:用 Godot 编辑器打开工程,按 F5 运行主场景
+
+### Unity 运行指引
+- 桌面端:双击 `Build/Game.exe` 运行
+- 浏览器(WebGL):`python -m http.server 8080 --directory Build/Web` 后访问 `http://localhost:8080`
+- 编辑器调试:用 Unity Editor 打开工程,Tools > Build Scenes 生成场景后按 ▶ 运行 Main 场景
+- 宿主构建命令(沙箱无 Unity 时):
+  - `unity -batchmode -quit -projectPath . -executeMethod {ProjectName}.Editor.SceneBuilder.BuildAll`
+  - `unity -batchmode -quit -projectPath . -executeMethod {ProjectName}.Editor.BuildScript.BuildWindows`
 
 ## 7. 下一步建议
 1. 替换占位美术资源(见 ASSET_ISSUES.md)

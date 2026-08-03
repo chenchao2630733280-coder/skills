@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill Audit Report",
+  "description": "skill-auditor 产出的机读审查报告 Schema,供下游自动化改造 skill 消费",
+  "type": "object",
+  "required": ["auditMode", "target", "dimensions", "issues", "summary", "generatedAt"],
+  "properties": {
+    "auditMode": {
+      "type": "string",
+      "enum": ["single", "collection", "pipeline", "benchmark"],
+      "description": "审查模式:单skill/集合/流水线/对比基准"
+    },
+    "target": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "被审查 skill 路径列表"
+    },
+    "benchmark": {
+      "type": "string",
+      "description": "基准 skill 路径(仅对比基准审查模式)"
+    },
+    "dimensions": {
+      "type": "object",
+      "description": "4 维度的审查结果",
+      "properties": {
+        "structure": {
+          "type": "object",
+          "description": "维度1:结构与体积",
+          "properties": {
+            "checked": { "type": "boolean", "description": "是否启用了此维度" },
+            "issueCount": {
+              "type": "object",
+              "properties": {
+                "critical": { "type": "integer" },
+                "warning": { "type": "integer" },
+                "info": { "type": "integer" }
+              }
+            },
+            "checks": {
+              "type": "array",
+              "description": "审查项结果清单",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "checkId": { "type": "string", "description": "审查项编号,如 1.1" },
+                  "checkName": { "type": "string", "description": "审查项名称" },
+                  "passed": { "type": "boolean" },
+                  "evidence": { "type": "string", "description": "证据(文件:行号)" }
+                }
+              }
+            }
+          }
+        },
+        "consistency": {
+          "type": "object",
+          "description": "维度2:一致性与契约",
+          "properties": {
+            "checked": { "type": "boolean" },
+            "issueCount": {
+              "type": "object",
+              "properties": {
+                "critical": { "type": "integer" },
+                "warning": { "type": "integer" },
+                "info": { "type": "integer" }
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "checkId": { "type": "string" },
+                  "checkName": { "type": "string" },
+                  "passed": { "type": "boolean" },
+                  "evidence": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "robustness": {
+          "type": "object",
+          "description": "维度3:健壮性",
+          "properties": {
+            "checked": { "type": "boolean" },
+            "issueCount": {
+              "type": "object",
+              "properties": {
+                "critical": { "type": "integer" },
+                "warning": { "type": "integer" },
+                "info": { "type": "integer" }
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "checkId": { "type": "string" },
+                  "checkName": { "type": "string" },
+                  "passed": { "type": "boolean" },
+                  "evidence": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "extensibility": {
+          "type": "object",
+          "description": "维度4:扩展性",
+          "properties": {
+            "checked": { "type": "boolean" },
+            "issueCount": {
+              "type": "object",
+              "properties": {
+                "critical": { "type": "integer" },
+                "warning": { "type": "integer" },
+                "info": { "type": "integer" }
+              }
+            },
+            "checks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "checkId": { "type": "string" },
+                  "checkName": { "type": "string" },
+                  "passed": { "type": "boolean" },
+                  "evidence": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "issues": {
+      "type": "array",
+      "description": "问题数组,按严重级别排序",
+      "items": {
+        "type": "object",
+        "required": ["id", "dimension", "severity", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "问题编号,如 ISSUE-001"
+          },
+          "dimension": {
+            "type": "string",
+            "enum": ["structure", "consistency", "robustness", "extensibility"],
+            "description": "所属维度"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["CRITICAL", "WARNING", "INFO"],
+            "description": "严重级别"
+          },
+          "description": {
+            "type": "string",
+            "description": "问题描述"
+          },
+          "evidence": {
+            "type": "object",
+            "description": "证据",
+            "properties": {
+              "file": { "type": "string", "description": "文件路径" },
+              "line": { "type": "integer", "description": "行号" },
+              "snippet": { "type": "string", "description": "相关代码片段" }
+            }
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "优化建议"
+          },
+          "plan": {
+            "type": "object",
+            "description": "改造方案",
+            "properties": {
+              "steps": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "改造步骤"
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": { "type": "string" },
+                    "action": {
+                      "type": "string",
+                      "enum": ["create", "modify", "delete"]
+                    },
+                    "description": { "type": "string" }
+                  }
+                },
+                "description": "改动文件清单"
+              },
+              "expectedEffect": {
+                "type": "string",
+                "description": "预期效果"
+              }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "description": "总览统计",
+      "required": ["critical", "warning", "info", "total"],
+      "properties": {
+        "critical": { "type": "integer" },
+        "warning": { "type": "integer" },
+        "info": { "type": "integer" },
+        "total": { "type": "integer" }
+      }
+    },
+    "topSuggestions": {
+      "type": "array",
+      "description": "按 ROI 排序的 Top 优化建议",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": { "type": "integer", "description": "排名" },
+          "title": { "type": "string", "description": "建议标题" },
+          "roi": {
+            "type": "string",
+            "enum": ["high", "medium", "low"],
+            "description": "ROI 评级"
+          },
+          "benefit": {
+            "type": "object",
+            "properties": {
+              "level": { "type": "string", "enum": ["high", "medium", "low"] },
+              "description": { "type": "string" }
+            }
+          },
+          "cost": {
+            "type": "object",
+            "properties": {
+              "level": { "type": "string", "enum": ["high", "medium", "low"] },
+              "description": { "type": "string" }
+            }
+          },
+          "relatedIssues": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "关联问题编号"
+          },
+          "quadrant": {
+            "type": "string",
+            "enum": ["quick-win", "major-project", "low-priority", "defer"],
+            "description": "优先级象限:快速赢/重大改造/低优先/暂缓"
+          }
+        }
+      }
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "报告生成时间(ISO 8601)"
+    },
+    "auditorVersion": {
+      "type": "string",
+      "description": "审查工具版本",
+      "default": "skill-auditor v1.0"
+    }
+  }
+}
