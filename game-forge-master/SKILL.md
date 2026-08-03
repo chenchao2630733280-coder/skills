@@ -22,6 +22,8 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 - 用户给了游戏雏形需求,需要端到端产出可运行工程
 - 用户调用了任意 `game-*` 系列 skill 但未先经过总纲
 
+**阶段 0 路由**:若用户需求模糊(如"做个小游戏"但未明确核心玩法),或明确要"脑暴选题/找点子",先调用 `game-topic-brainstorm` 产出 `docs/TOPIC_PROPOSAL.md`,用户确认推荐方案后再进入阶段 1。
+
 **不要**在以下场景调用:
 - 用户只是问"游戏怎么做"(纯咨询,用对话回答即可)
 - 用户要修改已有游戏的某一处代码(直接用 Edit/Write)
@@ -34,6 +36,9 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 ```
 用户一句话需求
        ↓
+(需求模糊?) ──是──→ game-topic-brainstorm → docs/TOPIC_PROPOSAL.md
+       │ 否                                    ↓
+       ↓ ←─────────────────────────────────────┘
 [本 skill] 引擎选择 + 阶段裁剪
        ↓
 game-blueprint    → docs/GAME_BLUEPRINT.md
@@ -53,6 +58,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 ```
 
 **阶段性质**:
+- 阶段 0(game-topic-brainstorm):**可选**,用户需求模糊或要脑暴选题时调用
 - 阶段 1-5(蓝图→规格→美术→资源/代码→集成):**必走**,产出可玩游戏
 - 阶段 6(game-polish):**可选**,在可玩游戏基础上叠加效果,不改玩法
 
@@ -209,15 +215,16 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 调用本 skill 后,必须按以下顺序执行下游 skill:
 
+0. **(可选)** 若需求模糊或用户要脑暴选题,调用 `game-topic-brainstorm`,产出 `docs/TOPIC_PROPOSAL.md`,用户确认推荐方案后进入下一步
 1. 调用 `game-blueprint`,产出 `docs/GAME_BLUEPRINT.md`
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
 3. 调用 `game-art-spec`,读取 PRD + TECH_DESIGN,产出 `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md`
 4. **并行**调用 `game-asset-forge` 和 `game-code-forge`,分别产出 `assets/` 和 `src/`
-5. 调用 `game-integrate`,读取 assets + src(Web 引擎)或 Godot 工程(Godot)或 Unity 工程(Unity),产出 `dist/`(Web)或 `export/`(Godot)或 `Build/`(Unity) + `docs/BUILD_REPORT.md`
+5. 调用 `game-integrate`,读取 assets + src(Web 引擎)或 Godot/Unity 工程,产出 `dist/`(Web)或 `export/`(Godot)或 `Build/`(Unity) + `docs/BUILD_REPORT.md`
 6. (可选)若阶段 6 未被裁剪,调用 `game-polish`,读取可运行工程 + `docs/POLISH_REQUEST.md`(如有),产出 `src/effects/` 增量 + `docs/POLISH_REPORT.md`
 
 **不允许跳步**:即使某阶段被裁剪,也必须产出对应的占位文档(如音频裁剪也要写一个最小 AUDIO_SPEC.md 标注"全部静音占位")。
-**阶段 6 例外**:game-polish 被裁剪时**不产出占位文档**(它是可选增量,无占位概念)。
+**阶段 0 和 6 例外**:game-topic-brainstorm 和 game-polish 被跳过时**不产出占位文档**(它们是可选增量,无占位概念)。
 
 ---
 
@@ -227,6 +234,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 | 产物 | 路径 | 由哪个 skill 产出 |
 |---|---|---|
+| 选题方案(可选) | `docs/TOPIC_PROPOSAL.md` | game-topic-brainstorm |
 | 蓝图 | `docs/GAME_BLUEPRINT.md` | game-blueprint |
 | PRD | `docs/PRD.md` | game-spec |
 | 技术设计 | `docs/TECH_DESIGN.md` | game-spec |
