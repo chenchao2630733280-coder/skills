@@ -107,6 +107,7 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 | `references/design-principles-puzzle.md` | 品类判定为"思考顿悟类"(解谜/逻辑推理)时读取 |
 | `references/design-principles-monetization.md` | 通用原则。涉及 F2P/IAA/IAP/通行证 任意一项时读取 |
 | `references/design-principles-economy.md` | 通用原则。涉及属性/资源/货币/成长曲线 任意一项时读取 |
+| `references/design-principles-narrative-adaptation.md` | **前置**。需求是"把 XX 题材/IP/热点/真实数据改成游戏"(已有题材,非从0脑暴)时先读,做题材→机制转化 |
 
 ---
 
@@ -118,6 +119,7 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 ### 2. 核心玩法循环设计
 生成"4. 核心玩法循环"前,**先读取 `references/design-principles-overview.md`**:
 
+0. **若需求是"已有题材改编"**(用户给明确题材 / IP / 热点 / 真实数据),先读 `design-principles-narrative-adaptation.md` 做"题材→机制"转化,再继续以下步骤定主品类。
 1. 按 overview §二 品类决策树确定**唯一主品类**:
    - ① 即时反馈类(超休闲/混合休闲)→ 读 `design-principles-instant-feedback.md`
    - ② 价值揭示类(赌石/开箱/鉴定)→ 读 `design-principles-value-reveal.md`

@@ -36,6 +36,10 @@ game-blueprint 的设计原则分两层:
 ```
 用户需求
 │
+├─ 是"把已有题材/IP/热点/真实数据改成游戏"?(已有题材,非从0脑暴)
+│  ├─ 是 → 先走 叙事化改编原则(见 design-principles-narrative-adaptation.md)
+│  │        做"题材→机制"转化后,再回到本决策树定主品类
+│  │
 ├─ 核心驱动是"即时爽感+高频反馈"?
 │  ├─ 是 → ① 即时反馈类
 │  │        (超休闲/小游戏/H5/碎片化/混合休闲)
@@ -130,6 +134,7 @@ game-blueprint 的设计原则分两层:
 | 品类 | ③ 思考顿悟类 | `design-principles-puzzle.md` | Eureka Moment | 6 |
 | 通用 | ④ 商业化设计 | `design-principles-monetization.md` | 变现与体验平衡 | 6 |
 | 通用 | ⑤ 数值与经济 | `design-principles-economy.md` | 数值服务体验 | 5 |
+| 前置 | 叙事化改编 | `design-principles-narrative-adaptation.md` | 题材→机制转化(已有题材时先走) | 6 |
 
 ---
 
@@ -166,5 +171,8 @@ game-blueprint 的设计原则分两层:
 | 混合变现(IAA+IAP) | monetization 全文 | "详见 monetization" |
 | F2P 平衡 | economy 原则5 + monetization 原则3 | economy 管数值层,monetization 管变现层 |
 | 产出消耗闭环 | economy 原则3 | "详见 economy 原则3" |
+| 大众记忆点 / memoryStrength | narrative-adaptation 原则3 | "详见 narrative-adaptation 原则3" |
+| 不可逆操作+付费阀门 | narrative-adaptation 原则5 | "详见 narrative-adaptation 原则5" |
+| 广告双价值(信息/对冲) | narrative-adaptation 原则6(补充) | 完整 IAA 见 monetization |
 
 **规则**:任何概念需要跨文件使用时,在**定义文件**写完整,在**引用文件**用一句话摘要+"详见 xxx"指向定义文件,不重复完整内容。

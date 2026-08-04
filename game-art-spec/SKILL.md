@@ -22,7 +22,23 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 
 ---
 
-## 二、ASSET_MANIFEST.json Schema(中枢契约)
+## 二、风格基线(可选前置)
+
+当项目画风命中已收录的**风格基线**时,应先加载基线再生成 ART_SPEC.md。基线提供通用约束(角色比例 / 色板 / UI 材质 / Prompt 模板 / 负面词 / 风险降级),项目仅叠加题材差异(角色名 / 世界观 / 门派色),避免重复造轮子。
+
+**已收录基线**:
+
+| 基线名 | 路径 | 适用画风 |
+|---|---|---|
+| Q版国风修仙水墨手游风 | `references/style-baseline-chibi-xianxia-ink.md` | Q版 2.5~3 头身 + 水墨淡彩 + 玉石金描边 UI + 仙侠题材 |
+
+**判定规则**:读 PRD 后,若画风关键词(chibi / 国风 / 修仙 / 仙侠 / 水墨 / 手游 RPG)命中上表,则在生成的 `ART_SPEC.md` 顶部按基线 §16.1 声明扩展,资源 prompt 直接复用基线 §13 模板,负面词固定附加基线 §14 清单。
+
+未命中任何基线时,沿用本 skill §四的通用 ART_SPEC 模板自行定义风格。
+
+---
+
+## 三、ASSET_MANIFEST.json Schema(中枢契约)
 
 这是整套方案最关键的产物,**代码 skill 只读此文件**,不读美术文档。schema:
 
@@ -67,7 +83,9 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
       "size": [200, 80],
       "format": "png-32",
       "atlas": "ui-home",
-      "prompt": "开始按钮,圆角矩形,红色,游戏风格,200x80,透明背景"
+      "prompt": "开始按钮,圆角矩形,红色,游戏风格,200x80,透明背景",
+      "contentHash": "a1b2c3...",
+      "predecessorId": null
     },
     {
       "id": "bg-home",
@@ -121,6 +139,8 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 | prompt | 是 | 给 AI 生图的 prompt |
 | seed | 否 | 固定 seed(同角色同 seed) |
 | fallback | 否 | 音频失败时的降级方案 |
+| contentHash | 是 | 内容指纹 `sha256(prompt + size + format)`,由本 skill 写入。下游对比新旧 manifest,hash 不变 → 复用旧文件不重生成 |
+| predecessorId | 否 | 改名前的 id。布局调整导致 asset 改名时,由本 skill 写入旧 id;下游据此移动旧文件而非重生成 |
 | actualFormat | 否 | **实际格式**(由 game-asset-forge 回写,见下"与下游 skill 的契约") |
 | actualPath | 否 | **实际路径**(若 game-asset-forge 改名则回写) |
 | converted | 否 | 是否经过格式转换(回写) |
@@ -150,9 +170,37 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 
 详见 game-asset-forge skill 的第十章"格式校验与转换"与第十一章"manifest 回写"。
 
+### 增量更新机制(布局调整时)
+
+当 PRD 的 UI 节点树调整(页面重排 / 元素增减 / 改名),`game-art-spec` 会整表重写 manifest。为避免下游盲目重生成全部资源,用 `contentHash` + `predecessorId` 做增量 diff:
+
+```
+重跑 game-art-spec 生成新 manifest
+        ↓
+对比新旧 manifest(以 id 为主键):
+  ├─ id 相同 + contentHash 相同 → 未变更,跳过生图,复用旧文件
+  ├─ id 相同 + contentHash 不同 → 内容变更,重生成该资源
+  ├─ id 新增(predecessorId=null)→ 新增,生图
+  ├─ id 新增 + predecessorId 命中旧 id → 改名,移动旧文件到新 path,不重生成
+  └─ 旧 id 在新表消失 → 已删除,清理旧文件(可选保留备份)
+```
+
+**字段约束**:
+- `contentHash` = `sha256(prompt + size + format)`,由本 skill 在写 manifest 时计算并填入;`actual*` 字段不参与 hash(它们是回写产物,代表执行结果而非意图)
+- `predecessorId` 仅在 id 与上一版不同时填入,否则为 `null`
+- 首次生成(无旧 manifest)时所有 asset 的 `predecessorId` 为 `null`,全部走生图
+
+**下游消费约定**:
+- `game-asset-forge` 启动前先 diff 新旧 manifest,仅对"需生图"和"需移动"的 asset 执行操作,其余跳过
+- 移动文件后,game-asset-forge 仍需回写新 manifest 的 `actualPath`(因 path 已变)
+- 若 `predecessorId` 命中但旧文件已不存在(如被清理),降级为重生成
+
+**变更溯源**(供 ART_SPEC.md 记录):
+布局调整时,本 skill 应在 ART_SPEC.md 末尾"变更记录"章节追加一行,说明本次调整影响的 asset 范围(新增 N / 删除 M / 改名 K / 内容变更 L),便于人工复核。
+
 ---
 
-## 三、ART_SPEC.md 模板
+## 四、ART_SPEC.md 模板
 
 ```markdown
 # {游戏名} - 美术资源规范
@@ -252,11 +300,27 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 |---|---|---|
 
 详见 docs/ASSET_MANIFEST.json
+
+## 9. 变更记录
+
+> 布局调整时由 game-art-spec 追加一行,首次生成留空占位。
+
+| 版本 | 日期 | 变更摘要 | asset 影响 |
+|---|---|---|---|
+| v1.0 | {date} | 首次生成 | 新增 N |
+| | | | 新增 / 删除 / 改名 / 内容变更 |
+
+摘要格式参考:`新增 N / 删除 M / 改名 K / 内容变更 L`
+
+## 10. 已知风险
+
+- {高频坑:AI 生图返回 jpg,由 game-asset-forge 用 sharp 抠图转 png}
+- {本项目特有风险}
 ```
 
 ---
 
-## 四、AUDIO_SPEC.md 模板
+## 五、AUDIO_SPEC.md 模板
 
 ```markdown
 # {游戏名} - 音频规范
@@ -284,7 +348,7 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 
 ---
 
-## 五、生成规则
+## 六、生成规则
 
 ### 1. 资源数量统计
 - 从 PRD 的 UI 节点树逐节点列资源
@@ -317,7 +381,7 @@ ART_SPEC.md 末尾追加"已知风险"章节,标注哪些资源可能生图困�
 
 ---
 
-## 六、交互约定
+## 七、交互约定
 
 1. 读取 PRD 和 TECH_DESIGN 后,**不要问用户**,直接产出 3 份产物
 2. 产出后简报:"美术规范已生成,共 {N} 张图 + {M} 个音频,图集 {K} 个。下一步可并行调用 game-asset-forge(生成资源)和 game-code-forge(生成代码)"
@@ -325,7 +389,7 @@ ART_SPEC.md 末尾追加"已知风险"章节,标注哪些资源可能生图困�
 
 ---
 
-## 七、质量检查清单
+## 八、质量检查清单
 
 - [ ] ASSET_MANIFEST.json 通过 schema 校验
 - [ ] 每个资源有 prompt
@@ -336,4 +400,7 @@ ART_SPEC.md 末尾追加"已知风险"章节,标注哪些资源可能生图困�
 - [ ] 音频策略明确(占位/生成)
 - [ ] 数量未超上限
 - [ ] manifest 字段不写 actual*(留给 game-asset-forge 回写)
+- [ ] 每个 asset 有 contentHash(首次生成必填)
+- [ ] predecessorId 仅在 id 变更时填入,否则为 null
 - [ ] ART_SPEC.md 末尾标注已知风险(高频坑:AI 生图返回 jpg)
+- [ ] ART_SPEC.md 末尾有"变更记录"章节(布局调整时追加,首次生成可留空占位)

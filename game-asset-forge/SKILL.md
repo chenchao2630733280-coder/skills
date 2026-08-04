@@ -1,4 +1,4 @@
-﻿---
+---
 name: "game-asset-forge"
 description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执行 AI 生图、图集打包、音频占位,产出 assets/ 目录。当被 game-forge-master 调度到本阶段,或用户要'生成游戏美术资源/切图打包'时调用。"
 ---
@@ -72,8 +72,30 @@ magick -version 2>nul
 
 ## 三、图片生成规则
 
+### 0. 增量 diff(执行前一次性)
+
+若工程中已存在上一版 `ASSET_MANIFEST.json`(命名如 `ASSET_MANIFEST.prev.json`),启动生图前先做 diff,避免无差别全量重生成:
+
+```
+读取新 manifest(本 skill 的输入)+ 旧 manifest(prev)
+以 id 为主键逐条对比:
+  ├─ id 相同 + contentHash 相同        → 跳过,复用旧文件(actual* 字段直接继承)
+  ├─ id 相同 + contentHash 不同        → 重生成该资源
+  ├─ 新 id + predecessorId=null         → 新增,生图
+  ├─ 新 id + predecessorId 命中旧 id    → 改名,移动旧文件到新 path(不生图),回写 actualPath
+  └─ 旧 id 在新表消失                  → 标记为已删除,提示清理(默认保留备份)
+```
+
+**字段读取约定**:
+- `contentHash` / `predecessorId` 由 game-art-spec 写入,本 skill 只读不写
+- 移动文件后必须回写新 manifest 的 `actualPath`
+- 若 `predecessorId` 命中但旧文件已不存在 → 降级为重生成(等价于新增)
+- 首次生成(无 prev manifest)时全部走生图,等价于全量
+
+**输出**:diff 完成后,生图任务清单 = [重生成] + [新增] + [改名后文件缺失降级],其余跳过。后续 §三.1 ~ §三.5 仅对任务清单执行。
+
 ### 1. 调用 GenerateImage 工具
-每个 manifest 中的图片资源,调用 `GenerateImage`:
+每个**任务清单内**的图片资源,调用 `GenerateImage`:
 - prompt:取 manifest 的 `prompt` 字段
 - path:取 manifest 的 `path` 字段(相对工程根)
 - image_size:按 manifest 的 `size` 转换为 GenerateImage 支持的格式
@@ -392,7 +414,7 @@ game-asset-forge 完成后,实际格式可能与期望不符(如 jpg 转成 png�
   "id": "hero-run-1",
   "format": "png-32",                   // 期望(不变)
   "actualFormat": "png-32",             // 实际格式(回写)
-  "actualPath": "assets/role/hero/run_001.png",  // 实际路径(若改名则回写)
+  "actualPath": "assets/role/hero/run_001.png",  // 实际路径(若 game-asset-forge 改名或按 predecessorId 移动旧文件则回写)
   "converted": true,                    // 是否经过格式转换
   "conversionNote": "jpg→png via sharp threshold 245"  // 转换备注
 }
