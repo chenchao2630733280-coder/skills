@@ -176,76 +176,81 @@ c:\Users\26307\.agents\skills\
   │
   ▼
 [9] 执行 step 4: 调 generate-prototype skill
-     → 消费上游 JSON 工件, 将 PRD 转为 HTML 原型
+     → 消费上游 JSON 工件, 将 PRD 翻译为 ASCII 布局 + 视觉规范
+     → 产出原型页面文档 docs/prototype-spec.md
+  │
+  ▼
+[10] 执行 step 5: 调 generate-html-pages skill
+     → 消费原型页面文档, 判定端类型
      → 路由到 generate-html-pc-admin（PC 管理后台风格）
      → 产出 output/site/pc/ + build-report.json
   │
   ▼
-[10] ⏸ pause: 人工确认点 3
-     → AskUserQuestion: "原型已生成, 进入总控门户? [进入/回退/终止]"
+[11] ⏸ pause: 人工确认点 3
+     → AskUserQuestion: "HTML 原型已生成, 进入总控门户? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[11] 执行 step 5: 调 generate-portal skill
+[12] 执行 step 6: 调 generate-portal skill
      → 消费 build-report.json, 产出总控演示门户（跨端预览+标注）
   │
   ▼
-[12] ⏸ pause: 人工确认点 4
+[13] ⏸ pause: 人工确认点 4
      → AskUserQuestion: "需求阶段(PRD+原型+门户)全部完成, 进入工程蓝图规划? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[13] 执行 step 6: 调 plan-system-implementation skill
+[14] 执行 step 7: 调 plan-system-implementation skill
      → 由 PRD/原型/仓库生成技术实施蓝图（架构/模块/API 契约/交付增量）
      → 产出 docs/IMPLEMENTATION_PLAN.md
   │
   ▼
-[14] ⏸ pause: 人工确认点 5
+[15] ⏸ pause: 人工确认点 5
      → AskUserQuestion: "工程蓝图已就绪, 进入工程实现? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[15] 执行 step 7: 并行调 implement-frontend / implement-backend / implement-data-layer
+[16] 执行 step 8: 并行调 implement-frontend / implement-backend / implement-data-layer
      → 前端: 原型转生产级前端（类型化API/可访问性/权限/测试）
      → 后端: 实现 API/领域服务/校验/授权/集成测试
      → 数据层: 实现 schema/migration/constraints/seed/repo
      → 三层并行, 汇聚后继续
   │
   ▼
-[16] 执行 step 8: 调 integrate-system skill
+[17] 执行 step 9: 调 integrate-system skill
      → 前后端+DB+认证+权限+文件+异步任务集成
      → 替换 mock 为真实流程
   │
   ▼
-[17] 执行 step 9: 调 test-and-harden-system skill
+[18] 执行 step 10: 调 test-and-harden-system skill
      → 单元/集成/E2E/安全/可访问性/性能/lint/类型/构建检查
      → 修复阻塞缺陷, 产出验收报告
   │
   ▼
-[18] ⏸ pause: 人工确认点 6
+[19] ⏸ pause: 人工确认点 6
      → AskUserQuestion: "系统已验收通过, 进入部署? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[19] 执行 step 10: 调 package-and-deploy-system skill
+[20] 执行 step 11: 调 package-and-deploy-system skill
      → 容器化/CI/CD/迁移/健康检查/可观测/备份/回滚
      → 或调 web-static-deploy（纯静态前端走 GitHub Pages/Vercel/CloudBase）
   │
   ▼
-[20] 完成 → 返回部署 URL + 验收报告路径
+[21] 完成 → 返回部署 URL + 验收报告路径
 ```
 
 这是完整产研流水线，分两大阶段：
 
-**需求阶段**（step 1~5）：需求澄清→PRD→质量门禁→原型→门户，产出可演示的需求产物
-**落地阶段**（step 6~10）：工程蓝图→前端/后端/数据层→集成→测试→部署，产出可运行系统
+**需求阶段**（step 1~6）：需求澄清→PRD→质量门禁→原型文档→HTML 生成→门户，产出可演示的需求产物
+**落地阶段**（step 7~11）：工程蓝图→前端/后端/数据层→集成→测试→部署，产出可运行系统
 
 两个阶段之间有明确转折点：确认点 4（需求阶段全部完成→进入工程蓝图规划）。
 
 共 6 个人工确认点。实际使用中可按需裁剪：
-- 只做需求阶段：执行到 step 5 停止（产出 PRD+原型+门户）
-- 只做工程蓝图：执行到 step 6 停止
-- 只做工程实现：从 step 7 开始
+- 只做需求阶段：执行到 step 6 停止（产出 PRD+原型文档+HTML+门户）
+- 只做工程蓝图：执行到 step 7 停止
+- 只做工程实现：从 step 8 开始
 - 只做部署：直接调 package-and-deploy-system 或 web-static-deploy
 
 ### 2.3 关键架构原则
@@ -384,7 +389,7 @@ references/（按需读，不强制全读）
 |--------|----------------|--------------|
 | 1. 需求澄清完成 | 理解偏了方向 | 你看一眼就知道对不对 |
 | 2. PRD 质量门禁通过 | 漏了关键需求/规则冲突 | 你比 AI 更懂业务 |
-| 3. 原型方向确定 | 风格/布局不对 | 你比 AI 更懂用户习惯 |
+| 3. HTML 原型生成 | 风格/布局不对 | 你比 AI 更懂用户习惯 |
 | 4. 需求阶段全部完成→进工程蓝图 | 需求没定清楚就开工落地 | 你确认需求闭环了再进入落地阶段 |
 | 5. 工程蓝图已就绪→进工程实现 | 架构方案不合理 | 你评估技术方案可行性 |
 | 6. 系统验收通过→进部署 | 测试覆盖不全/有隐藏 bug | 你运行一下就知道 |
@@ -709,8 +714,8 @@ Phase 1          Phase 2          Phase 3          Phase 4
 | 系统规划 | generate-system-prd | 生成企业级 PRD（页面规格/权限/状态机/非功能需求） |
 | PRD 质量门禁 | prd-quality-checker | 审核 PRD 的目标/用户/范围/规则/验收等 15+ 维度，产出门禁报告 |
 | 工程蓝图 | plan-system-implementation | 由 PRD/原型/仓库生成技术实施蓝图（架构/模块/API 契约/交付增量） |
-| 原型生成 | generate-prototype | 将 PRD 转为 HTML 原型（翻译 ASCII 布局+视觉规范） |
-| 原型生成 | generate-html-pages | HTML 原型生成路由器（判定端类型，调度到 mobile/pc-admin 子 skill） |
+| 原型生成 | generate-prototype | 将 PRD 翻译为原型页面文档（ASCII 布局+视觉规范+交互逻辑） |
+| 原型生成 | generate-html-pages | 消费原型页面文档生成 HTML，判定端类型后路由到 mobile/pc-admin 子 skill |
 | 原型生成 | generate-html-mobile | 移动端 HTML 原型（任务型页面：入口/发现/检索/详情/交易/个人中心） |
 | 原型生成 | generate-html-pc-admin | PC 管理后台 HTML 原型（vue-admin-plus 风格：深色侧栏+工作区页签） |
 | 总控门户 | generate-portal | 生成总控演示门户（三栏布局：导航+跨端预览+PRD 动态标注） |
