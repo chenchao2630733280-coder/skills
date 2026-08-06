@@ -135,7 +135,7 @@ output/site/mobile/
 
 ### Step 2：读取上游工件与文档
 
-1. **优先读取上游 JSON 工件**（见 §七）：`pages.json`、`navigation.json`、`annotations.json`、`actions.json`、`overlays.json`、`components.json`、`permissions.json`、`state-machines.json`、`design-tokens.json`、`pipeline-context.json`
+1. **优先读取上游 JSON 工件**（见 §七）：`pages.json`、`navigation.json`、`actions.json`、`overlays.json`、`components.json`、`permissions.json`、`state-machines.json`、`design-tokens.json`、`pipeline-context.json`（不读取 `annotations.json`）
 2. 工件缺失的字段回退到 PRD、页面原型文档和用户提供的 UI 设计规范提取
 3. 建立 `pageId → 规格` 映射表，记录每个字段的 `sourceLevel`（CONFIRMED/INFERRED/FALLBACK）和 `sourceRefs`
 4. 对每个移动端页面记录核心任务、页面原型（archetypeId）、导航层级、内容密度和固定区域
@@ -259,16 +259,17 @@ output/site/mobile/
 |------|------|--------|------|
 | `pages.json` | `output/spec/pages.json` | generate-system-prd | 页面注册表（id/title/moduleId/type/route/devices/coreTask/archetypeId/applicableStates/actionIds/specIds） |
 | `navigation.json` | `output/spec/navigation.json` | generate-prototype | 移动端底部 Tab 配置 |
-| `annotations.json` | `output/spec/annotations.json` | generate-prototype | 页面规格标注（SXX，含 display/interaction/data/exceptions） |
 | `actions.json` | `output/spec/actions.json` | generate-prototype | 页面动作（按钮、提交、跳转） |
 | `overlays.json` | `output/spec/overlays.json` | generate-prototype | 弹层（Drawer/Sheet/全屏页） |
 | `components.json` | `output/spec/components.json` | generate-prototype | 复用组件 |
 | `permissions.json` | `output/spec/permissions.json` | generate-system-prd | 权限定义 |
 | `business-rules.json` | `output/spec/business-rules.json` | generate-system-prd | 业务规则（状态机、校验） |
 | `state-machines.json` | `output/spec/state-machines.json` | generate-system-prd | 状态枚举与流转（移动端 `.m-tag-xxx`） |
-| `design-tokens.json` | `output/spec/design-tokens.json` | 用户/generate-system-prd | 项目 UI Token |
+| `design-tokens.json` | `output/spec/design-tokens.json` | generate-prototype（唯一产出者；用户可在原型阶段提供项目 Token 作为输入） | 项目 UI Token；缺失时用 `_shared/references/schemas/design-tokens.default.json` 兜底 |
 | `pipeline-context.json` | `output/spec/pipeline-context.json` | 各上游 skill | 字段来源与置信度标记 |
 
+> **不消费 `annotations.json`**：本 Skill 不读取、不绑定页面标注（不生成 `data-spec-id`/`data-page-id`）；`output/spec/annotations.json` 由 `generate-prototype` 创建，仅供 `generate-portal` 在门户层读取展示。
+>
 > 工件结构示例见 `../_shared/references/schemas/`。工件缺失时回退到 PRD/原型文档提取，并在 `build-report.json` 中标记 `generatedByFallback: true`。
 
 ### 7.2 工件到移动端 HTML 的映射规则

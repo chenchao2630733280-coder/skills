@@ -219,7 +219,7 @@ output/site/
 
 1. 按 `pages.json` 页清单逐页生成 PC HTML
 2. PC端按页面类型（列表/表单/详情/仪表盘/报表）选结构
-3. 从 `annotations.json` / `overlays.json` / `actions.json` 提取字段、筛选、表格列、弹窗、操作，填充示例数据
+3. 从 `overlays.json` / `actions.json` / `pages.json`（`actionIds`/`applicableStates`）提取字段、筛选、表格列、弹窗、操作，填充示例数据（**不读取 `annotations.json`**，标注仅供 `generate-portal` 展示）
 4. 所有跳转链接指向 PC 端内的正确页面文件
 5. 按 `permissions.json` 的 `validation` 字段控制字段显隐和操作可用性
 

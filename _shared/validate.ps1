@@ -124,6 +124,20 @@ foreach ($name in $newSkills) {
 }
 if ($fmMissing -eq 0) { Pass "全部新 skill frontmatter 含 name + description(共 $($newSkills.Count) 个)" }
 
+# ---------- 7b. 全部 SKILL.md 的 frontmatter name 必须使用双引号风格 ----------
+$allSkillDirs = Get-ChildItem -Path $ws -Directory | Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') }
+$quoteBad = 0
+foreach ($d in $allSkillDirs) {
+    $md = Join-Path $d.FullName 'SKILL.md'
+    $head = Get-Content $md -TotalCount 5 -Encoding UTF8 -ErrorAction SilentlyContinue
+    $joined = $head -join "`n"
+    if ($joined -notmatch '(?m)^name:\s*"[^"]+"\s*$') {
+        Fail "$($d.Name)/SKILL.md frontmatter name 未使用双引号风格"
+        $quoteBad++
+    }
+}
+if ($quoteBad -eq 0) { Pass "全部 SKILL.md frontmatter name 使用双引号风格(共 $($allSkillDirs.Count) 个)" }
+
 # ---------- 8. 声明 runtime.yaml 的 skill 必须符合 skill-runtime schema ----------
 # 调用 skill-runtime 的 validate_runtime.py scan 校验
 # scan 会扫描所有 skill,对声明了 runtime.yaml 的做 schema 校验

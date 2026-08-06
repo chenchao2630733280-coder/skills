@@ -1,5 +1,5 @@
 ---
-name: ai-short-drama-topic-planner
+name: "ai-short-drama-topic-planner"
 description: Generate, diversify, trend-enhance, evaluate, and refine AI short-drama story topics. Use when the user asks for short-drama concepts, high-concept premises, viewing-motivation analysis, topic diversification, trend radar, future event windows, topic comparison, or continued creative branching.
 ---
 

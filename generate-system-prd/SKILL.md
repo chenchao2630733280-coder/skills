@@ -29,8 +29,8 @@ description: "Generates structured PRDs for enterprise management systems, nativ
 | `references/prd-stage-boundary.md` | **必读**。定义 PRD 与原型/实施阶段的职责边界、去重规则、`output/spec/pages.json` 的权威地位与校验结论（PASS/WARN/FAIL/NOT_REVIEWED），优先级高于通用设计要求 |
 | `references/brainstorming-gate.md` | 需求输入不完整、缺少脑暴结论时读取，按其中的澄清问题模板先与用户确认，再进入生成流程 |
 | `references/product-design-standards.md` | 逐章生成前读取，作为通用产品设计标准补充 |
-| `references/schemas/` 下本阶段工件示例（`pages.example.json`（PRD 阶段快照）、`data-model`、`business-rules`、`permissions`、`state-machines`、`validation-report`、`decision-log`、`project`） | 需要向 `output/spec/` 产出对应 JSON 工件时参考结构 |
-| `../_shared/references/schemas/` 下共享示例（`pipeline-context`、`design-tokens.default`、`annotations`、`pages`（原型富化后完整结构）等） | 需要共享结构或默认 Token 时参考；**唯一事实来源**，不要在本地重建拷贝 |
+| `references/schemas/` 下本阶段独有工件示例（`pages.example.json`（PRD 阶段快照）、`validation-report`、`decision-log`、`project`） | 需要向 `output/spec/` 产出对应 JSON 工件时参考结构；**仅保留 PRD 阶段独有示例**，共享工件示例已统一迁至 `../_shared/references/schemas/` |
+| `../_shared/references/schemas/` 下共享示例（`pages`（原型富化后完整结构）、`data-model`、`permissions`、`business-rules`、`state-machines`、`navigation`、`annotations`、`actions`、`overlays`、`components`、`pipeline-context`、`design-tokens.default`、`html-build-report`） | 需要共享结构或默认 Token 时参考；**唯一事实来源**，不要在本地重建拷贝 |
 | `../_shared/references/pc_admin_ui_spec.md` | **admin_web 必读**。PC 管理端权威设计规范（基于 vue-admin-plus / Element Plus），定义色彩、字号、布局尺寸、间距、圆角、阴影、组件与页面模板。第8章"页面设计规格"涉及后台端布局、筛选区、表格、表单、弹窗、卡片、状态色与文案时必须遵循，优先级高于 `_shared` 默认 Token |
 
 ---

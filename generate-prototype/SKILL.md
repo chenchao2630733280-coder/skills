@@ -233,11 +233,18 @@ description: "Generates terminal-aware page prototype documents for admin web, m
 
 ## 四、生成流程
 
-### Step 1：读取PRD文档
+### Step 1：读取PRD文档与上游JSON工件
 
-1. 读取用户提供的系统产品设计文档
-2. 定位终端类型、页面清单、导航、页面规格、数据模型和校验规则等关键章节；移动端专项能力仅在 PRD 明确涉及时提取。
-3. 建立“页面编号 → 所属端 → 页面规格”的映射表。
+1. 读取用户提供的系统产品设计文档（PRD .md）
+2. **优先读取上游 JSON 工件**（若存在，路径 `output/spec/`）：
+   - `pages.json` — 页面清单与端类型（权威来源，优于从 .md 重复提取）
+   - `data-model.json` — 实体字段约束
+   - `permissions.json` — 权限角色定义
+   - `business-rules.json` — 业务规则
+   - `state-machines.json` — 状态流转
+   - JSON 工件缺失时回退到 PRD .md 提取，并在产出工件中标记 `sourceLevel: INFERRED`
+3. 定位终端类型、页面清单、导航、页面规格、数据模型和校验规则等关键章节；移动端专项能力仅在 PRD 明确涉及时提取。
+4. 建立"页面编号 → 所属端 → 页面规格"的映射表。
 
 ### Step 2：生成全局设计规范
 
@@ -343,3 +350,4 @@ description: "Generates terminal-aware page prototype documents for admin web, m
 - 页面标注使用 `SXX` 编号，按真实功能区域生成（不固定数量）；当需要机器可读工件时，向 `output/spec/annotations.json` 写入，结构参考 `../_shared/references/schemas/annotations.example.json`。
 - `annotations.json` 由本 Skill 创建和维护；`generate-html-pages` 不读取、不绑定标注（不生成 `data-spec-id`/`data-page-id`），`generate-portal` 在门户层读取 `annotations.json` 并按 PXX 分组展示标注。
 - 其他可选工件（`actions.json`、`navigation.json`、`overlays.json`、`components.json`、`design-tokens.json`）写入 `output/spec/`，结构参考 `../_shared/references/schemas/` 下对应示例。
+- **本 Skill 更新 `output/spec/pages.json`（富化）**：在 generate-system-prd 产出的 pages.json 基础上，填充 `archetypeId`（页面原型分类 ID）、`applicableStates`（适用状态）、`actionIds`（关联动作）、`specIds`（关联标注 SXX）等富化字段。generate-html-pages 读取这些字段路由 HTML 生成；product-pipeline-master §十质量门禁"原型 | pages.json 的 archetypeId 已填充"依赖此富化。

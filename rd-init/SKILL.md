@@ -1,5 +1,10 @@
 # rd-init
 
+---
+name: "rd-init"
+description: "根据初步需求从 GitLab 拉取最新 AI Product R&D 模板，并初始化一个新的产研项目；仅用于新项目初始化，不用于生成 PRD、页面明细、API、数据库、前端代码或测试。"
+---
+
 description: 根据初步需求从 GitLab 拉取最新 AI Product R&D 模板，并初始化一个新的产研项目；仅用于新项目初始化，不用于生成 PRD、页面明细、API、数据库、前端代码或测试。
 
 ## 触发方式

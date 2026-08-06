@@ -48,17 +48,23 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 - 现有项目只补缺失基础设施，不重建目录。
 - 确保最小应用能够安装依赖并启动，随后再实现业务。
 
-### Stage 3：按垂直切片实现
+### Stage 3：按垂直切片实现（按名调用 implement-* skill）
 
-对每个 P0 切片依次完成：
+对每个 P0 切片**按名调用以下三个专用 skill** 完成各层实现，本 skill 自身不直接写代码：
 
-1. 数据模型与迁移。
-2. API 契约和后端业务。
-3. 前端页面和交互状态。
-4. 权限、审计和错误处理。
+1. **数据层** — 调用 `implement-data-layer` skill：按 `output/build/architecture.json` 与领域模型产出 schema/migration/constraints/seed/repo。
+2. **后端** — 调用 `implement-backend` skill：基于 API 契约实现领域服务、校验、授权、审计与集成测试。
+3. **前端** — 调用 `implement-frontend` skill：将已批准的页面规格与 HTML 原型转译为生产级前端（类型化 API、可访问性、权限、测试）。
+
+每层调用完毕后，对当前切片补齐：
+
+4. 权限、审计和错误处理（跨层一致）。
 5. 自动化测试和手工验收步骤。
 
-优先完成一条端到端主流程，再扩展其他模块，避免各层都只有半成品。
+**调用约束**：
+- 三个 implement-* skill 的输入为上游产物（PRD / 原型 / implementation-plan / architecture.json / JSON 工件），输出写入项目源码目录与本 skill 的 `output/build/*-implementation-report.md`。
+- 优先完成一条端到端主流程，再扩展其他模块，避免各层都只有半成品。
+- implement-* skill 之间允许并行（数据层无前后端依赖时），但必须共享同一份 architecture.json 与 API 契约。
 
 ### Stage 4：系统集成
 

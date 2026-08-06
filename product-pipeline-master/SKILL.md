@@ -156,7 +156,9 @@ HTML 子 skill: generate-html-pc-admin
 |------|------|-----------------|
 | 脑暴摘要 | 对话输出 | brainstorm-product-feature |
 | PRD 文档 | `output/docs/{产品名称}-{端类型}-产品设计方案-V{版本号}.md` | generate-system-prd |
-| JSON 工件 | `output/spec/*.json`（pages/data-model/navigation/annotations/actions/overlays/components/permissions/business-rules/state-machines/design-tokens/pipeline-context） | generate-system-prd + generate-prototype |
+| PRD 质量门禁报告（可选，非主线产出） | 默认对话输出；用户/工作流指定时写入 `output/build/prd-quality-report.md` + `.json` | prd-quality-checker（**门禁类 skill**，非主线产出者；仅用于 PRD 进入下游前的质量门禁，不产出业务文件，§八确认点 1 依赖其 PASS/FAIL 结论） |
+| JSON 工件 | `output/spec/*.json`（pages/data-model/navigation/annotations/actions/overlays/components/permissions/business-rules/state-machines/pipeline-context） | generate-system-prd + generate-prototype（pages.json 富化） |
+| design-tokens.json | `output/spec/design-tokens.json` | generate-prototype（唯一产出者；缺失时下游用 `_shared/references/schemas/design-tokens.default.json` 兜底） |
 | 页面原型文档 | `output/docs/{系统名称}-页面原型文档.md` | generate-prototype |
 | annotations.json | `output/spec/annotations.json` | generate-prototype |
 | PC HTML 页面 | `output/site/pc/PXX-*.html` + `common.css` + `sidebar.js` | generate-html-pc-admin |
@@ -195,7 +197,7 @@ generate-prototype 产出/更新:
   actions.json ────────────────→ generate-html-pages (交互行为)
   overlays.json ───────────────→ generate-html-pages (弹窗规格)
   components.json ─────────────→ generate-html-pages (组件清单)
-  design-tokens.json ──────────→ generate-html-pages + generate-portal (视觉Token)
+  design-tokens.json ──────────→ generate-html-pages + generate-portal + implement-frontend (视觉Token；generate-prototype 为唯一产出者)
 
 generate-html-pages 产出:
   build-report.json ───────────→ generate-portal (页面清单+双端对应)
@@ -232,6 +234,7 @@ generate-html-pages 产出:
 
 1. （可选）调用 `brainstorm-product-feature`，产出功能构想评估摘要
 2. 调用 `generate-system-prd`，读取脑暴摘要（如有）和用户需求，产出 PRD 文档 + JSON 工件
+   - （可选）调用 `prd-quality-checker`（**门禁类 skill，非主线产出者**）：基于可定位证据审核 PRD 目标/范围/规则/验收等 15+ 维度，产出 Markdown 门禁报告 + 可选 JSON（默认对话输出，工作流指定时写入 `output/build/prd-quality-report.md`）
    - ⏸ **人工确认点 1**：PRD 质量门禁 PASS 后，简报 PRD 页面数/端类型/JSON 工件路径，AskUserQuestion 询问"进入原型设计 / 回退修改 PRD / 终止流水线"
 3. 调用 `generate-prototype`，读取 PRD 和 JSON 工件，产出页面原型文档 + 富化的 JSON 工件
    - ⏸ **人工确认点 2**：原型质量门禁 PASS 后，简报页面原型数/annotations 数，AskUserQuestion 询问"进入 HTML 生成 / 回退修改原型 / 终止流水线"
@@ -251,6 +254,7 @@ generate-html-pages 产出:
      - 选"跳过" → 进入阶段 6(若尚未进入)或结束
    - Tool 操作前过 `guardrail` 前置检查(检查 output/ 路径是否在敏感清单)
 6. （可选）原型评审通过后，调用 `plan-system-implementation`，产出实施蓝图
+   - **实施阶段（Stage 3）的下游编排由 `build-working-system` 承担**：当用户进入工程实现阶段时，由 `build-working-system` 按 P0 垂直切片**按名调用** `implement-data-layer` / `implement-backend` / `implement-frontend` 三个专用 skill，本 skill 不直接介入三层并行调度的细节。详见 `../build-working-system/SKILL.md` Stage 3。
 
 ### 旁线流程（可与主线任意阶段并行）
 
