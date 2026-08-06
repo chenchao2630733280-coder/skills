@@ -89,7 +89,14 @@ python scripts/ci_ops.py report --platform github-actions --repo owner/repo --ru
 
 ## 七、与编排总纲的接入
 
-本 skill 被 `product-pipeline-master`(产品流水线编排总纲)在 **Tool 确认点** 调用:
+本 skill 被 `package-and-deploy-system`(打包部署编排器)在 **§4 CI/CD** 章节调用:
+
+- 生成 CI 配置后,通过 `trigger --confirm` 触发构建(需用户确认)。
+- 触发后轮询 `status`,待构建完成后调用 `report` 读取测试结果。
+- 若 `status` 返回 `degraded` 或 `failed`,`package-and-deploy-system` 可选择跳过 CI 门禁并提示用户,而非硬性中断。
+- 产出 `ci-ops-report.json` 纳入 `output/build/` 交付证据。
+
+本 skill 也被 `product-pipeline-master`(产品流水线编排总纲)在 **Tool 确认点** 调用:
 
 - 在"提交 Git"步骤之后,**可选**触发 CI(由用户确认)。
 - 触发后由编排总纲轮询 `status`,待构建完成后调用 `report` 读取测试结果。

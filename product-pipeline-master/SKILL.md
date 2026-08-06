@@ -174,6 +174,9 @@ HTML 子 skill: generate-html-pc-admin
 | 软著说明书 | 用户指定路径 `.docx` | ruanzhu-doc-generator |
 | 操作手册 | 用户指定路径 `.docx` | screenshot-operation-manual |
 | workflow.yaml(可选) | `workflow.yaml` | workflow-runtime(编译本总纲执行顺序生成) |
+| CI 操作报告(按需) | `output/build/ci-ops-report.json` | tool-ci-ops(由 package-and-deploy-system §4 CI/CD 调用;按需产出,未调用时缺失不视为缺陷) |
+| 数据库操作报告(按需) | `output/build/db-ops-report.json` | tool-db-ops(由 package-and-deploy-system §3 数据库发布 或 implement-data-layer 调用;按需产出) |
+| 监控操作报告(按需) | `output/build/monitor-ops-report.json` | tool-monitor-ops(由 package-and-deploy-system §5 运维能力 或 debug-fix 调用;按需产出) |
 
 ---
 

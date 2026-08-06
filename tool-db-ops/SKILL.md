@@ -95,7 +95,8 @@ python scripts/db_ops.py rollback --migration-dir ./migrations --target 20240101
 
 ## 七、与编排总纲的接入
 
-- **上游调用方**:`implement-data-layer`(在生成 schema/migration 后调用本 skill 落库)。
+- **上游调用方1**:`implement-data-layer`(在生成 schema/migration 后调用本 skill 落库)。
+- **上游调用方2**:`package-and-deploy-system`(在 **§3 数据库发布** 章节调用本 skill 执行生产迁移):通过 `migrate --confirm` 执行生产环境迁移;迁移失败时调用 `rollback` 回滚;验证阶段调用 `query` 只读查询验证数据正确性。产出 `db-ops-report.json` 纳入 `output/build/` 交付证据。
 - **不主动编排**:本 skill 不调用其他 skill,只产出 `db-ops-report.json` 供上游决策。
 - **回退策略**:若上游检测到 `error` 非空,应中止后续步骤并提示人工介入;`rollback` 失败时禁止自动重试。
 

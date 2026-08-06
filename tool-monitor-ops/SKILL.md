@@ -99,10 +99,9 @@ python scripts/monitor_ops.py trace --service user-service --trace-id abc123def4
 
 ## 七、与编排总纲的接入
 
-- **被调用方**:本 skill 不主动发起排查,由编排总纲在「线上问题排查」阶段调用,典型调用方为 `debug-fix`。
-- **调用时机**:`debug-fix` 拿到故障现象后,依次或并行调用 `logs`(查报错)、`metrics`(查水位)、`trace`(查链路)收集证据。
-- **结果回流**:本 skill 产出的 report 作为 `debug-fix` 的输入证据;`debug-fix` 据此判断根因,但根因判断与本 skill 无关。
-- **权限边界**:本 skill 不得调用任何「变更类」skill(如 deploy、rollback);若证据指向需变更,由 `debug-fix` 上报编排总纲转交对应 skill。
+- **被调用方1**:`debug-fix`(线上问题排查):由编排总纲在「线上问题排查」阶段调用。`debug-fix` 拿到故障现象后,依次或并行调用 `logs`(查报错)、`metrics`(查水位)、`trace`(查链路)收集证据。本 skill 产出的 report 作为 `debug-fix` 的输入证据;`debug-fix` 据此判断根因,但根因判断与本 skill 无关。
+- **被调用方2**:`package-and-deploy-system`(部署后监控验证):在 **§5 运维能力** 章节调用本 skill 验证监控接入。部署后通过 `logs` 查询服务日志确认启动正常;通过 `metrics` 查询 CPU/内存/QPS/错误率指标验证监控埋点生效;通过 `trace` 查询链路确认分布式追踪接入。产出 `monitor-ops-report.json` 纳入 `output/build/` 运维验证证据。
+- **权限边界**:本 skill 不得调用任何「变更类」skill(如 deploy、rollback);若证据指向需变更,由调用方(`debug-fix` 或 `package-and-deploy-system`)上报编排总纲转交对应 skill。
 
 ## 八、质量检查清单
 
