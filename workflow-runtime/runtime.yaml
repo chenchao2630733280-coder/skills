@@ -1,0 +1,11 @@
+# runtime.yaml — workflow-runtime
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: exponential
+  interval: 15
+degrade:
+  - trigger: 工作流执行失败
+    action: 保存状态并暂停
+    target: workflow-state.json

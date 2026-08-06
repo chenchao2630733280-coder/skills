@@ -1,0 +1,11 @@
+# runtime.yaml — guardrail
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 120
+retry:
+  max: 0
+  backoff: fixed
+  interval: 5
+outputs:
+  - path: guardrail-report.json
+    type: file
+    optional: true

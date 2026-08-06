@@ -1,0 +1,11 @@
+# runtime.yaml — agent-runtime-exec
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 3
+  backoff: exponential
+  interval: 10
+degrade:
+  - trigger: Agent执行超时
+    action: 标记超时并collect已完成结果
+    target: null

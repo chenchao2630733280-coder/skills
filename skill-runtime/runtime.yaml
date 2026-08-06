@@ -1,0 +1,7 @@
+# runtime.yaml — skill-runtime
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 0
+  backoff: fixed
+  interval: 5

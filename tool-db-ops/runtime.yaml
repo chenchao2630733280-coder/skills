@@ -1,0 +1,7 @@
+# runtime.yaml — tool-db-ops
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 1
+  backoff: fixed
+  interval: 10

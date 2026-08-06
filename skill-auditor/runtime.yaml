@@ -1,0 +1,7 @@
+# runtime.yaml — skill-auditor
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 1
+  backoff: fixed
+  interval: 10

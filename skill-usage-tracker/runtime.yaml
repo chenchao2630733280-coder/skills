@@ -1,0 +1,7 @@
+# runtime.yaml — skill-usage-tracker
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 180
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5

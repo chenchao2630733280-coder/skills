@@ -1,0 +1,11 @@
+# runtime.yaml — codebase-rag
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: exponential
+  interval: 15
+degrade:
+  - trigger: 索引构建失败
+    action: 降级为实时检索模式
+    target: null

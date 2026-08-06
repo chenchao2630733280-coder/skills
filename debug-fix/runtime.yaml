@@ -1,0 +1,11 @@
+# runtime.yaml — debug-fix
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: exponential
+  interval: 10
+degrade:
+  - trigger: 修复失败
+    action: 标记未修复并记录原因
+    target: null

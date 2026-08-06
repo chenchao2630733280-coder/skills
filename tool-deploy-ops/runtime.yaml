@@ -1,0 +1,7 @@
+# runtime.yaml — tool-deploy-ops
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: exponential
+  interval: 15

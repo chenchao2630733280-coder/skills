@@ -1,0 +1,7 @@
+# runtime.yaml — failure-casebook
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 120
+retry:
+  max: 1
+  backoff: fixed
+  interval: 3

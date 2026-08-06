@@ -167,8 +167,11 @@ def _validate_degrade(degrade, errors, path="degrade"):
             errors.append(f"{item_path}.target:期望 string 或 null,实际 {type(item['target']).__name__}")
 
 
-def validate_runtime_data(data, errors):
-    """对解析后的 runtime.yaml dict 做 schema 校验,errors 列表追加问题。"""
+def validate_runtime_data(data, errors, skill_dir=None):
+    """对解析后的 runtime.yaml dict 做 schema 校验,errors 列表追加问题。
+
+    skill_dir 用于解析 external_overrides 引用的文件路径（相对 skill 根目录）。
+    """
     if not isinstance(data, dict):
         errors.append(f"runtime.yaml 顶层:期望 object,实际 {type(data).__name__}")
         return
@@ -206,6 +209,32 @@ def validate_runtime_data(data, errors):
             errors.append(f"external_overrides:期望 string 或 null,实际 {type(eo).__name__}")
         elif len(eo) == 0:
             errors.append("external_overrides:为空字符串,应为有效文件路径或 null")
+        elif skill_dir is not None:
+            # 校验引用文件存在性
+            eo_path = skill_dir / eo
+            if not eo_path.exists():
+                errors.append(f"external_overrides:引用文件不存在: {eo} (解析路径: {eo_path})")
+            else:
+                # 校验引用文件为合法 YAML
+                if yaml is None:
+                    errors.append("external_overrides:PyYAML 未安装,无法校验引用文件合法性")
+                else:
+                    try:
+                        eo_data = yaml.safe_load(eo_path.read_text(encoding="utf-8"))
+                        if eo_data is not None and not isinstance(eo_data, dict):
+                            errors.append(f"external_overrides:引用文件顶层非 object,实际 {type(eo_data).__name__}")
+                        elif isinstance(eo_data, dict):
+                            # 校验 overrides 字段格式
+                            overrides = eo_data.get("overrides", {})
+                            if not isinstance(overrides, dict):
+                                errors.append(f"external_overrides:引用文件 overrides 字段非 object,实际 {type(overrides).__name__}")
+                            # 校验 version 字段
+                            if "version" not in eo_data:
+                                errors.append("external_overrides:引用文件缺 version 字段")
+                    except yaml.YAMLError as exc:
+                        errors.append(f"external_overrides:引用文件 YAML 解析失败: {exc}")
+                    except Exception as exc:
+                        errors.append(f"external_overrides:引用文件读取失败: {exc}")
 
 
 # ---------- 单 skill 校验 ----------
@@ -263,7 +292,7 @@ def check_skill(skill_dir):
         data = {}
 
     # schema 校验
-    validate_runtime_data(data, result["errors"])
+    validate_runtime_data(data, result["errors"], skill_dir=skill_dir)
 
     if result["errors"]:
         result["status"] = "FAIL"

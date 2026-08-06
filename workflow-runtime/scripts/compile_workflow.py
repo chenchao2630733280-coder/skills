@@ -203,15 +203,21 @@ def validate_workflow(data):
 def _extract_section(text, section_name):
     """从 SKILL.md 文本中提取指定执行顺序章节的内容。
 
-    section_name 可为章节号(如 "七"/"八")或标题片段(如 "执行顺序")。
+    section_name 可为章节号(如 "七"/"八"或 "§七"/"§八")或标题片段(如 "执行顺序")。
+    自动去除 § 前缀后匹配。
     返回该章节正文(到下一个 ## 二级标题为止),未找到返回 None。
     """
+    # 规范化：去除 § 前缀
+    normalized = section_name
+    if normalized.startswith("§"):
+        normalized = normalized[1:]
+
     lines = text.splitlines()
     start = None
     for i, line in enumerate(lines):
         # 匹配 "## 七、执行顺序" 或 "## 八、执行顺序"
         if re.match(r"^##\s+", line) and ("执行顺序" in line):
-            if section_name in line or section_name == "执行顺序":
+            if normalized in line or normalized == "执行顺序":
                 start = i
                 break
     if start is None:

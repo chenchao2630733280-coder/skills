@@ -108,6 +108,181 @@ def init_exec_report(workflow):
     }
 
 
+# --------------------------------------------------------------------------- #
+# runtime.yaml 读取与 external_overrides 合并
+# --------------------------------------------------------------------------- #
+def load_runtime_yaml(runtime_ref, workflow_dir):
+    """读取 step.runtime 引用的 runtime.yaml，返回 (runtime_dict, warnings)。
+
+    runtime_ref 是相对 workflow.yaml 所在目录的路径。
+    若文件不存在或解析失败，返回 ({}, [warning])。
+    """
+    warnings = []
+    if not runtime_ref:
+        return {}, []
+
+    runtime_path = Path(workflow_dir) / runtime_ref
+    if not runtime_path.exists():
+        warnings.append("runtime.yaml 不存在: %s" % runtime_ref)
+        return {}, warnings
+
+    yaml_err = _ensure_yaml()
+    if yaml_err is not None:
+        warnings.append(yaml_err)
+        return {}, warnings
+
+    try:
+        data = yaml.safe_load(runtime_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        warnings.append("runtime.yaml 解析失败: %s" % exc)
+        return {}, warnings
+
+    if data is None:
+        data = {}
+    if not isinstance(data, dict):
+        warnings.append("runtime.yaml 顶层非 object: %s" % type(data).__name__)
+        return {}, warnings
+
+    return data, warnings
+
+
+def merge_external_overrides(local_runtime, overrides_ref, skill_name, workflow_dir):
+    """合并 external_overrides 引用的 overrides 文件。
+
+    overrides_ref 是相对 skill 根目录的路径（runtime.yaml 中的 external_overrides 字段值）。
+    从 overrides 文件中筛选当前 skill 名对应的 overrides，用其 timeout/retry 覆盖本地值。
+
+    返回 (merged_runtime, warnings)。
+    """
+    warnings = []
+    if not overrides_ref:
+        return local_runtime, warnings
+
+    # overrides 文件路径解析：相对 workflow.yaml 所在目录
+    overrides_path = Path(workflow_dir) / overrides_ref
+    if not overrides_path.exists():
+        warnings.append("external_overrides 引用文件不存在: %s" % overrides_ref)
+        return local_runtime, warnings
+
+    yaml_err = _ensure_yaml()
+    if yaml_err is not None:
+        warnings.append(yaml_err)
+        return local_runtime, warnings
+
+    try:
+        overrides_data = yaml.safe_load(overrides_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        warnings.append("overrides 文件解析失败: %s" % exc)
+        return local_runtime, warnings
+
+    if not isinstance(overrides_data, dict):
+        warnings.append("overrides 文件顶层非 object")
+        return local_runtime, warnings
+
+    # 筛选当前 skill 名对应的 overrides
+    overrides_list = overrides_data.get("overrides", {})
+    if not isinstance(overrides_list, dict):
+        warnings.append("overrides 字段非 object")
+        return local_runtime, warnings
+
+    skill_overrides = overrides_list.get(skill_name)
+    if not skill_overrides:
+        # 当前 skill 无 overrides，用本地值
+        return local_runtime, warnings
+
+    if not isinstance(skill_overrides, dict):
+        warnings.append("skill %s 的 overrides 非 object" % skill_name)
+        return local_runtime, warnings
+
+    # 合并：仅覆盖 timeout 和 retry，不覆盖 inputs/outputs/degrade
+    merged = dict(local_runtime)  # 浅拷贝
+    if "timeout" in skill_overrides:
+        local_type = type(local_runtime.get("timeout")).__name__
+        override_type = type(skill_overrides["timeout"]).__name__
+        if local_type == override_type or local_runtime.get("timeout") is None:
+            merged["timeout"] = skill_overrides["timeout"]
+        else:
+            warnings.append("timeout 类型不一致(local=%s, override=%s)，回退本地值" % (local_type, override_type))
+
+    if "retry" in skill_overrides:
+        local_retry = local_runtime.get("retry", {})
+        override_retry = skill_overrides["retry"]
+        if isinstance(override_retry, dict):
+            merged_retry = dict(local_retry) if isinstance(local_retry, dict) else {}
+            merged_retry.update(override_retry)
+            merged["retry"] = merged_retry
+        else:
+            warnings.append("retry overrides 非 object，回退本地值")
+
+    return merged, warnings
+
+
+def resolve_runtime_params(step, workflow_dir):
+    """解析 step 的最终 runtime 参数。
+
+    流程：
+    1. 读取 step.runtime 引用的 runtime.yaml
+    2. 若 runtime.yaml 含 external_overrides，读取 overrides 文件
+    3. 从 overrides 中筛选当前 skill 名对应的 overrides
+    4. 用 overrides 的 timeout/retry 覆盖本地值
+    5. 返回最终参数 (timeout, retry, warnings)
+
+    返回 (timeout, retry_dict, warnings)：
+      timeout: int (默认 300)
+      retry_dict: {"max": int, "backoff": str, "interval": int}
+      warnings: [str]
+    """
+    warnings = []
+    runtime_ref = step.get("runtime")
+    skill_name = step.get("skill", "")
+
+    if not runtime_ref:
+        # 未声明 runtime，用默认值
+        return 300, {"max": 0, "backoff": "fixed", "interval": 5}, []
+
+    # 1. 读取 runtime.yaml
+    local_runtime, rt_warnings = load_runtime_yaml(runtime_ref, workflow_dir)
+    warnings.extend(rt_warnings)
+
+    # 2. 合并 external_overrides
+    external_ref = local_runtime.get("external_overrides")
+    if external_ref:
+        merged_runtime, eo_warnings = merge_external_overrides(
+            local_runtime, external_ref, skill_name, workflow_dir
+        )
+        warnings.extend(eo_warnings)
+    else:
+        merged_runtime = local_runtime
+
+    # 3. 提取最终参数
+    timeout = merged_runtime.get("timeout", 300)
+    if not isinstance(timeout, int) or isinstance(timeout, bool):
+        warnings.append("timeout 非整数，用默认值 300")
+        timeout = 300
+
+    retry_dict = merged_runtime.get("retry", {})
+    if not isinstance(retry_dict, dict):
+        warnings.append("retry 非 object，用默认值")
+        retry_dict = {}
+
+    retry = {
+        "max": retry_dict.get("max", 0) if isinstance(retry_dict.get("max", 0), int) and not isinstance(retry_dict.get("max", 0), bool) else 0,
+        "backoff": retry_dict.get("backoff", "fixed") if retry_dict.get("backoff", "fixed") in ("fixed", "exponential") else "fixed",
+        "interval": retry_dict.get("interval", 5) if isinstance(retry_dict.get("interval", 5), int) and not isinstance(retry_dict.get("interval", 5), bool) else 5,
+    }
+
+    return timeout, retry, warnings
+
+
+def compute_retry_delay(retry, attempt):
+    """根据 retry 策略计算重试延迟（秒）。"""
+    backoff = retry.get("backoff", "fixed")
+    interval = retry.get("interval", 5)
+    if backoff == "exponential":
+        return interval * (2 ** attempt)
+    return interval
+
+
 def append_step_record(report, step_id, status, outputs=None, error=None, duration=None, retries=0):
     """追加一条步骤执行记录。"""
     record = {
@@ -205,7 +380,7 @@ def print_execution_plan(workflow, step_index):
 # --------------------------------------------------------------------------- #
 # 实际执行(非 dry-run)
 # --------------------------------------------------------------------------- #
-def execute_workflow(workflow, step_index, report, dry_run=False):
+def execute_workflow(workflow, step_index, report, dry_run=False, workflow_dir=None):
     """按 steps 顺序执行工作流。
 
     dry_run=True 时只打印计划(由 print_execution_plan 处理,本函数不被调用)。
@@ -221,10 +396,10 @@ def execute_workflow(workflow, step_index, report, dry_run=False):
         return "aborted", 1
 
     first_id = workflow["steps"][0].get("id")
-    return execute_from_step(workflow, step_index, report, first_id, dry_run=dry_run)
+    return execute_from_step(workflow, step_index, report, first_id, dry_run=dry_run, workflow_dir=workflow_dir)
 
 
-def execute_from_step(workflow, step_index, report, start_id, dry_run=False):
+def execute_from_step(workflow, step_index, report, start_id, dry_run=False, workflow_dir=None):
     """从指定 step 开始执行。"""
     current_id = start_id
     retry_counts = {}  # step_id → 累计回退次数
@@ -271,19 +446,34 @@ def execute_from_step(workflow, step_index, report, start_id, dry_run=False):
         # skill 节点:模拟执行(实际调用由宿主完成)
         sys.stdout.write("\n[执行] %s (id=%s, skill=%s)\n" % (title, sid, step.get("skill", "")))
 
-        # 读取 runtime.yaml(若声明)
+        # 解析 runtime 参数（读取 runtime.yaml + 合并 external_overrides）
         runtime_ref = step.get("runtime")
         if runtime_ref:
             sys.stdout.write("  runtime: %s\n" % runtime_ref)
+            timeout, retry, rt_warnings = resolve_runtime_params(step, workflow_dir)
+            for w in rt_warnings:
+                sys.stdout.write("  ⚠ %s\n" % w)
+            sys.stdout.write("  timeout=%ds retry(max=%d,backoff=%s,interval=%ds)\n" % (
+                timeout, retry["max"], retry["backoff"], retry["interval"]))
+        else:
+            timeout = 300
+            retry = {"max": 0, "backoff": "fixed", "interval": 5}
 
-        # 模拟成功(脚本不实际调用 skill,由宿主调用并回填结果)
-        # 这里按"成功"记录;真实场景下宿主会根据 skill 执行结果回填
+        # 模拟执行（实际调用由宿主完成，脚本只记录轨迹）
+        # 注：timeout 和 retry 参数记录在 step record 中，供宿主参考
+        # 实际场景下宿主应按 timeout 设定执行超时，按 retry 决定重试
         append_step_record(
             report, sid, status="done",
             outputs=step.get("outputs", []),
         )
+        # 在 record 中补充 runtime 参数
+        if runtime_ref:
+            report["steps"][-1]["runtime"] = {
+                "timeout": timeout,
+                "retry": retry,
+            }
         save_report(report)
-        sys.stdout.write("  → 完成,产物: %s\n" % ", ".join(step.get("outputs", [])) or "(无)")
+        sys.stdout.write("  → 完成,产物: %s\n" % (", ".join(step.get("outputs", [])) or "(无)"))
 
         # 解析下一步
         nxt = resolve_next(step, step_index)
@@ -318,7 +508,8 @@ def cmd_run(args):
         save_report(report)
         return 0
 
-    status, exit_code = execute_workflow(workflow, step_index, report, dry_run=False)
+    workflow_dir = Path(args.input).resolve().parent
+    status, exit_code = execute_workflow(workflow, step_index, report, dry_run=False, workflow_dir=workflow_dir)
     return exit_code
 
 
@@ -368,7 +559,8 @@ def cmd_resume(args):
     report["steps"] = [{"id": sid, "status": "done", "retries": 0, "outputs": []}
                        for sid in state.get("completed_steps", [])]
 
-    status, exit_code = execute_from_step(workflow, step_index, report, next_step)
+    workflow_dir = Path(args.workflow).resolve().parent
+    status, exit_code = execute_from_step(workflow, step_index, report, next_step, workflow_dir=workflow_dir)
     return exit_code
 
 

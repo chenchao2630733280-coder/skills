@@ -1,0 +1,11 @@
+# runtime.yaml — session-snapshot
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 2
+  backoff: fixed
+  interval: 3
+degrade:
+  - trigger: 快照写入失败
+    action: 仅保留内存副本并警告
+    target: null
