@@ -1,11 +1,11 @@
 ---
 name: "skill-auditor"
-description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出报告+JSON)。当用户要'审查/优化/分析 skill 质量'、'对比 skill 与基准'、'审查流水线一致性'时调用。"
+description: "审查 skill 质量并给出优化建议(6 模式+6 维度,产出报告+JSON)。当用户要'审查/优化/分析 skill 质量'、'对比 skill 与基准'、'审查流水线一致性'、'审查运行时契约'时调用。"
 ---
 
 # Skill Auditor — Skill 质量审查与优化建议
 
-本 skill 是 skill 集合的**质量审查工具**,职责是:对单个 skill、skill 集合、整条流水线或对比基准进行结构化审查,从 4 个维度发现问题和优化点,产出 Markdown 报告 + JSON 工件,供人工或自动化改造消费。
+本 skill 是 skill 集合的**质量审查工具**,职责是:对单个 skill、skill 集合、整条流水线或对比基准进行结构化审查,从 6 个维度发现问题和优化点,产出 Markdown 报告 + JSON 工件,供人工或自动化改造消费。
 
 本 skill **只读不写**:不直接修改被审查的 skill,所有优化建议以报告形式产出。
 
@@ -27,7 +27,7 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 
 ---
 
-## 二、四种审查模式
+## 二、六种审查模式
 
 | 模式 | 输入 | 适用场景 | 产出粒度 |
 |---|---|---|---|
@@ -35,6 +35,8 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 | **集合审查** | 一组相关 skill(如 game-forge-*) | 跨 skill 一致性、命名对齐、JSON 工件消费链 | 集合级 + 单 skill 级问题 |
 | **流水线审查** | 编排总纲 + 全部下游 skill | 阶段衔接、产物契约、失败回退、裁剪规则 | 流水线级问题 |
 | **对比基准审查** | 1 个目标 skill + 1 个基准 skill | 评估目标 skill 与基准模式的差距 | 差距清单 + 改造建议 |
+| **执行后评测** | skill 执行产物 + 可选标准测试集 | 评测产物质量 / 规范符合度 / 可运行性 | 评测报告 + JSON 工件 |
+| **运行时契约审查** | skill 的 runtime.yaml | 校验 runtime.yaml 是否符合 skill-runtime 规范 | 审查报告 + JSON 工件 |
 
 ### 模式选择决策
 
@@ -44,12 +46,13 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 ├─ 给了一组 skill(同前缀/同领域)→ 集合审查
 ├─ 给了"流水线/编排/总纲"关键词 → 流水线审查
 ├─ 给了"对比/差距/基准"关键词 → 对比基准审查
+├─ 给了"运行时/runtime.yaml/契约"关键词 → 运行时契约审查
 └─ 不确定 → 询问用户
 ```
 
 ---
 
-## 三、四个审查维度
+## 三、六个审查维度
 
 每个维度有详细的审查规则,抽离到 `references/` 按需读取。
 
@@ -83,6 +86,20 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 - 决策树完备度(覆盖所有声明场景,无遗漏分支)
 - 模板索引与产物路径表同步
 
+### 维度 5:执行质量(`references/audit-execution.md`)
+审查 skill 执行后产物的实际质量(仅执行后评测模式使用)。
+- 产物完整性(是否缺失必填字段/章节)
+- 产物规范符合度(是否符合声明的 schema/格式)
+- 可运行性(代码类产物能否跑起来/文档类能否解析)
+- 与声明符合度(description 声称的能力 vs 实际产出)
+
+### 维度 6:运行时契约(`references/audit-runtime.md`)
+审查 skill 的 runtime.yaml 是否符合 skill-runtime 规范(仅运行时契约审查模式使用)。
+- runtime.yaml 存在性(声明的 skill 是否有 runtime.yaml)
+- schema 符合度(字段是否符合 skill-runtime 规范)
+- 契约一致性(timeout/retry/inputs/outputs 与 SKILL.md 声明一致)
+- 降级策略有效性(degrade 引用的策略是否存在)
+
 ---
 
 ## 四、审查流程
@@ -92,7 +109,7 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 1. 根据用户输入按 §二决策树选择审查模式
 2. 确定被审查的 skill 目录(单个/集合/流水线)
 3. 若对比基准审查,确定基准 skill(默认基准:`game-forge-master` 的四位一体模式)
-4. 用 AskUserQuestion 确认审查维度(默认 4 维全审)
+4. 用 AskUserQuestion 确认审查维度(默认 6 维全审)
 
 ### Step 2:读取被审查 skill
 
@@ -154,13 +171,25 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 > Schema 见 `references/audit-report-schema.json`。
 
 **关键字段**:
-- `auditMode`:审查模式(single/collection/pipeline/benchmark)
+- `auditMode`:审查模式(single/collection/pipeline/benchmark/execution/runtime)
 - `target`:被审查 skill 路径列表
 - `benchmark`:基准 skill(对比基准审查时)
-- `dimensions`:4 维度的审查结果
+- `dimensions`:6 维度的审查结果
 - `issues`:问题数组,每条含 id/dimension/severity/description/evidence/suggestion/plan
 - `summary`:总览统计(CRITICAL/WARNING/INFO 计数)
 - `topSuggestions`:按 ROI 排序的 Top 优化建议
+
+### 5.3 运行时契约审查产出(`docs/runtime-audit-report.json`)
+
+> 运行时契约审查模式(维度 6)的专用产出,Schema 摘要见 `references/audit-runtime.md` §五。
+
+**关键字段**:
+- `auditMode`:`runtime`
+- `skill`:被审查 skill 名
+- `declared`:是否声明了 runtime.yaml
+- `conclusion`:`PASS` / `FAIL` / `UNDECLARED`
+- `checks`:R1~R4 检查项结果数组
+- `summary`:总览统计(CRITICAL/MAJOR/MINOR/INFO 计数)
 
 ---
 
@@ -172,6 +201,8 @@ description: "审查 skill 质量并给出优化建议(4 模式+4 维度,产出�
 | `references/audit-consistency.md` | 审查维度 2(一致性与契约)时 |
 | `references/audit-robustness.md` | 审查维度 3(健壮性)时 |
 | `references/audit-extensibility.md` | 审查维度 4(扩展性)时 |
+| `references/audit-execution.md` | 审查维度 5(执行质量,仅执行后评测模式)时 |
+| `references/audit-runtime.md` | 审查维度 6(运行时契约,仅运行时契约审查模式)时 |
 | `references/audit-report-template.md` | 产出 Markdown 报告时 |
 | `references/audit-report-schema.json` | 产出 JSON 工件时 |
 

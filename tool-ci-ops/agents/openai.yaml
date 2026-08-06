@@ -1,0 +1,4 @@
+interface:
+  display_name: "CI/CD 工具层"
+  short_description: "封装触发CI/查询构建状态/读取测试报告,平台不可用时降级提示"
+  default_prompt: "Use $tool-ci-ops to trigger CI, check build status, or read test reports. Trigger requires confirmation."

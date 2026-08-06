@@ -29,7 +29,7 @@ description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执
 
 ```
 0. 依赖初始化(见 二.0)
-1. 解析 ASSET_MANIFEST.json
+1. 解析 ASSET_MANIFEST.json(见 二.1 输入校验)
 2. 创建目录结构
 3. 生成图片资源(按 category 分组)
    ├─ role:逐帧生成,同角色用首帧作 reference
@@ -68,16 +68,30 @@ magick -version 2>nul
 - sharp 是图集/格式转换的首选(跨平台、无系统依赖)
 - ffmpeg 用于音频占位生成与视频转 GIF(若需)
 
+### 二.1 输入校验(解析 manifest 前一次性)
+
+读取 `docs/ASSET_MANIFEST.json` 前必须做两步校验,失败则明确报错退出,不进入后续流程:
+
+1. **存在性校验**:文件不存在 → 报错"ASSET_MANIFEST.json 缺失,请先调用 game-art-spec 生成",列出期望路径,直接退出
+2. **JSON 解析校验**:`JSON.parse` 包 try-catch,非法 JSON → 报错"ASSET_MANIFEST.json 解析失败(行 {N}):{错误信息}",附原文片段供 game-art-spec 修复,直接退出
+
+> **边界处理原则**:输入错误以明确报错暴露,不允许以 undefined 崩溃或静默继续(会导致后续生图引用空字段)。
+
 ---
 
 ## 三、图片生成规则
 
 ### 0. 增量 diff(执行前一次性)
 
-若工程中已存在上一版 `ASSET_MANIFEST.json`(命名如 `ASSET_MANIFEST.prev.json`),启动生图前先做 diff,避免无差别全量重生成:
+**步骤 0.1:备份当前 manifest(增量更新场景必备)**
+
+若工程中已存在 `docs/ASSET_MANIFEST.json`,先将其复制为 `docs/ASSET_MANIFEST.prev.json`(供 game-quality-gate 增量追溯使用),再进行后续 diff。首次生成时无当前 manifest,跳过本步骤。
+
+**步骤 0.2:启动 diff**
+
+读取新 manifest(本 skill 的输入)+ 旧 manifest(prev),启动生图前先做 diff,避免无差别全量重生成:
 
 ```
-读取新 manifest(本 skill 的输入)+ 旧 manifest(prev)
 以 id 为主键逐条对比:
   ├─ id 相同 + contentHash 相同        → 跳过,复用旧文件(actual* 字段直接继承)
   ├─ id 相同 + contentHash 不同        → 重生成该资源
@@ -144,7 +158,7 @@ function placeholder(name: string, size: [number, number], color: string)
 可用 `canvas` npm 包或直接写 PNG。
 
 ### 5. 并行生成
-**调用 GenerateImage 时必须并行**(单条消息多个 tool call),最多 5 个并行。
+**调用 GenerateImage 默认并行**(单条消息多个 tool call),最多 5 个并行;**但当任务总量大(>30 张)或遇到 RequestLimitExceeded 限额错误时,必须降级为串行 + 退避 + 待重试队列**(见 十三),否则会持续饱和、永远失败。
 
 ---
 
@@ -279,121 +293,17 @@ ffmpeg -version
 
 ---
 
-## 十、格式校验与转换(关键章节)
+## 十、格式校验与转换(详见 references)
 
-### 10.1 问题背景
-
-GenerateImage 工具常**忽略 prompt 中的 "transparent PNG" 要求**,直接返回 jpg:
-- 现象:文件扩展名是 .jpg 或虽为 .png 但无 alpha 通道(纯白底)
-- 影响:角色/UI 带方形背景,无法正常打包图集,代码侧 anims 看起来像贴方块
-- 这是**高频坑**,所有 role/ui/effect 资源必须经过本章节处理
-
-### 10.2 转换流程
-
-```
-对每张要求透明的资源(path 以 .png 结尾 且 manifest.format = "png-32"):
-  1. 读文件头判断真实格式(magic number)
-     - PNG: 89 50 4E 47
-     - JPG: FF D8 FF
-  2. 若实为 JPG / 无 alpha 通道 → 触发转换
-  3. 转换后覆盖原 path(保持文件名不变)
-  4. 记录到 ASSET_ISSUES.md
-```
-
-### 10.3 转换实现(三档降级)
-
-**档 1:sharp(首选)** —— 纯 Node、跨平台、无系统依赖
-
-```typescript
-// scripts/convert-to-png.ts —— 接受输入路径数组,统一转透明 PNG
-import sharp from 'sharp';
-
-async function toTransparentPng(input: string, output: string, bg: { r: number; g: number; b: number }) {
-  // 把背景色(白底/黑底)抠成透明,加 alpha 通道
-  await sharp(input)
-    .flatten({ background: bg })           // 若本身无 alpha,先合成
-    .removeAlpha()                          // 去掉旧 alpha
-    .raw()                                  // 拿像素 buffer
-    .toBuffer({ resolveWithObject: true })
-    .then(({ data, info }) => {
-      // 简化方案:直接生成带 alpha 的 png,背景色阈值替为透明
-      // 复杂场景建议用 chroma key,见档 2
-    });
-  // 实战推荐:sharp 直接 chroma key 不便,改用阈值方案
-  await sharp(input)
-    .modulate({ brightness: 1 })
-    .png({ palette: true, colors: 32, quality: 80 })
-    .toFile(output);
-}
-```
-
-**档 1.5:sharp + 阈值 + 饱和度抠图(推荐实战)** —— 把低饱和度浅色背景改透明,保留高饱和度角色
-
-```typescript
-import sharp from 'sharp';
-
-// 实战调参(PoC 验证):
-//   - 阈值 245 只能抠纯白,AI 生图常返回浅灰背景(RGB 220-245)会漏抠
-//   - 阈值 200 + 饱和度判断(max-min<25)能覆盖浅灰背景,且不误伤角色高光
-const BG_THRESHOLD = 200;   // RGB 均 > 此值视为候选背景
-const SAT_THRESHOLD = 25;   // max-min < 此值视为低饱和度(灰色系)
-const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-for (let i = 0; i < data.length; i += info.channels) {
-  const r = data[i], g = data[i + 1], b = data[i + 2];
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  const sat = max - min;
-  if (r > BG_THRESHOLD && g > BG_THRESHOLD && b > BG_THRESHOLD && sat < SAT_THRESHOLD) {
-    data[i + 3] = 0;  // alpha 置 0
-  }
-}
-await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
-  .png().toFile(output);
-```
-
-**为什么加饱和度判断**:浅橙/浅蓝高光 RGB 可能都 > 200,但 max-min 较大(有色);浅灰背景 RGB 都 > 200 且 max-min 很小(无色)。加饱和度判断能区分两者,避免误抠角色高光。
-
-**PoC 实测数据**(阈值 200 + 饱和度 25):
-| 帧 | 转换前透明% | 转换后透明% |
-|---|---|---|
-| run_001 | 10.2 | 80.5 |
-| run_002 | 9.5 | 83.7 |
-| run_003 | 77.3 | 79.2 |
-| run_004 | 72.8 | 75.8 |
-
-**档 2:ImageMagick(系统级)**
-
-```bash
-magick input.jpg -fuzz 20% -transparent white output.png
-# 复杂背景用 chroma key
-magick input.jpg -fill none -draw "matte 0,0 floodfill" output.png
-```
-
-**档 3:ffmpeg chromakey(系统级)**
-
-```bash
-ffmpeg -i input.jpg -filter_complex "colorkey=white:0.3:0.2" output.png
-```
-
-### 10.4 决策树
-
-```
-manifest.format = png-32?
-├─ 否 → 跳过(背景图直接用 jpg)
-└─ 是 → 读 magic number
-        ├─ 真为 PNG 且有 alpha 通道 → 通过
-        └─ 实为 jpg / 无 alpha → 触发转换
-            ├─ sharp 可用 → 档 1.5(阈值抠图)
-            ├─ sharp 不可用 + magick 可用 → 档 2
-            ├─ sharp 不可用 + ffmpeg 可用 → 档 3
-            └─ 全部不可用 → 警告并写入 ASSET_ISSUES.md
-                            代码侧降级用散图(不用 atlas)
-```
-
-### 10.5 一致性保证
-
-- 同角色 4 帧必须用**相同的转换参数**(同阈值、同背景色),否则帧间抖动
-- 转换后做一次视觉抽检:首帧和末帧的角色外接矩形尺寸差应 < 5%
-- 若抽检不一致 → 全部 4 帧重新走档 1.5,记录到 ASSET_ISSUES.md
+> **本章完整内容已抽离到 `references/format-conversion-guide.md`**(问题背景、三档降级实现、决策树、一致性保证)。
+>
+> **何时读取**:当 manifest.format = "png-32" 且实际格式不符(读 magic number 判为 JPG 或无 alpha 通道)时。
+>
+> **核心流程速览**:
+> 1. 读 magic number 判真实格式(PNG: `89 50 4E 47` / JPG: `FF D8 FF`)
+> 2. JPG / 无 alpha → 触发转换,三档降级:sharp 阈值抠图 → ImageMagick → ffmpeg chromakey
+> 3. 转换后覆盖原 path,记录到 ASSET_ISSUES.md
+> 4. 全部不可用 → 警告,代码侧降级用散图(不用 atlas)
 
 ---
 
@@ -436,102 +346,62 @@ game-code-forge 读 manifest 时:
 
 ---
 
-## 十二、卡片/对话框背景图生成规范(关键章节)
+## 十二、卡片/对话框背景图生成规范(详见 references)
 
-### 12.1 问题背景
+> **本章完整内容已抽离到 `references/card-bg-spec.md`**(问题背景、Prompt 编写规范、模板、尺寸要求、颜色对比度校验、失败处理、与代码侧协作)。
+>
+> **何时读取**:当生成需要叠加文字的背景图(UI 卡片/对话框/面板)时。
+>
+> **核心要点速览**:
+> 1. Prompt 必须包含 4 要素:中心区域干净留白 / 装饰只留边框 / 类比说明 / 禁止内框
+> 2. 生成尺寸 ≥ 3,686,400 像素,后用 sharp 缩放到目标尺寸
+> 3. 颜色对比度:背景与文字亮度差 ≥ 40%(WCAG AA 简化版)
 
-AI 生成的卡片/对话框背景图常出现两类问题导致叠加文字看不清:
-- **装饰侵入文字区域**:AI 会在整张图上铺装饰纹理,中心区域不干净,叠加文字后不可读
-- **对话框内框问题**:对话框生成了比文本区域小的内框装饰线,文字溢出框外
-- **颜色对比不足**:深色背景配深色文字、浅色背景配浅色文字,都导致不可读
+---
 
-这是**高频坑**,所有需要叠加文字的背景图(UI 卡片/对话框/面板)生成时必须遵守本章规范。
+## 十三、生图平台限额与文件名碰撞(关键章节)
 
-### 12.2 Prompt 编写规范(强制)
+### 13.1 问题背景(实战高频)
 
-生成卡片/对话框背景图时,prompt **必须**包含以下要素:
+`GenerateImage` 后端有**任务并发上限**(实测约 150 个在途任务即饱和)。当一次生图任务量大(如 78 张核心图 + 逐帧动画),会出现两类坑:
+- **RequestLimitExceeded**:即使只发 1 张也会被拒(平台在途任务已饱和),不是 prompt 问题,直接重试无效。
+- **文件名碰撞**:同批并行生成时若文件名相似/同名,后续帧会**互相覆盖**(如 `run_001` 被同批另一角色同帧覆盖),且工具不报错,肉眼难发现。
 
-**要素 1:明确中心区域干净留白**
+### 13.2 限额处理策略(降级链)
+
 ```
-The ENTIRE center area is pure clean {color} solid color with ABSOLUTELY NO patterns, NO decorations, NO textures
+提交生图 → 捕获 RequestLimitExceeded?
+├─ 否 → 正常入库
+└─ 是 → 暂停提交,等待限额释放(平台按完成数回血,所有会话共享)
+        ├─ 串行退避: 单张提交 + 间隔(sleep 2-3s)避免瞬时打满
+        ├─ 失败任务入"待重试队列",限额释放后分批补(每批 ≤5)
+        └─ 全部完成后统一回写 manifest + 抽查覆盖
 ```
+**要点**:不要用"无限重试"硬顶限额——会持续饱和、永远失败。改为**记录失败 → 等释放 → 分批补**。限额是平台级(所有会话共享),与你发几张无关,需等其自然回落。
 
-**要素 2:装饰只留在边框**
-```
-Only the outer border (about {N}px wide on each side) has decorative elements
-```
+### 13.3 文件名碰撞处理(入库流水线)
 
-**要素 3:类比说明帮助 AI 理解**
-```
-Think of it as a blank rice paper with an ornate frame
-```
+**推荐:搭建一个串行 ingest 脚本**(如 `tools/ingest.mjs`),生图完成后统一:
+- 用 sharp 缩放/改名到 `assets/role/{role}/{state}_{frame:03}.png`(帧序号 3 位补零,避免 `1`/`10` 排序错)
+- prompt 注入时间戳/唯一后缀做**清洗**,避免同批同名
+- 入库前校验目标路径已存在 → 报错(防覆盖),而非静默覆盖
 
-**要素 4:禁止内框(对话框专用)**
-```
-NO inner frames, NO decorative lines inside, NO inner rectangles
-```
+**为什么串行**:并行生成返回的文件若用同一文件名,写入时后到覆盖先到。串行(或显式唯一命名)可彻底避免。
 
-### 12.3 Prompt 模板
+### 13.4 决策树
 
-**卡片背景(角色卡/信息卡等华丽风格)**:
 ```
-Chinese traditional {theme} card background, vertical portrait layout.
-The ENTIRE center area is pure clean {bgColor} solid color with ABSOLUTELY NO patterns, NO decorations, NO textures - completely blank for text overlay.
-Only the outer border (about {N}px wide on each side) has decorative elements: {borderStyle}.
-The border is the ONLY decorated area.
-Think of it as a blank rice paper scroll with an ornate frame.
-Flat, no depth, no shadows. Game UI texture.
-```
-
-**对话框背景(干净简约风格)**:
-```
-Chinese ink wash style dialog box background, horizontal landscape layout.
-The ENTIRE center area is pure clean {bgColor} solid color with ABSOLUTELY NO inner frames, NO decorative lines inside, NO patterns - completely blank solid color for text overlay.
-Only a simple outer border (about {N}px) with subtle ink brush strokes.
-No inner rectangles or frames. Flat, clean, minimal. Game UI texture.
+生图任务 > 30 张?
+├─ 否 → 常规并行(≤5)即可
+└─ 是 → 必须搭 ingest 流水线 + 限额退避策略(见 13.2/13.3)
+        └─ 限额触顶 → 串行 + 待重试队列,勿硬顶
 ```
 
-### 12.4 尺寸要求
+---
 
-GenerateImage 要求最小 3,686,400 像素(约 1920x1920)。卡片/对话框目标尺寸较小,策略:
+## references 使用指引
 
-| 资源类型 | 目标尺寸 | 生成尺寸(满足最小像素) |
-|---|---|---|
-| 竖向卡片 | 520x640 | 1720x2150 或更大 |
-| 横向对话框 | 520x320 | 2620x1680 或更大 |
-| 方形面板 | 400x400 | 1920x1920 |
-
-生成后用 sharp 缩放到目标尺寸:
-```javascript
-await sharp(input).resize(targetW, targetH).jpeg({ quality: 90 }).toFile(output);
-```
-
-### 12.5 颜色对比度校验
-
-背景图生成后,必须校验文字可读性:
-
-| 背景底色 | 文字颜色 | 适用场景 |
-|---|---|---|
-| 浅米黄(#F5E6C8) | 深红(#8B0000)/深灰(#444444)/深棕(#5a0a12) | 水墨风卡片 |
-| 深红(#2a1810) | 金色(#FFD700)/白色(#FFFFFF) | 宫廷风卡片 |
-| 浅灰(#E8E8E8) | 深灰(#333333)/黑色(#000000) | 现代风面板 |
-
-**规则**:背景与文字的亮度差应 >= 40%(WCAG AA 标准简化版)。
-
-### 12.6 失败处理
-
-| 失败场景 | 处理 |
-|---|---|
-| 中心区域仍有装饰 | prompt 中重复强调 "ABSOLUTELY NO patterns in center",重新生成 |
-| 对话框有内框 | prompt 中添加 "NO inner frames, NO inner rectangles",重新生成 |
-| 文字看不清 | 调整文字颜色适配背景(见 12.5),或重新生成浅色底背景 |
-| 尺寸不够报错 | 用更大尺寸生成后 sharp 缩放(见 12.4) |
-
-### 12.7 与代码侧的协作
-
-背景图生成完成后,通知 game-code-forge:
-- 卡片背景图用 `load.image` 加载(非 atlas)
-- 代码侧用 `add.image(x, y, 'card_bg_key').setDisplaySize(w, h)` 显示
-- 文字叠加在背景图之上,颜色按 12.5 表选择
-- **不要**再叠加 9patch 或纯色 rectangle 作为底色(背景图已包含完整底色+边框)
-
+| 文件 | 何时读取 |
+|------|---------|
+| `references/format-conversion-guide.md` | 格式校验与转换(§十):manifest.format = "png-32" 且实际格式不符时 |
+| `references/card-bg-spec.md` | 卡片/对话框背景图生成(§十二):生成需叠加文字的背景图时 |

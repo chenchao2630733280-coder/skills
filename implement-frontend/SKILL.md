@@ -81,3 +81,13 @@ description: "Converts approved page specifications and HTML prototypes into a p
 - 更新 `traceability.json` 和 `task-board.json`
 
 报告中必须列出页面覆盖率：已实现页面 / P0 页面 / 全部页面，以及未实现原因。
+
+---
+
+## 质量检查清单
+
+- [ ] 页面覆盖率达 P0
+- [ ] 视觉规范符合 design-tokens
+- [ ] API 客户端类型完整
+- [ ] 表单校验与 PRD 一致
+- [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

@@ -1,0 +1,4 @@
+interface:
+  display_name: "部署工具层"
+  short_description: "封装部署/回滚/健康检查,支持5平台,CLI不可用时降级输出命令"
+  default_prompt: "Use $tool-deploy-ops to deploy artifacts, rollback, or run health checks. Deploy requires confirmation."

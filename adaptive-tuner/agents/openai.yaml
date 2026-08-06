@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data 自适应优化层"
+  short_description: "基于 skill-usage-tracker 数据生成 skill 参数优化建议，产出 runtime-overrides.yaml。不自动应用，需用户确认"
+  default_prompt: "Use $adaptive-tuner to analyze skill-usage-tracker statistics and generate runtime parameter optimization suggestions (timeout/retry/degrade thresholds). Outputs tuning-suggestions.json + runtime-overrides.yaml. Does not auto-apply; requires user confirmation via apply subcommand."

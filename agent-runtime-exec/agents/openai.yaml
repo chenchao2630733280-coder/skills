@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Runtime 执行层"
+  short_description: "基于 agent-orchestrator 协议实现多 Agent 实际调度执行器(委派/收集/合并/监控)。本身是执行器,依赖宿主提供 Agent 实例"
+  default_prompt: "Use $agent-runtime-exec to actually schedule and execute multi-agent orchestration (delegate/collect/merge/monitor). Implements agent-orchestrator protocol as an executor. Depends on host for Agent instances (does not create Agents, only schedules). Produces agent-exec-state.json + agent-exec-report.json."

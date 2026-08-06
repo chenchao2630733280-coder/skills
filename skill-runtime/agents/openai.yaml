@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Runtime 层"
+  short_description: "定义 skill 运行时元数据契约(runtime.yaml: timeout/retry/inputs/outputs/degrade),提供 validate_runtime.py 校验"
+  default_prompt: "Use $skill-runtime to define or validate a skill's runtime.yaml contract (timeout/retry/inputs/outputs/degrade) before workflow-runtime schedules it or skill-auditor audits it."

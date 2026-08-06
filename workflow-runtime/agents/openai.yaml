@@ -1,0 +1,4 @@
+interface:
+  display_name: "工作流执行引擎"
+  short_description: "把编排总纲的执行顺序编译为可执行 workflow.yaml,支持暂停/恢复/跳过/回退/并行调度"
+  default_prompt: "Use $workflow-runtime to compile pipeline execution order into workflow.yaml, or to run/resume a workflow with pause/skip/back_to/parallel semantics."

@@ -5,7 +5,7 @@ description: "把已有短剧/热门IP/社会热梗的'设定与爽点'转化为
 
 # 短剧 / IP 游戏化改编方法论
 
-> **单一来源说明**:本 skill 的通用设计原则(大众记忆点 / 广告双价值 / 不可逆阀门 / 提取设定做机制)已提炼沉淀至 game-blueprint 的 `references/design-principles-narrative-adaptation.md`,生成蓝图时由 game-blueprint 自动加载。本 skill 专注**改编 workflow** 与 **6 角度框架(原则 2)**,其余原则以引用为主,不重复定义。
+> **单一来源说明**:本 skill 的通用设计原则(大众记忆点 / 广告双价值 / 不可逆阀门 / 提取设定做机制)已提炼沉淀至 game-blueprint 的 `../game-blueprint/references/design-principles-narrative-adaptation.md`,生成蓝图时由 game-blueprint 自动加载。本 skill 专注**改编 workflow** 与 **6 角度框架(原则 2)**,其余原则以引用为主,不重复定义。
 
 把"短剧/影视/小说/社会热点"的设定变成**可玩机制**,而不是把剧情搬进游戏。本 skill 提供一套经过实战验证的转化框架与设计铁律,可直接喂给 game-blueprint / game-spec 产出蓝图与技术设计。
 

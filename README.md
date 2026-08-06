@@ -33,6 +33,15 @@
 - `rd-init`：由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目。
 - `pet-health-product-simulator`：模拟/测试中文宠物主人健康分诊对话机器人产品交互（非兽医诊断）。
 
+### 6. AI Agent 体系层（2026-08-06 升级）
+- **Tool 层**：`tool-git-ops` / `tool-ci-ops` / `tool-deploy-ops` / `tool-db-ops` / `tool-monitor-ops`——封装 Git/CI/部署/DB/监控操作,默认只读优先,变更类需用户确认。
+- **工程 skill**：`code-review` / `debug-fix` / `refactor`——补齐研发链路的审查/调试/重构能力。
+- **安全与评测**：`guardrail`(前置拦截) / `diff-reviewer`(后置审查) / `skill-auditor`(已扩展为 5 模式 5 维度,含执行后评测)。
+- **Memory 层**：`project-knowledge-base`(团队规范/ADR/事故) / `failure-casebook`(失败案例自动记录,保留 90 天)。
+- **接入方式**：编排总纲(product-pipeline-master / game-forge-master)末尾的可选 Tool 确认点会按需调用 Tool 层 + guardrail 前置检查;各高频 skill 质量检查清单末尾含“产物自评”项(可选调 skill-auditor 执行后评测)。详细计划见 `.trae/documents/agent-system-upgrade-plan.md`。
+- **Phase 2 运行时层**（2026-08-06 升级）：`skill-runtime`(runtime.yaml 契约) / `task-planner`(任务规划) / `replanner`(重规划) / `workflow-runtime`(工作流执行引擎)——把编排总纲的执行顺序升级为可执行 workflow.yaml，支持暂停/恢复/跳过/回退/并行调度。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十四。
+- **Phase 3 数据与协作层**（2026-08-06 升级）：`codebase-rag`(Context 持久化索引) / `skill-usage-tracker`(Data 调用统计) / `prompt-registry`(Model prompt 注册) / `agent-orchestrator`(多 Agent 协同协议)——补齐 Context/Data/Model/协同四大能力,从"自主运行"升级为"数据驱动+智能协作"。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五。
+
 ---
 
 ## 二、完整技能清单
@@ -71,7 +80,27 @@
 | rd-init | 由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目 | "初步需求如下："后的需求文本 | .rd-init-brief.md、project.yaml、workflow_state.yaml、asset_map.json、项目说明(不生成 PRD/代码) |
 | ruanzhu-doc-generator | 由产品截图生成中文软著产品说明书 DOCX(区分 PC 后台与移动端) | 截图文件夹 + 可选 PRD/README/产品事实 | `(管理后台)产品说明书.docx`/`(移动端)产品说明书.docx`(混合时两份) |
 | screenshot-operation-manual | 由截图/录屏生成 PC 后台与移动端操作手册(DOCX/PDF/MD/HTML) | 截图/录屏/截图文件夹、平台分类 | manual_spec.json + 操作手册.docx(封面、目录、模块说明、步骤、FAQ) |
+| skill-runtime | Agent Runtime 层(定义 runtime.yaml 契约:timeout/retry/inputs/outputs/degrade) | skill 目录 | runtime-contract-report.json(校验结果) |
 | test-and-harden-system | 运行并提升单元/集成/端到端/安全/性能等检查，修复阻塞缺陷并出验收报告 | 已实现系统、PRD、各层报告、测试配置 | acceptance-matrix.json、test-report.md、security-review.md、performance-smoke.md、release-blockers.json |
+| code-review | 代码审查(4 维度:正确性/安全性/性能/可维护性,只读不写) | git diff / PR 链接 | code-review-report.md + code-review-report.json |
+| debug-fix | 调试修复(定位根因 + 修复,最多重试 3 轮) | 错误日志 + 堆栈 + 复现步骤 | debug-report.md(根因 + 修复方案 + diff) |
+| diff-reviewer | 变更审查(后置审查 diff 的风险变更,只读不写) | 变更前后的路径或 git diff | diff-review-report.md(风险变更清单 + 建议) |
+| failure-casebook | 失败案例库(自动记录失败码 + 修复方法,保留 90 天) | skill 名 + 失败码 + 原因 + 修复方法 | failure-casebook.json(索引) + 案例文件 |
+| guardrail | 安全护栏(前置拦截:敏感路径保护 + 操作分级) | 目标路径 + 操作类型 | guardrail-report.json(检查结果 + 风险级别) |
+| project-knowledge-base | 项目知识库(团队规范/ADR/历史事故/代码规范) | 知识分类 + 查询关键词 | knowledge-base.json(索引) + 各知识文件 |
+| refactor | 代码重构(不改功能,小步保测试) | 目标文件/模块 + 重构目标 | 重构方案 + 重构 diff |
+| replanner | 重规划器(失败/变更时动态调整 task-tree,最多 3 轮) | 原 task-tree.json + 失败信息 | task-tree.v2.json + replan-report.md |
+| task-planner | 通用任务规划器(拆解为子任务树+依赖+优先级) | 需求描述 + 可选上下文 | task-tree.json + task-plan.md |
+| tool-ci-ops | CI/CD 工具层(触发/查询/报告,触发需确认) | 仓库 + CI 平台(github-actions/gitlab-ci/jenkins) | ci-ops-report.json |
+| tool-db-ops | 数据库工具层(migrate/query/rollback,生产环境只读) | 迁移文件 + 数据库连接配置 | db-ops-report.json |
+| tool-deploy-ops | 部署工具层(部署/回滚/健康检查,支持 GitHub Pages/Vercel/Netlify/CloudBase/COS) | 产物路径 + 目标平台 | deploy-ops-report.json(部署 URL + 版本号 + 健康检查) |
+| tool-git-ops | Git 工具层(commit/branch/push/diff/log,默认不 push) | 产物路径列表 + 可选 commit message | git-ops-report.json(文件清单 + commit hash + branch) |
+| tool-monitor-ops | 监控工具层(logs/metrics/trace 查询,纯只读) | 服务名 + 时间范围 | monitor-ops-report.json |
+| workflow-runtime | 工作流执行引擎(编译执行顺序为可执行 workflow.yaml,支持暂停/恢复/跳过/回退/并行) | 编排总纲 SKILL.md 或 task-tree.json | workflow.yaml + workflow-exec-report.json |
+| codebase-rag | Context 层(持久化代码库索引,语义检索,与宿主 SearchCodebase 互补) | 项目路径 + 分块策略 | codebase-index.json + 检索结果 |
+| skill-usage-tracker | Data 层(记录 skill 调用数据,统计高频/慢/失败率,纯记录不阻塞) | skill 名 + 耗时 + 状态 | records.jsonl + usage-stats.json + optimization-suggestions.md |
+| prompt-registry | Model 层(集中管理 prompt 模板,版本化+变体管理+对比) | skill 名 + prompt 模板 + 版本 | prompt-registry.json + prompts/{skill}/{version}.md |
+| agent-orchestrator | 多 Agent 协同(定义通信协议+任务委派+结果汇总) | 任务 + Agent 列表 | orchestration-protocol.md + agent-messages.json |
 
 ---
 
@@ -313,6 +342,14 @@ generate-portal            → output/site/index.html (演示门户,独占)
 
 **其他 / 垂直**
 - [pet-health-product-simulator](./pet-health-product-simulator/SKILL.md)
+
+**AI Agent 体系层**（2026-08-06 升级）
+- [tool-git-ops](./tool-git-ops/SKILL.md) - [tool-ci-ops](./tool-ci-ops/SKILL.md) - [tool-deploy-ops](./tool-deploy-ops/SKILL.md) - [tool-db-ops](./tool-db-ops/SKILL.md) - [tool-monitor-ops](./tool-monitor-ops/SKILL.md)
+- [code-review](./code-review/SKILL.md) - [debug-fix](./debug-fix/SKILL.md) - [refactor](./refactor/SKILL.md)
+- [guardrail](./guardrail/SKILL.md) - [diff-reviewer](./diff-reviewer/SKILL.md) - [skill-auditor](./skill-auditor/SKILL.md)（已扩展为 5 模式 5 维度）
+- [project-knowledge-base](./project-knowledge-base/SKILL.md) - [failure-casebook](./failure-casebook/SKILL.md)
+- [skill-runtime](./skill-runtime/SKILL.md) - [task-planner](./task-planner/SKILL.md) - [replanner](./replanner/SKILL.md) - [workflow-runtime](./workflow-runtime/SKILL.md)（Phase 2 运行时层）
+- [codebase-rag](./codebase-rag/SKILL.md) - [skill-usage-tracker](./skill-usage-tracker/SKILL.md) - [prompt-registry](./prompt-registry/SKILL.md) - [agent-orchestrator](./agent-orchestrator/SKILL.md)（Phase 3 数据与协作层）
 
 **公共引用**
 - [_shared/](./_shared/)（公共 schema、UI 设计标准、校验脚本，非独立 skill）

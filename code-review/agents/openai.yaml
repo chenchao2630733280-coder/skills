@@ -1,0 +1,4 @@
+interface:
+  display_name: "代码审查"
+  short_description: "接收 PR/diff,按四维度(正确性/安全/性能/可维护性)审查,产出报告+修复建议,只读不写"
+  default_prompt: "Use $code-review to review a PR or diff for quality, security, performance, and maintainability. Read-only."

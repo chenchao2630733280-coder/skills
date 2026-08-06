@@ -1,0 +1,4 @@
+interface:
+  display_name: "Model 层"
+  short_description: "prompt 模板注册表,版本化+变体管理+对比,支持 A/B 测试"
+  default_prompt: "Use $prompt-registry to register, retrieve, version, or diff prompt templates for skills. Supports variant tags (stable/detailed/concise) for A/B testing. Does not handle model routing."

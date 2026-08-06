@@ -1,11 +1,13 @@
 ---
 name: "game-integrate"
-description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
+description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export-release 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
 ---
 
-# Game Integrate — 集成与构建
+# 游戏集成与构建
 
 本 skill 是 AI 游戏生成流水线的**阶段 5(最终阶段)**,职责是把 assets/ 与 src/ 集成,执行依赖安装、类型检查、构建、浏览器自测,产出 `dist/`(Web)/ `export/`(Godot)/ `Build/`(Unity)和 `docs/BUILD_REPORT.md`。
+
+**质量门角色**:本 skill 内置 **Gate 4 实跑门**(typecheck + 构建 + 浏览器自测 + 数值平衡),是流水线的最终质量门。前置 Gate 0~3 由 game-quality-gate 介入,本 skill 通过读取 `docs/GATE_3_REPORT.md` 避免重复 typecheck。
 
 ---
 
@@ -16,6 +18,7 @@ description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/(Web 引
 - `src/`、`index.html`、`package.json` 等(由 game-code-forge 产出)
 - `docs/ASSET_MANIFEST.json`(校验资源完整性)
 - `docs/ASSET_ISSUES.md`(如有,了解已知问题)
+- `docs/GATE_3_REPORT.md`(如有,game-quality-gate 产出的前置门报告;若 Gate 3 L3 typecheck 已 PASS 则本 skill 跳过 typecheck,避免重复执行)
 
 **Godot 4 工程输入**(引擎为 Godot 4 时):
 - `project.godot`:工程配置文件(校验存在性)
@@ -55,7 +58,7 @@ description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/(Web 引
 ### 2.0 引擎判定
 
 读取 `docs/GAME_BLUEPRINT.md` 的"3. 平台与引擎"章节,按引擎走不同分支:
-- **Web 引擎(Phaser/Pixi/Canvas)**:走 npm/Vite 流程(§2.1-§2.6 原有步骤)
+- **Web 引擎(Phaser 3/Pixi.js/纯 Canvas)**:走 npm/Vite 流程(§2.1-§2.6 原有步骤)
 - **Godot 4**:走 Godot CLI 流程(§2.7 新增步骤)
 - **Unity**:走 Unity CLI 流程(§2.8 新增步骤,需宿主安装 Unity Editor)
 
@@ -79,8 +82,10 @@ description: "AI 游戏生成流水线阶段 5。读取 assets/ 和 src/(Web 引
    ├─ 失败重试 1 次(清缓存后)
    └─ 仍失败则告知用户检查网络
 
-4. typecheck
-   ├─ 执行 npm run typecheck
+4. typecheck(Gate 4 实跑门的一部分,若 Gate 3 已通过则跳过)
+   ├─ **前置检查**:读取 `docs/GATE_3_REPORT.md`
+   │  ├─ 若 Gate 3 L3 typecheck 已 PASS → 跳过本步骤(避免重复执行)
+   │  └─ 若 Gate 3 报告不存在或 typecheck 未跑 → 执行 `npm run typecheck`
    ├─ 失败则 AI 自动修复(最多 3 轮)
    └─ 仍失败降级 tsconfig strict:false + 标记
 
@@ -371,7 +376,7 @@ npm run build
 
 > 下方默认为 Web 引擎清单;Godot 4 见 §2.7、Unity 见 §2.8 的对应检查项。
 
-**Web 引擎(Phaser/Pixi/Canvas)**:
+**Web 引擎(Phaser 3/Pixi.js/纯 Canvas)**:
 - [ ] npm install 成功
 - [ ] typecheck 通过或已降级
 - [ ] dev server 能启动
@@ -381,7 +386,7 @@ npm run build
 
 **Godot 4**:
 - [ ] project.godot 存在且 config_version=5
-- [ ] godot --check-only 通过或已标记
+- [ ] godot --headless --check-only --script scripts/main.gd 通过或已标记
 - [ ] export/ 下存在 Game.exe 或 Web/index.html
 
 **Unity**:

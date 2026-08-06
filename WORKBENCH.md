@@ -50,6 +50,67 @@ screenshot-operation-manual  截图操作手册（DOCX/PDF/Markdown）
 | `ruanzhu-doc-generator` | 旁线 | 软著说明书 `.docx`（PC/移动端分离） | 用户指定 |
 | `screenshot-operation-manual` | 旁线 | 操作手册 `.docx` 等 | 用户指定 |
 
+## Agent 体系层
+
+除流水线 skill 外,工作台新增 AI Agent 体系层 skill(2026-08-06 升级):
+
+### Tool 层（工具调用）
+
+| Skill | 职责 |
+|---|---|
+| `tool-git-ops` | Git 操作封装(commit/branch/push/diff/log,默认不 push) |
+| `tool-ci-ops` | CI/CD 操作(触发/查询/报告,触发需确认) |
+| `tool-deploy-ops` | 部署操作(部署/回滚/健康检查,支持 GitHub Pages/Vercel/Netlify/CloudBase/COS) |
+| `tool-db-ops` | 数据库操作(migrate/query/rollback,生产环境只读) |
+| `tool-monitor-ops` | 监控查询(logs/metrics/trace,纯只读) |
+
+### 工程 skill
+
+| Skill | 职责 |
+|---|---|
+| `code-review` | 代码审查(4 维度 + 报告,只读不写) |
+| `debug-fix` | 调试修复(定位 + 修复,最多重试 3 轮) |
+| `refactor` | 代码重构(不改功能,小步保测试) |
+
+### 安全与评测
+
+| Skill | 职责 |
+|---|---|
+| `guardrail` | 安全护栏(前置拦截,敏感路径保护 + 操作分级) |
+| `diff-reviewer` | 变更审查(后置审查 diff 的风险变更,只读不写) |
+| `skill-auditor` | 质量审查(5 模式 5 维度,含执行后评测) |
+
+### Memory 层
+
+| Skill | 职责 |
+|---|---|
+| `project-knowledge-base` | 项目知识库(团队规范/ADR/历史事故/代码规范) |
+| `failure-casebook` | 失败案例库(自动记录失败码 + 修复方法,保留 90 天) |
+
+**接入方式**：编排总纲(product-pipeline-master / game-forge-master)末尾的可选 Tool 确认点会按需调用 Tool 层 + guardrail 前置检查。各高频 skill 的质量检查清单末尾含“产物自评”项(可选调用 skill-auditor 执行后评测模式)。
+
+### Phase 2 运行时层（2026-08-06 升级）
+
+| Skill | 职责 |
+|---|---|
+| `skill-runtime` | Agent Runtime 层(定义 runtime.yaml 契约:timeout/retry/inputs/outputs/degrade) |
+| `task-planner` | Planning 层(通用任务规划器,拆解为 task-tree.json) |
+| `replanner` | Planning 层(重规划器,失败/变更时动态调整 task-tree) |
+| `workflow-runtime` | Workflow 层(工作流执行引擎,编译执行顺序为可执行 workflow.yaml) |
+
+**Phase 2 接入方式**:编排总纲(product-pipeline-master / game-forge-master)的执行顺序可由 workflow-runtime 编译为 workflow.yaml,支持暂停/恢复/跳过/回退/并行调度;runtime.yaml 契约被 skill-auditor 第 6 维度审查;failure-casebook 的 auto-query 子命令供 workflow-runtime 在调用 skill 前注入预防提示。
+
+### Phase 3 数据与协作层（2026-08-06 升级）
+
+| Skill | 职责 |
+|---|---|
+| `codebase-rag` | Context 层(持久化代码库索引,语义检索,与宿主 SearchCodebase 互补) |
+| `skill-usage-tracker` | Data 层(记录 skill 调用数据,统计高频/慢/失败率,纯记录不阻塞) |
+| `prompt-registry` | Model 层(集中管理 prompt 模板,版本化+变体管理+对比) |
+| `agent-orchestrator` | 多 Agent 协同(定义通信协议+任务委派+结果汇总) |
+
+**Phase 3 接入方式**:workflow-runtime 执行 workflow.yaml 时,每步 skill 调用前后调 skill-usage-tracker record 记录调用数据(分配 call_id 贯穿链路);failure-casebook 记录失败时关联 call_id(related_call_id 字段);codebase-rag 与宿主 SearchCodebase 互补(宿主实时,本 skill 持久化+跨会话);prompt-registry 渐进式接入(先 game-*/implement-* 试点);agent-orchestrator 定义协议,实际多 Agent 运行依赖宿主。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五。
+
 ## 编号体系（追溯用）
 
 PRD 产出 `PXX / BR-XXX / VR-XXX(V/S/C/E) / PERM-XXX / SM-XXX / TXX`；原型阶段产出 `SXX / ACT-XXX / OV-XXX / CMP-XXX / CMD-XXX`；各阶段校验产生 `CHK-XXX / TBD-XXX`。完整登记表见 `generate-system-prd/SKILL.md` 第七节"编号体系"。
@@ -112,3 +173,18 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - PRD 新增编号体系（PXX/BR/VR/PERM/SM），移动端页面废弃 MXX 编号
 - 四个 SKILL.md 新增 references 使用指引，消灭死资产
 - 新增两份 `requirements.txt` 与依赖自检命令；frontmatter 与 description 风格统一
+
+### 2026-08-06 AI Agent 体系升级（第一阶段完成）
+- 新增 12 个 Agent 体系层 skill：Tool 层 5 个(tool-git-ops/tool-ci-ops/tool-deploy-ops/tool-db-ops/tool-monitor-ops) + 工程 skill 3 个(code-review/debug-fix/refactor) + Guardrail 层 2 个(guardrail/diff-reviewer) + Memory 层 2 个(project-knowledge-base/failure-casebook)
+- 扩展 skill-auditor：新增第 5 模式"执行后评测" + 第 5 维度"执行质量" + references/audit-execution.md
+- 9 个高频 skill(generate-system-prd/generate-prototype/generate-html-pages/game-spec/game-art-spec/game-code-forge/implement-backend/implement-frontend/implement-data-layer)质量章节末尾加"产物自评"项
+- product-pipeline-master + game-forge-master 末尾加可选 Tool 确认点(确认点 5/6),打通"产出→提交→部署"闭环,Tool 前过 guardrail 前置检查
+- _shared/validate.ps1 扩展 3 项检查:Tool skill 必须有 scripts/ 目录 / 审查类 skill 必须声明"只读"约束 / 新 skill frontmatter 必填 name+description
+- 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十三
+
+### 2026-08-06 AI Agent 体系升级（第二阶段完成）
+- 新增 4 个 Phase 2 运行时层 skill：skill-runtime(Agent Runtime 契约) + task-planner/replanner(Planning) + workflow-runtime(Workflow 可执行化)
+- 扩展 product-pipeline-master + game-forge-master：执行顺序可由 workflow-runtime 编译为可执行 workflow.yaml，人工确认点对应 pause 节点
+- 扩展 skill-auditor：新增第 6 维度"运行时契约"（现 6 模式 6 维度）+ references/audit-runtime.md
+- 扩展 failure-casebook：新增 auto-query 子命令（skill 执行前自动查询历史失败，注入预防提示）
+- 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十四

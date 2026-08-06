@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git 工具层"
+  short_description: "封装 git commit/branch/push/diff/log,支持只提交产物目录和自动 commit message"
+  default_prompt: "Use $tool-git-ops to commit product artifacts to git, create branches, or push (with confirmation)."

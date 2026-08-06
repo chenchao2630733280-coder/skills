@@ -1,0 +1,4 @@
+interface:
+  display_name: "通用任务规划器"
+  short_description: "把复杂需求拆解为子任务树+依赖关系+优先级,产出 task-tree.json"
+  default_prompt: "Use $task-planner to decompose complex requirements into a subtask tree with dependencies and priorities, producing task-tree.json."

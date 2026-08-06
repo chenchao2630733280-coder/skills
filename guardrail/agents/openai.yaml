@@ -1,0 +1,4 @@
+interface:
+  display_name: "安全护栏"
+  short_description: "前置拦截敏感操作 + 后置审查 diff 变更,只读不写"
+  default_prompt: "Use $guardrail to check path safety before operations or review diffs after changes. Read-only."

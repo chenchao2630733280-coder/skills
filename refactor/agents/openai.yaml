@@ -1,0 +1,4 @@
+interface:
+  display_name: "代码重构"
+  short_description: "不改功能前提下改善代码结构/可读性/性能,小步重构+每步测试"
+  default_prompt: "Use $refactor to restructure code without changing functionality. Requires confirmation before executing."

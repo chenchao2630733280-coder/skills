@@ -285,6 +285,7 @@ description: "Generates terminal-aware page prototype documents for admin web, m
 5. **终端适配性**：移动端页面具备可触达的主操作、明确返回路径、核心页面状态和必要的键盘/安全区处理。
 6. **ASCII图表**：布局图、导航结构、流转关系均使用 ASCII 字符画。
 7. **口径标注**：所有指标必须标注计算口径说明。
+8. **产物自评**：本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)。
 
 ---
 

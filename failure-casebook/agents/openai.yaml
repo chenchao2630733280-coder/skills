@@ -1,0 +1,4 @@
+interface:
+  display_name: "失败案例库"
+  short_description: "自动记录 skill 失败案例,供下次执行前查询避免重复踩坑"
+  default_prompt: "Use $failure-casebook to record a skill failure or query historical failure cases before executing a skill."

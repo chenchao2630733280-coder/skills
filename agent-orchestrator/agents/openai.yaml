@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent 协同层"
+  short_description: "多 Agent 协同编排,定义通信协议与委派/收集/合并逻辑"
+  default_prompt: "Use $agent-orchestrator to define inter-agent communication protocols and orchestrate multi-agent delegation/collection/merge. Supports master-slave and peer-to-peer modes. Note: defines protocol only; actual multi-agent execution depends on the host."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "数据库工具层"
+  short_description: "封装 migration/query/rollback,生产环境只读,连接串从环境变量读取"
+  default_prompt: "Use $tool-db-ops to run database migrations, query data, or rollback migrations. Production is read-only."

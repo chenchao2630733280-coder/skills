@@ -28,11 +28,18 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 
 **已收录基线**:
 
-| 基线名 | 路径 | 适用画风 |
-|---|---|---|
-| Q版国风修仙水墨手游风 | `references/style-baseline-chibi-xianxia-ink.md` | Q版 2.5~3 头身 + 水墨淡彩 + 玉石金描边 UI + 仙侠题材 |
+| 基线名 | 维度 | 引擎 | 路径 | 适用画风 |
+|---|---|---|---|---|
+| Q版国风修仙水墨手游风 | 2D | Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 | `references/style-baseline-chibi-xianxia-ink.md` | Q版 2.5~3 头身 + 水墨淡彩 + 玉石金描边 UI + 仙侠题材 |
+| 3D卡通休闲躲猫猫手游风 | 3D | Unity (URP) / Godot 4 | `references/style-baseline-cartoon-casual-hide-seek.md` | Q版 2~2.5 头身 + 卡通明亮圆润 + 大圆弹性 UI + 躲猫猫/变装隐藏题材 |
 
-**判定规则**:读 PRD 后,若画风关键词(chibi / 国风 / 修仙 / 仙侠 / 水墨 / 手游 RPG)命中上表,则在生成的 `ART_SPEC.md` 顶部按基线 §16.1 声明扩展,资源 prompt 直接复用基线 §13 模板,负面词固定附加基线 §14 清单。
+**判定规则**:
+1. **先判维度**:从 PRD / TECH_DESIGN 读渲染维度(2D / 3D)与目标引擎,缩小候选基线范围。
+2. **再判画风关键词**:
+   - 2D + `chibi / 国风 / 修仙 / 仙侠 / 水墨 / 手游 RPG` → 命中 chibi-xianxia-ink
+   - 3D + `卡通 / 可爱 / 明亮 / 圆润 / 躲猫猫 / 变装 / 玩具世界 / 休闲手游` → 命中 cartoon-casual-hide-seek
+3. **命中后**:在生成的 `ART_SPEC.md` 顶部按对应基线的"项目级扩展声明"小节(chibi-xianxia-ink 为 §16.1,cartoon-casual-hide-seek 为 §19.2)声明扩展,资源 prompt 直接复用基线对应章节的模板(chibi-xianxia-ink 为 §13,cartoon-casual-hide-seek 为 §16),负面词固定附加基线负面词清单(chibi-xianxia-ink 为 §14,cartoon-casual-hide-seek 为 §17)。
+4. **维度差异注意**:2D 基线 asset type 走 spriteframe/image + 图集打包;3D 基线 asset type 走 model/texture/material/animation/prefab + 不打包(Unity 用 Sprite Atlas,Godot 4 用直接 Texture / AtlasTexture)。下游 game-code-forge 按基线维度选择引擎分支(2D → Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 等,3D → Unity / Godot 4)。
 
 未命中任何基线时,沿用本 skill §四的通用 ART_SPEC 模板自行定义风格。
 
@@ -258,6 +265,18 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 - 描边宽度统一(2px)
 - 阴影方向统一(右下 45 度)
 
+### 4.3 文字-背景对比度参考表(需叠加文字的背景图共用)
+
+> 本表是**全流水线唯一源**,game-asset-forge 的 `references/card-bg-spec.md` §12.5 与 game-polish 的 `references/asset-fix-recipes.md` §11.4 均引用本表,不再各自维护副本。
+>
+> **规则**:背景与文字的亮度差应 ≥ 40%(WCAG AA 标准简化版)。
+
+| 背景底色 | 文字颜色 | 适用场景 |
+|---|---|---|
+| 浅米黄(#F5E6C8) | 深红(#8B0000)/深灰(#444444)/深棕(#5a0a12) | 水墨风卡片 |
+| 深红(#2a1810) | 金色(#FFD700)/白色(#FFFFFF) | 宫廷风卡片 |
+| 浅灰(#E8E8E8) | 深灰(#333333)/黑色(#000000) | 现代风面板 |
+
 ## 5. 图集打包约束
 - 单图集最大 2048×2048
 - 边缘 padding 2px
@@ -335,6 +354,24 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 | sfx-jump | SFX | 点击跳跃 | 200ms | 否 | 清脆短促 | 静音占位 |
 | sfx-crash | SFX | 撞击障碍 | 500ms | 否 | 低沉爆破 | 静音占位 |
 
+## 2.5 SFX 事件映射表(工程接入用,必填)
+
+供 game-code-forge 生成音频调用代码、game-quality-gate Gate 2 的 2.13"manifest audio asset ↔ AUDIO_SPEC 事件映射表"校验对齐。
+
+| 事件 ID | 触发条件(PRD 状态机事件) | 音频 ID | 优先级 | 层级 | 备注 |
+|---|---|---|---|---|---|
+| evt_jump | 玩家点击 → 跳跃状态 | sfx-jump | P1 | 单次 | 跳跃失败不触发 |
+| evt_crash | 碰撞 → 游戏结束 | sfx-crash | P0 | 单次 | 优先于 BGM |
+| evt_score | 计分 → 分数+1 | sfx-score | P2 | 单次 | 连续得分变调(可选) |
+| evt_home_bgm | 场景进入 Home | bgm-home | P3 | 循环 | 切场景淡入淡出 |
+| ... | ... | ... | ... | ... | ... |
+
+> **事件 ID 命名规范**:evt_{动作}_{对象},如 evt_jump_player / evt_crash_obstacle。
+> **触发条件**:必须引用 PRD §6.2 状态转换表中的"事件"列,保证状态机与音频事件对齐。
+> **优先级**:P0(必须播放,如碰撞/失败) > P1(核心反馈,如跳跃/得分) > P2(次要反馈,如按钮) > P3(背景,如 BGM)。
+> **层级**:单次(播放一次)/ 循环(直到停止事件)/ 变调(连续触发时音调变化)。
+> **资源预算**:同时发声数 ≤ 4(移动端),P0/P1 优先播放,P2/P3 在满负荷时丢弃。
+
 ## 3. 占位音频生成
 所有音频用统一的 1 秒静音文件占位:
 - wav 占位:`assets/audio/_placeholder.wav`
@@ -404,3 +441,4 @@ ART_SPEC.md 末尾追加"已知风险"章节,标注哪些资源可能生图困�
 - [ ] predecessorId 仅在 id 变更时填入,否则为 null
 - [ ] ART_SPEC.md 末尾标注已知风险(高频坑:AI 生图返回 jpg)
 - [ ] ART_SPEC.md 末尾有"变更记录"章节(布局调整时追加,首次生成可留空占位)
+- [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

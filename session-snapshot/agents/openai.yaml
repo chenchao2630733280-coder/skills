@@ -1,0 +1,4 @@
+interface:
+  display_name: "会话持久化层"
+  short_description: "把当前会话关键状态（任务进度/已产出文件/上下文摘要）快照保存，支持跨会话恢复。与宿主记忆互补"
+  default_prompt: "Use $session-snapshot to save or restore session state snapshots (task progress, artifacts, context summary, workflow state). Supports cross-session recovery. Complements host memory (host = session-level, this skill = explicit snapshot + cross-session)."

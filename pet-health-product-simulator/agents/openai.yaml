@@ -1,8 +1,0 @@
-interface:
-  display_name: "宠物健康产品模拟器"
-  short_description: "模拟宠物主人端的通用健康问诊、风险分诊和转诊交互"
-  brand_color: "#1677FF"
-  default_prompt: "使用 $pet-health-product-simulator 模拟一轮面向宠物主人的完整健康问诊产品交互。"
-
-policy:
-  allow_implicit_invocation: true

@@ -1,4 +1,4 @@
-﻿---
+---
 name: "game-polish"
 description: "AI 游戏生成流水线阶段 6(可选)。在 game-integrate 产出可运行游戏后,叠加视觉/手感/反馈层面的动画与效果打磨,不改变核心玩法与数值。当被 game-forge-master 调度到本阶段,或用户要'优化游戏效果/让画面更好看/加特效/提升手感/打磨动画'时调用。"
 ---
@@ -340,238 +340,54 @@ export function detectHeadSide(texture: Phaser.Textures.Texture): number {
 
 **适用**:
 - 2D 实时游戏(跑酷/平台/飞行/养成/水族)
-- Phaser / Pixi / Canvas / DOM 渲染均可
+- Web 引擎:Phaser 3 / Pixi.js / 纯 Canvas / DOM 渲染均可
+- Godot 4(2D 模式):Node2D / Sprite2D / AnimationPlayer,代码示例需翻译为 GDScript
+- Unity(2D 模式):SpriteRenderer / Animator / Canvas,代码示例需翻译为 C#
 
 **不适用**:
+- 纯 3D 游戏(优化对象是模型 / 材质 / 光照,非本 skill 的 2D 渲染优化范畴)
 - 纯文字游戏(无动画可优化)
 - 回合制游戏(优化空间小,仅 A1/D3 适用)
 - 已有专业美术资源的商业项目(应直接换资源而非运行时优化)
 
-
----
-
-## 十一、AI 生图资源常见问题修复(关键章节)
-
-### 11.1 问题背景
-
-game-asset-forge 产出的 AI 生图资源在实际使用中常出现以下问题,本章节提供运行时修复方案。这些问题在资源生成阶段难以完全避免,需要在 polish 阶段通过代码或脚本修复。
-
-### 11.2 9patch 纹理透明问题
-
-**现象**:9patch 卡片/对话框纹理中心区域过度透明,导致透穿后面背景。
-
-**原因**:`remove-white-bg.mjs` 脚本处理白底时,9patch 纹理中心的宣纸纹理被误判为白色背景而去除。
-
-**修复方案 A:排除特定资源**(推荐)
-
-在去白底脚本中排除 9patch 纹理:
-```javascript
-function shouldSkip(relPath) {
-  // 9patch 纹理中心需要不透明,跳过处理
-  return relPath.includes('9patch_');
-}
-```
-
-**修复方案 B:用 AI 生成完整背景图替代 9patch**
-
-直接用 AI 生成包含边框+底色的完整卡片/对话框背景图(见 game-asset-forge 第十二章),代码侧改用:
-```typescript
-// 旧方案(9patch + 纯色底)
-const bgFill = scene.add.rectangle(0, 0, w, h, 0xf5e6c8, 1);
-const cardBg = new NinePatch(scene, 0, 0, w, h, '9patch_card', 40);
-
-// 新方案(AI 生成完整背景图)
-const cardBg = scene.add.image(0, 0, 'card_bg').setDisplaySize(w, h);
-```
-
-### 11.3 按钮 hover 纹理切换白底问题
-
-**现象**:按钮 hover 时切换到 `btn_primary_hover` 纹理,该纹理有白底残留,视觉上出现白色闪烁。
-
-**原因**:AI 生成的 hover 态按钮纹理同样存在白底问题,且 hover 纹理与普通态纹理风格不一致。
-
-**修复方案:改用缩放效果替代纹理切换**(推荐)
-
-```typescript
-// 旧方案(纹理切换,有白底问题)
-this.bg.on('pointerover', () => {
-  this.bg.setTexture('btn_primary_hover');  // ← 白底残留
-});
-
-// 新方案(缩放效果,无纹理切换)
-this.bg.on('pointerover', () => {
-  this.setScale(1.05);  // ← 放大 5% 作为选中态
-});
-this.bg.on('pointerout', () => {
-  this.setScale(1);
-});
-this.bg.on('pointerdown', () => {
-  this.setScale(0.97);  // ← 按下缩小
-});
-this.bg.on('pointerup', () => {
-  this.setScale(1.05);  // ← 回到 hover 态
-});
-```
-
-**优点**:
-- 无纹理切换,避免白底问题
-- 缩放反馈更自然,符合移动端交互习惯
-- 减少资源加载(hover/disabled 纹理可选)
-
-### 11.4 卡片背景图文字可读性问题
-
-**现象**:AI 生成的卡片背景图装饰过于复杂/颜色过深,叠加的文字看不清。
-
-**修复方案 A:重新生成背景图**
-
-按 game-asset-forge 第十二章的 prompt 规范重新生成,强调中心区域干净留白。
-
-**修复方案 B:调整文字颜色适配背景**
-
-```typescript
-// 浅色底 → 深色文字
-const title = scene.add.text(0, 0, '卡片标题', {
-  color: '#8B0000',  // 深红,适配浅米黄底
-});
-
-// 深色底 → 浅色文字
-const title = scene.add.text(0, 0, '卡片标题', {
-  color: '#FFD700',  // 金色,适配深红底
-});
-```
-
-**颜色搭配参考**:
-| 背景底色 | 文字颜色 |
-|---|---|
-| 浅米黄(#F5E6C8) | 深红(#8B0000)/深灰(#444444) |
-| 深红(#2a1810) | 金色(#FFD700)/白色(#FFFFFF) |
-
-### 11.5 角色/精灵白底残留
-
-**现象**:角色立绘/精灵图周围有白色矩形背景,与游戏背景不融合。
-
-**原因**:AI 生图返回 jpg(无 alpha 通道)或 png 但白底未完全去除。
-
-**修复方案:重新处理图片像素**
-
-```javascript
-// 用 sharp 重新处理,更激进的阈值
-const BG_THRESHOLD = 30;   // RGB 差值小于此值视为白色
-const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-for (let i = 0; i < data.length; i += info.channels) {
-  const r = data[i], g = data[i+1], b = data[i+2];
-  const diff = Math.max(255-r, 255-g, 255-b);
-  if (diff < 30) {
-    data[i+3] = 0;  // 完全透明
-  } else if (diff < 60) {
-    const k = (diff - 30) / 30;
-    data[i+3] = Math.round(255 * k);  // 渐变透明
-  }
-}
-await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toFile(output);
-```
-
-**注意**:阈值越激进越容易误伤角色高光(如白色鱼身),需逐图调整。
-
-### 11.6 修复流程
-
-```
-1. 浏览器测试发现视觉问题(白底/透明/文字不可读)
-2. 定位问题资源(通过 browser_evaluate 检查纹理)
-3. 选择修复方案:
-   ├─ 9patch 透明 → 排除处理 或 换 AI 完整背景图
-   ├─ 按钮 hover 白底 → 改缩放效果
-   ├─ 卡片文字不可读 → 重新生成背景图 或 调文字颜色
-   └─ 角色白底 → 重新处理像素
-4. 修复后浏览器验证
-5. 记录到 POLISH_REPORT.md
-```
+> **引擎适配说明**:本 skill 的代码示例以 TypeScript + Phaser API 为基准。Godot 4 / Unity 引擎时,效果清单(§A~§F)与适用类型判断仍然有效,但实现代码需按引擎语法翻译:
+> - Godot 4:GDScript 4.x,`Sprite2D` 替代 `Phaser.GameObjects.Sprite`,`Tween` 替代手动 lerp,`AnimationPlayer` 替代 `this.anims`
+> - Unity:C#,`SpriteRenderer` / `Transform.localScale` 替代 `sprite.scale`,`DOTween` 或 `LeanTween` 替代手动 lerp,`Animator` 替代 `this.anims`
 
 
 ---
 
-## 十二、弹窗与卡片蒙层规范(关键章节)
+## 十一、AI 生图资源常见问题修复(详见 references)
 
-### 12.1 问题背景
+> **本章完整内容已抽离到 `references/asset-fix-recipes.md`**(9patch 透明问题、按钮 hover 白底、卡片文字可读性、角色白底残留、修复流程)。
+>
+> **何时读取**:当浏览器测试发现视觉问题(白底/透明/文字不可读)时。
+>
+> **核心要点速览**:
+> 1. 9patch 透明 → 排除处理 或 换 AI 完整背景图
+> 2. 按钮 hover 白底 → 改缩放效果替代纹理切换
+> 3. 卡片文字不可读 → 重新生成背景图 或 调文字颜色(深底浅字/浅底深字)
+> 4. 角色白底 → 用 sharp 重新处理像素(阈值 + 渐变透明)
 
-游戏中常出现"卡片/弹窗直接叠加在背景上"的问题:
-- 卡片展示时,背景的角色立绘、对话框、动画仍在运动,视觉互相干扰
-- 信息卡片展示时,背景的特效动画透穿卡片,分散注意力
+---
 
-**根因**:展示卡片/弹窗时没有添加蒙层(半透明遮罩),背景元素未被压暗。
+## 十二、弹窗与卡片蒙层规范(详见 references)
 
-### 12.2 蒙层规范(强制)
+> **本章完整内容已抽离到 `references/overlay-spec.md`**(蒙层规范、透明度选择、渲染顺序、渐入动画、检查清单)。
+>
+> **何时读取**:当实现卡片展示/弹窗/确认对话框时。
+>
+> **核心要点速览**:
+> 1. 所有全屏卡片/弹窗/确认对话框**必须**在背景之上、卡片之下加蒙层
+> 2. 透明度:卡片选择 0.40-0.45 / 卡片展示 0.50-0.55 / 确认对话框 0.65-0.70 / 评分弹窗 0.70-0.75
+> 3. 蒙层用渐入动画(duration 400ms,避免突兀)
+> 4. 渲染顺序:背景图 → 背景动画 → 蒙层 → 卡片 → 文字/按钮
 
-**所有**全屏卡片展示、弹窗、确认对话框**必须**在背景之上、卡片之下添加蒙层:
+---
 
-```typescript
-const overlay = this.add
-  .rectangle(0, 0, width, height, 0x000000, 0.55)
-  .setOrigin(0);
-overlay.setAlpha(0);
-this.tweens.add({
-  targets: overlay,
-  alpha: 0.55,
-  duration: 400,
-});
-```
+## references 使用指引
 
-### 12.3 透明度选择
-
-| 场景类型 | 透明度 | 说明 |
-|---|---|---|
-| 卡片选择(需看背景上下文) | 0.40-0.45 | 压暗但背景可见 |
-| 卡片展示(仪式感揭示) | 0.50-0.55 | 较强压暗,突出卡片 |
-| 确认对话框(模态) | 0.65-0.70 | 强压暗,聚焦对话 |
-| 评分弹窗(全屏聚焦) | 0.70-0.75 | 最强压暗 |
-
-### 12.4 蒙层位置(渲染顺序)
-
-蒙层必须在**背景元素之后、卡片/弹窗之前**添加:
-
-```
-渲染顺序(从下到上):
-1. 背景图(bg_*)
-2. 背景动画/粒子/角色立绘    <- 这些要被压暗
-3. 蒙层(overlay)              <- 加在这里
-4. 卡片/弹窗内容              <- 这些不被压暗
-5. 卡片上的文字/按钮
-```
-
-**反例**(蒙层在卡片之上):
-```typescript
-const card = new Card(this, x, y, tmpl, w, h);
-const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.55);  // 错!蒙住卡片了
-```
-
-**正例**(蒙层在卡片之下):
-```typescript
-const overlay = this.add.rectangle(0, 0, width, height, 0x000000, 0.55);  // 先加蒙层
-const card = new Card(this, x, y, tmpl, w, h);                          // 卡片在蒙层上
-```
-
-### 12.5 渐入动画(推荐)
-
-蒙层应使用渐入动画,避免突然变暗的突兀感:
-```typescript
-overlay.setAlpha(0);
-this.tweens.add({ targets: overlay, alpha: 0.55, duration: 400, ease: 'Quad.easeOut' });
-```
-
-### 12.6 检查清单
-
-| 场景 | 是否有蒙层 | 透明度 | 渐入 |
-|---|---|---|---|
-| 卡片标题卡 | ✓/✗ | 0.40-0.55 | ✓/✗ |
-| 卡片选择(需看背景) | ✓/✗ | 0.40-0.45 | ✓/✗ |
-| 卡片展示(仪式感揭示) | ✓/✗ | 0.50-0.55 | ✓/✗ |
-| 评分弹窗 | ✓/✗ | 0.70-0.75 | ✓/✗ |
-| 确认对话框 | ✓/✗ | 0.65-0.70 | ✓/✗ |
-| 分享卡展示 | ✓/✗ | 0.50-0.55 | ✓/✗ |
-
-### 12.7 适用范围与与其他效果的关系
-
-- 适用于所有 Phaser/Pixi/Canvas 游戏的弹窗与卡片展示
-- 蒙层与 camera fadeOut 不同:fadeOut 是全屏黑屏切换场景,蒙层是场景内压暗背景
-- 蒙层与粒子特效可共存:粒子在蒙层之上仍可见
-- 蒙层与 InkTransition 可共存:墨转场是全屏闪烁,蒙层是持续压暗
+| 文件 | 何时读取 |
+|------|---------|
+| `references/asset-fix-recipes.md` | AI 生图资源常见问题修复(§十一):浏览器测试发现视觉问题时 |
+| `references/overlay-spec.md` | 弹窗与卡片蒙层规范(§十二):实现卡片/弹窗/对话框时 |

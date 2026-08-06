@@ -1,0 +1,4 @@
+interface:
+  display_name: "调试修复"
+  short_description: "接收错误日志/堆栈,定位根因并修复,最多重试3轮,修复前需确认"
+  default_prompt: "Use $debug-fix to debug an error, locate root cause, and fix the bug. Fix requires confirmation."

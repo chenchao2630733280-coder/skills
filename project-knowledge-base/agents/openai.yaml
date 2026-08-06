@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目知识库"
+  short_description: "结构化存储团队规范/ADR/事故复盘/代码规范,供其他 skill 执行前查询"
+  default_prompt: "Use $project-knowledge-base to query project knowledge before executing a skill, or add/update knowledge entries."

@@ -218,6 +218,7 @@ output/site/
 8. **资源合规**:分析截图不进入Skill或输出;仅用授权资产或本地SVG/CSS/中性占位
 9. **零占位符**:无"开发中"等文案(详见8.1)
 10. **viewport一致**:双端 `viewport-fit=cover`,移动端允许缩放
+11. **产物自评**:本 skill 产出后,按 skill-auditor 执行后评测模式自查 build-report.json 字段完整性(可选)
 
 ---
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Context 层"
+  short_description: "代码库持久化语义索引,跨会话检索,与宿主 SearchCodebase 互补"
+  default_prompt: "Use $codebase-rag to build/update a persistent code index for large projects or cross-session code retrieval. Falls back to keyword search when no embedding library is available."

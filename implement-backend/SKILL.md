@@ -85,3 +85,13 @@ description: "Implements production backend APIs, domain services, validation, a
 - 更新 `./output/build/traceability.json` 和 `task-board.json`
 
 报告必须区分：已实现并验证、已实现但未验证、外部阻塞、明确未实现。
+
+---
+
+## 质量检查清单
+
+- [ ] API 契约与 PRD 一致
+- [ ] 鉴权/授权完整
+- [ ] 校验规则覆盖边界
+- [ ] 测试覆盖关键路径
+- [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

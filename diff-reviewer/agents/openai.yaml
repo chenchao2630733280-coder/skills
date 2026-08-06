@@ -1,0 +1,4 @@
+interface:
+  display_name: "变更审查"
+  short_description: "后置审查 diff 变更,标红删除/大幅删减/配置/依赖/密钥变更,只读不写"
+  default_prompt: "Use $diff-reviewer to review diffs after changes and flag risky modifications. Read-only."

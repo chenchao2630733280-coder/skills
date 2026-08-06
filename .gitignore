@@ -18,5 +18,10 @@ node_modules/
 .tmp/
 tmp/
 
+# Generated validation / execution reports (transient artifacts)
+runtime-contract-report.json
+workflow-exec-report.json
+
 # Local workspace memory / sync (not part of the published skills collection)
 .workbuddy/
+.trae/

@@ -1,0 +1,4 @@
+interface:
+  display_name: "重规划器"
+  short_description: "子任务失败或上下文变化时,动态调整 task-tree(重排/跳过/拆分/合并/降级),产出 task-tree.v2.json + replan-report.md"
+  default_prompt: "Use $replanner to dynamically adjust the task-tree when a subtask fails or requirements change, producing task-tree.v2.json and replan-report.md."

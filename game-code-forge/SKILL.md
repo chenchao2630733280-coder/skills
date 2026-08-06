@@ -1,6 +1,6 @@
-﻿---
+---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser/Pixi/纯 Canvas/Godot 4/Unity 五引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity 五引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -62,7 +62,7 @@ Unity 工程:
 
 ```
 {项目名}/
-├── index.html              # Phaser/Pixi/Canvas 入口
+├── index.html              # Phaser 3/Pixi.js/纯 Canvas 入口
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -126,6 +126,8 @@ Unity 工程:
 | `references/pitfall-balance-validation.md` | 跑酷类游戏数值配置生成时 |
 | `references/pitfall-phaser-text-wrap.md` | Phaser 含中文文字渲染时 |
 | `references/pitfall-atlas-frame-format.md` | Phaser 帧动画图集生成时 |
+| `references/pitfall-phaser-ui-overlay-input.md` | Phaser UI 弹窗/长按/拖拽交互与层级（自定义容器被蒙层遮挡、setInteractive 写法、长按定时器、dragMode 区分） |
+| `references/pitfall-state-visual-feedback.md` | 切换型玩法状态（潜行/加速/变身/整活/开盾）必须有可见反馈，否则玩家误判"点了没反应" |
 
 ---
 
@@ -274,7 +276,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 | 引擎类型 | 配置文件 | references 文件 |
 |---------|---------|----------------|
-| Web(Phaser/Pixi/Canvas) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
+| Web(Phaser 3/Pixi.js/纯 Canvas) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
 | Godot 4 | project.godot/export_presets.cfg | `references/engine-godot-template.md` |
 | Unity | ProjectVersion.txt/manifest.json/.asmdef/.csproj | `references/engine-unity-template.md` |
 
@@ -298,6 +300,11 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ## 十一、交互约定
 
+0. **输入校验(读取前一次性)**:逐个检查 4 份输入文档是否存在,缺失则报错并列出缺失文件后退出,不进入生成流程:
+   - `docs/GAME_BLUEPRINT.md` 缺失 → "缺少蓝图,请先调用 game-blueprint"
+   - `docs/PRD.md` 或 `docs/TECH_DESIGN.md` 缺失 → "缺少规格,请先调用 game-spec"
+   - `docs/ASSET_MANIFEST.json` 缺失 → "缺少资源清单,请先调用 game-art-spec"
+   - `ASSET_MANIFEST.json` 存在但非法 JSON → `JSON.parse` try-catch,报错附行号与错误信息,退出
 1. 读取 4 份输入文档后,**不要问用户**,直接生成
 2. 生成过程分批 Write,每批 5-10 个文件
 3. 完成后简报:"代码生成完成,共 {N} 个 .ts 文件。下一步可调用 game-integrate 集成构建"
@@ -317,6 +324,8 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - [ ] README 含运行命令
 - [ ] Sprite/Body 偏移安全(见 十三)
 - [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十四)
+- [ ] UI 自定义容器(Panel/RustButton 等)已显式 `parent.add(panel)`,未被高 depth 蒙层遮挡(见 十七)
+- [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)
 
 ---
 
@@ -343,3 +352,24 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 > **Phaser 专属**。完整规范见 `references/pitfall-atlas-frame-format.md`。
 
 核心约束:generateFrameNames 的 prefix/suffix/start/end 必须与 JSON Hash 中的实际帧名完全匹配。
+
+## 十七、Phaser UI 交互 / 层级踩坑(关键踩坑)
+
+> **Phaser 专属**。完整规范见 `references/pitfall-phaser-ui-overlay-input.md`。
+
+核心约束(生成弹窗/长按/拖拽 UI 时必查):
+- 自定义 `Panel`/`RustButton` 等容器构造函数会 `scene.add.existing(this)` 挂到场景根(depth 0),**必须显式 `targetContainer.add(panel)`**,否则被更高 depth 的全屏蒙层遮挡(表现"只有蒙层没有弹窗")。
+- `setInteractive` 必须用配置对象 `{ hitArea, hitAreaCallback, useHandCursor }`,不能把 `useHandCursor` 当第三参。
+- 长按用 `this.time.delayedCall` 定时器触发 + `done` 防重入;**不要**在 `pointerout` 取消(微抖会重置导致"卡住");拆解逻辑同步执行,不依赖抖动 tween 的 `onComplete`。
+- 全局 `drag` handler 用 `setData('dragMode','free'|'h')` 区分"自由拖"与"横滑容器",避免把 UI 一起拖飞。
+- 局部变量不能用 `let x?: T`,用 `let x: T | undefined`。
+- 缺 favicon 会产生无害 404,`index.html` 加 `<link rel="icon" href="data:," />` 消除。
+
+## 十八、状态切换的可见反馈(关键踩坑)
+
+> **跨引擎通用**。完整规范见 `references/pitfall-state-visual-feedback.md`。
+
+核心约束(生成含"潜行/加速/变身/整活/开盾"等切换态的游戏时必查):
+- 状态切换不能只改逻辑布尔/数值,必须有视觉/动画反馈(潜行半透明、整活 tween 形变、按钮持续高亮)。
+- 切换型按钮文字/底色要随状态变化(关→开),否则玩家以为"点了没反应"。
+- 动画型动作需冻结输入,避免动画期间画面乱跳。

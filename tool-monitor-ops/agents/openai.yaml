@@ -1,0 +1,4 @@
+interface:
+  display_name: "监控工具层"
+  short_description: "封装 logs/metrics/trace 查询,纯只读,平台不可用时降级提示"
+  default_prompt: "Use $tool-monitor-ops to query logs, metrics, or traces for debugging. Read-only."
