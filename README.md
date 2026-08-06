@@ -41,6 +41,7 @@
 - **Phase 2 运行时层**（2026-08-06 升级）：`skill-runtime`(runtime.yaml 契约) / `task-planner`(任务规划) / `replanner`(重规划) / `workflow-runtime`(工作流执行引擎)——把编排总纲的执行顺序升级为可执行 workflow.yaml，支持暂停/恢复/跳过/回退/并行调度。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十四。
 - **Phase 3 数据与协作层**（2026-08-06 升级）：`codebase-rag`(Context 持久化索引) / `skill-usage-tracker`(Data 调用统计) / `prompt-registry`(Model prompt 注册) / `agent-orchestrator`(多 Agent 协同协议)——补齐 Context/Data/Model/协同四大能力,从"自主运行"升级为"数据驱动+智能协作"。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五。
 - **Phase 4 自适应与执行落地层**（2026-08-06 升级）：`adaptive-tuner`(Data 自适应优化) / `session-snapshot`(Memory 会话快照) / `agent-runtime-exec`(Agent Runtime 执行器)——补齐"数据驱动自适应闭环 + 会话状态持久化 + 多 Agent 实际执行"三大能力,从"数据驱动+智能协作"升级为"智能自适应+协同运行"。扩展 skill-runtime(runtime.yaml 新增 external_overrides)/workflow-runtime(接入 adaptive-tuner)/agent-orchestrator(委托 agent-runtime-exec)。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六。
+- **元技能层**（2026-08-06 新增）：`agent-builder`(Skill 工程化元技能)——把 4 阶段升级的 23 个 skill 建设经验沉淀为可复用的 12 维度架构框架 + 6 步标准创建流程 + 7 大设计模式 + 结构模板。新建 Agent 体系层 skill 时调 `agent-builder` 确定架构定位和模式,再调 `skill-creator` 创建文件骨架。
 
 ---
 
@@ -103,6 +104,7 @@
 | adaptive-tuner | Data 层(基于调用数据自动生成 skill 参数优化建议) | skill-usage-tracker 的 usage-stats.json | tuning-suggestions.json + runtime-overrides.yaml(需用户确认) |
 | session-snapshot | Memory 层(会话状态快照与跨会话恢复) | 当前会话上下文 + 快照 ID | snapshot-{id}.json + restore-report.md |
 | agent-runtime-exec | Agent Runtime 执行层(多 Agent 实际调度执行器) | 委派任务 + Agent 列表 | agent-exec-report.json + merged-result.json |
+| agent-builder | Skill 工程化元技能(12 维度架构框架+创建流程+7 大模式+模板) | 新建 Agent 体系层 skill 的需求 | 架构定位指导+模式选择建议(只读不写) |
 
 ---
 
@@ -356,6 +358,7 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [skill-runtime](./skill-runtime/SKILL.md) - [task-planner](./task-planner/SKILL.md) - [replanner](./replanner/SKILL.md) - [workflow-runtime](./workflow-runtime/SKILL.md)（Phase 2 运行时层）
 - [codebase-rag](./codebase-rag/SKILL.md) - [skill-usage-tracker](./skill-usage-tracker/SKILL.md) - [prompt-registry](./prompt-registry/SKILL.md) - [agent-orchestrator](./agent-orchestrator/SKILL.md)（Phase 3 数据与协作层）
 - [adaptive-tuner](./adaptive-tuner/SKILL.md) - [session-snapshot](./session-snapshot/SKILL.md) - [agent-runtime-exec](./agent-runtime-exec/SKILL.md)（Phase 4 自适应与执行落地层）
+- [agent-builder](./agent-builder/SKILL.md)（元技能层：Skill 工程化元技能）
 
 **公共引用**
 - [_shared/](./_shared/)（公共 schema、UI 设计标准、校验脚本，非独立 skill）

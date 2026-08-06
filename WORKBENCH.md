@@ -138,6 +138,14 @@ skill-usage-tracker 记录调用数据(耗时/失败率)
 
 覆盖优先级:`external_overrides`(adaptive-tuner 产出) > runtime.yaml 本地字段 > 默认值。失败不阻塞:overrides 文件缺失或解析失败时回退到本地值并标 WARNING。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六。
 
+### 元技能层
+
+| Skill | 职责 |
+|---|---|
+| `agent-builder` | Skill 工程化元技能(12 维度架构框架+标准创建流程+7 大设计模式+结构模板,用于新建 Agent 体系层 skill 时指导) |
+
+**元技能层接入方式**:新建 Agent 体系层 skill 时,先调 `agent-builder` 确定架构定位和模式选择,再用 `skill-creator` 创建文件骨架。`agent-builder` 提供"怎么设计",`skill-creator` 提供"怎么写"。
+
 ## 编号体系（追溯用）
 
 PRD 产出 `PXX / BR-XXX / VR-XXX(V/S/C/E) / PERM-XXX / SM-XXX / TXX`；原型阶段产出 `SXX / ACT-XXX / OV-XXX / CMP-XXX / CMD-XXX`；各阶段校验产生 `CHK-XXX / TBD-XXX`。完整登记表见 `generate-system-prd/SKILL.md` 第七节"编号体系"。
@@ -230,3 +238,10 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 扩展 agent-orchestrator：新增 §六.1"执行后端"章节,委托 agent-runtime-exec 实际运行多 Agent,协议定义与执行实现职责分离
 - _shared/validate.ps1 扩展 3 项检查(检查 12 adaptive-tuner / 检查 13 agent-runtime-exec / 检查 14 session-snapshot references),检查 7 newSkills 加 Phase 4 的 3 个 skill(现 23 个),共 14 项检查全 PASS
 - 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六
+
+### 2026-08-06 新增 agent-builder 元技能(经验沉淀)
+- 新增 `agent-builder` skill:把 4 阶段升级的 23 个 skill 建设经验沉淀为可复用的元技能
+- 含 12 维度架构框架 + 6 步标准创建流程 + 7 大设计模式 + 标准 skill 结构模板
+- 3 份 references:`agent-architecture-framework.md`(12 维度详解) + `skill-creation-patterns.md`(7 大模式) + `skill-template.md`(结构模板)
+- 与 `skill-creator` 互补:agent-builder 提供"怎么设计 Agent skill",skill-creator 提供"怎么写 skill 文件"
+- validate.ps1 检查 7 newSkills 从 23 扩展到 24(加 agent-builder)

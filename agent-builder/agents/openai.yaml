@@ -1,0 +1,5 @@
+interface:
+  display_name: Agent Builder
+  short_description: 创建 AI Agent 体系层 skill 的元技能
+  default_prompt: |
+    我要创建一个新的 AI Agent 体系层 skill。请提供 12 维度架构框架对照、标准创建流程和设计模式指导。

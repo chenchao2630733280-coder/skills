@@ -106,7 +106,7 @@ foreach ($name in $readonlySkills) {
 if ($roMissing -eq 0) { Pass "全部审查类 skill 声明了'只读'约束(共 $($readonlySkills.Count) 个)" }
 
 # ---------- 7. 新 skill frontmatter 必填 name + description ----------
-$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator','adaptive-tuner','session-snapshot','agent-runtime-exec')
+$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator','adaptive-tuner','session-snapshot','agent-runtime-exec','agent-builder')
 $fmMissing = 0
 foreach ($name in $newSkills) {
     $md = Join-Path $ws "$name/SKILL.md"
