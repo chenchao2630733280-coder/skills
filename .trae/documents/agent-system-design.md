@@ -141,7 +141,7 @@ c:\Users\26307\.agents\skills\
   ▼
 [2] 调 product-pipeline-master（编排总纲）
     → 决策：端类型=PC 管理后台, 裁剪=跳过移动端阶段
-    → 产出执行顺序：需求澄清→PRD→PRD质量检查→原型→门户→工程蓝图→前端→后端→数据层→集成→测试→部署
+    → 产出执行顺序：需求澄清→PRD→PRD质量检查→原型→HTML生成→门户→工程蓝图→前端→后端→数据层→集成→测试→部署
   │
   ▼
 [3] 调 workflow-runtime（执行引擎）
@@ -180,64 +180,76 @@ c:\Users\26307\.agents\skills\
      → 产出原型页面文档 docs/prototype-spec.md
   │
   ▼
-[10] 执行 step 5: 调 generate-html-pages skill
+[10] ⏸ pause: 人工确认点 3
+     → AskUserQuestion: "原型页面文档已生成, 进入 HTML 生成? [进入/回退/终止]"
+     → 用户选"进入" → 继续
+  │
+  ▼
+[11] 执行 step 5: 调 generate-html-pages skill
      → 消费原型页面文档, 判定端类型
      → 路由到 generate-html-pc-admin（PC 管理后台风格）
      → 产出 output/site/pc/ + build-report.json
   │
   ▼
-[11] ⏸ pause: 人工确认点 3
+[12] ⏸ pause: 人工确认点 4
      → AskUserQuestion: "HTML 原型已生成, 进入总控门户? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[12] 执行 step 6: 调 generate-portal skill
+[13] 执行 step 6: 调 generate-portal skill
      → 消费 build-report.json, 产出总控演示门户（跨端预览+标注）
   │
   ▼
-[13] ⏸ pause: 人工确认点 4
+[14] ⏸ pause: 人工确认点 5
      → AskUserQuestion: "需求阶段(PRD+原型+门户)全部完成, 进入工程蓝图规划? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[14] 执行 step 7: 调 plan-system-implementation skill
+[15] 执行 step 7: 调 plan-system-implementation skill
      → 由 PRD/原型/仓库生成技术实施蓝图（架构/模块/API 契约/交付增量）
      → 产出 docs/IMPLEMENTATION_PLAN.md
   │
   ▼
-[15] ⏸ pause: 人工确认点 5
+[16] ⏸ pause: 人工确认点 6
      → AskUserQuestion: "工程蓝图已就绪, 进入工程实现? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[16] 执行 step 8: 并行调 implement-frontend / implement-backend / implement-data-layer
+[17] 执行 step 8: 并行调 implement-frontend / implement-backend / implement-data-layer
      → 前端: 原型转生产级前端（类型化API/可访问性/权限/测试）
      → 后端: 实现 API/领域服务/校验/授权/集成测试
      → 数据层: 实现 schema/migration/constraints/seed/repo
      → 三层并行, 汇聚后继续
   │
   ▼
-[17] 执行 step 9: 调 integrate-system skill
+[18] 执行 step 9: 调 integrate-system skill
      → 前后端+DB+认证+权限+文件+异步任务集成
      → 替换 mock 为真实流程
   │
   ▼
-[18] 执行 step 10: 调 test-and-harden-system skill
+[19] 执行 step 10: 调 test-and-harden-system skill
      → 单元/集成/E2E/安全/可访问性/性能/lint/类型/构建检查
      → 修复阻塞缺陷, 产出验收报告
   │
   ▼
-[19] ⏸ pause: 人工确认点 6
+[20] ⏸ pause: 人工确认点 7
      → AskUserQuestion: "系统已验收通过, 进入部署? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[20] 执行 step 11: 调 package-and-deploy-system skill
+[21] 执行 step 11: 调 package-and-deploy-system skill
      → 容器化/CI/CD/迁移/健康检查/可观测/备份/回滚
      → 或调 web-static-deploy（纯静态前端走 GitHub Pages/Vercel/CloudBase）
   │
   ▼
-[21] 完成 → 返回部署 URL + 验收报告路径
+[22] ⏸ pause: 人工确认点 8（可选 Tool）
+     → AskUserQuestion: "产物已部署, 是否提交到 Git / 部署到平台 / 跳过? [提交/部署/跳过]"
+     → 选"提交到 Git" → 调 tool-git-ops
+     → 选"部署到平台" → 调 tool-deploy-ops
+     → 选"跳过" → 结束
+  │
+  ▼
+[23] 完成 → 返回部署 URL + 验收报告路径
 ```
 
 这是完整产研流水线，分两大阶段：
@@ -245,9 +257,9 @@ c:\Users\26307\.agents\skills\
 **需求阶段**（step 1~6）：需求澄清→PRD→质量门禁→原型文档→HTML 生成→门户，产出可演示的需求产物
 **落地阶段**（step 7~11）：工程蓝图→前端/后端/数据层→集成→测试→部署，产出可运行系统
 
-两个阶段之间有明确转折点：确认点 4（需求阶段全部完成→进入工程蓝图规划）。
+两个阶段之间有明确转折点：确认点 5（需求阶段全部完成→进入工程蓝图规划）。
 
-共 6 个人工确认点。实际使用中可按需裁剪：
+共 8 个人工确认点（含 1 个可选 Tool 确认点）。实际使用中可按需裁剪：
 - 只做需求阶段：执行到 step 6 停止（产出 PRD+原型文档+HTML+门户）
 - 只做工程蓝图：执行到 step 7 停止
 - 只做工程实现：从 step 8 开始
@@ -383,16 +395,18 @@ references/（按需读，不强制全读）
 
 **为什么必须人工确认？**
 
-以完整产研流水线的 6 个确认点为例：
+以完整产研流水线的 8 个确认点为例：
 
 | 确认点 | AI 自动可能出错 | 人工确认的价值 |
 |--------|----------------|--------------|
 | 1. 需求澄清完成 | 理解偏了方向 | 你看一眼就知道对不对 |
 | 2. PRD 质量门禁通过 | 漏了关键需求/规则冲突 | 你比 AI 更懂业务 |
-| 3. HTML 原型生成 | 风格/布局不对 | 你比 AI 更懂用户习惯 |
-| 4. 需求阶段全部完成→进工程蓝图 | 需求没定清楚就开工落地 | 你确认需求闭环了再进入落地阶段 |
-| 5. 工程蓝图已就绪→进工程实现 | 架构方案不合理 | 你评估技术方案可行性 |
-| 6. 系统验收通过→进部署 | 测试覆盖不全/有隐藏 bug | 你运行一下就知道 |
+| 3. 原型页面文档已生成 | 页面布局/交互逻辑不对 | 你比 AI 更懂用户习惯 |
+| 4. HTML 原型已生成 | HTML 渲染异常/页面缺失 | 你点开看一眼就知道 |
+| 5. 需求阶段全部完成→进工程蓝图 | 需求没定清楚就开工落地 | 你确认需求闭环了再进入落地阶段 |
+| 6. 工程蓝图已就绪→进工程实现 | 架构方案不合理 | 你评估技术方案可行性 |
+| 7. 系统验收通过→进部署 | 测试覆盖不全/有隐藏 bug | 你运行一下就知道 |
+| 8. 产物已部署→提交 Git/部署平台（可选 Tool） | 误提交/误部署 | 你确认要提交才提交 |
 
 **确认点的标准动作**（三选项）：
 
