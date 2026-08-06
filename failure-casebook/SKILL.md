@@ -144,11 +144,15 @@ python scripts/casebook_ops.py auto-query --help
 
 1. **执行前查询(推荐)**:编排总纲在调度某 skill 执行前,先调 `query --skill <名>`,若存在近期失败案例,把 `fix` 字段作为提示注入到该 skill 的执行上下文,提前规避。
 2. **失败后自动记录**:任一 skill 执行失败时,编排总纲(或失败 skill 自身)在异常处理分支中调 `record`,把失败码、原因、(若已知)修复方法写入案例库。
-3. **接入契约**:记录与查询均为"尽力而为",不强制要求编排总纲接入;未接入时案例库为空,不影响主流程。
+3. **接入契约**:记录与查询为"显式调用"模式:编排总纲/workflow-runtime/agent-orchestrator/agent-runtime-exec/skill-runtime 在 skill 执行失败时,应显式调用本 skill 的 record 子命令记录失败码+修复方法;未接入时案例库为空,不影响主流程。建议接入以获得防踩坑能力。
 
 **与 workflow-runtime 的协作**:workflow-runtime 在调用 skill 前(执行 workflow.yaml 的 skill step 前),先调本 skill 的 auto-query 子命令,查询该 skill 的历史失败案例。若有匹配失败码,把 `preventive_hints` 注入到 skill 执行上下文,帮助 skill 提前规避已知坑。查询失败不阻塞 skill 执行(降级为无提示)。
 
 **与 skill-usage-tracker 的关联**:记录失败案例时,若 workflow-runtime 提供了 `call_id`(来自 skill-usage-tracker),则写入 `related_call_id` 字段,建立"失败案例 ↔ 调用记录"的关联。查询失败案例时,可通过 `related_call_id` 反查 skill-usage-tracker 获取该次调用的完整上下文(耗时/输入摘要/产物路径),便于根因分析。
+
+**与 agent-orchestrator / agent-runtime-exec 的协作(反向声明)**:这两个 skill 在委派/执行超时或失败时,显式调用本 skill 的 `record` 子命令记录失败码 + 修复方法(失败码格式如 `AGENT_TIMEOUT_<correlation_id>` / `AGENT_CONFLICT_<correlation_id>`)。下次同名任务委派前,这两个 skill 可调本 skill 的 `query` 子命令注入预防提示。
+
+**与 adaptive-tuner 的协作(反向声明)**:adaptive-tuner 在分析高失败率 skill(基于 skill-usage-tracker 统计)时,可关联查询本 skill 的历史案例,把"失败码 + 修复方法"作为参数优化建议的输入(如发现某 skill 因固定失败码高频失败,可在 runtime-overrides.yaml 中调整 timeout/retry/降级阈值)。
 
 ## 七、失败处理
 

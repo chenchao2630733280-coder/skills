@@ -8,13 +8,13 @@
 # 由 adaptive-tuner 生成，供 workflow-runtime 应用
 generated_at: "2026-08-06T10:30:00+08:00"
 data_source: "~/.trae-cn/usage/usage-stats.json"
-tuner_version: "1.0"
+version: "1.0"
 overrides:
   - skill: <skill名>
     timeout: <秒>
     retry:
       max: <次数>
-      backoff: <exponential | linear | fixed>
+      backoff: <fixed | exponential>
     reason: "<调优原因>"
     confidence: <0.0~1.0>
     sample_count: <样本数>
@@ -27,16 +27,17 @@ overrides:
 |------|------|------|------|
 | `generated_at` | string(ISO-8601) | 是 | 生成时间 |
 | `data_source` | string | 是 | 数据来源（usage-stats.json 路径） |
-| `tuner_version` | string | 是 | 生成器版本 |
+| `version` | string | 是 | 生成器版本 |
 | `overrides` | array | 是 | 覆盖列表 |
 | `overrides[].skill` | string | 是 | 目标 skill 名 |
 | `overrides[].timeout` | integer | 否 | 覆盖的 timeout 值（秒） |
 | `overrides[].retry` | object | 否 | 覆盖的 retry 配置 |
 | `overrides[].retry.max` | integer | 否 | 最大重试次数（≤5） |
 | `overrides[].retry.backoff` | enum | 否 | 退避策略 |
-| `overrides[].reason` | string | 是 | 调优原因（含数据依据） |
-| `overrides[].confidence` | float | 是 | 置信度（0.0~1.0） |
-| `overrides[].sample_count` | integer | 是 | 样本数 |
+| `overrides[].retry.interval` | integer (秒) | 否 | 重试间隔（fixed 模式为固定间隔，exponential 模式为初始间隔） |
+| `overrides[].reason` | string | 否 | 调优原因（含数据依据） |
+| `overrides[].confidence` | float | 否 | 置信度（0.0~1.0） |
+| `overrides[].sample_count` | integer | 否 | 样本数 |
 
 ## 三、覆盖优先级
 
@@ -55,7 +56,7 @@ workflow-runtime 执行 step 时：
 ```yaml
 generated_at: "2026-08-06T10:30:00+08:00"
 data_source: "~/.trae-cn/usage/usage-stats.json"
-tuner_version: "1.0"
+version: "1.0"
 overrides:
   - skill: game-asset-forge
     timeout: 900

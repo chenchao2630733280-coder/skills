@@ -194,7 +194,7 @@ python scripts/message_bus.py history [--from master-agent] [--to sub-agent-1] \
 | `workflow-runtime` | 互补 | workflow-runtime 编排 skill 调用(细粒度),本 skill 编排 Agent 协同(粗粒度);一个 Agent 可包含多 skill,workflow-runtime 可被 Agent 内部使用 |
 | `task-planner` | 上游 | task-planner 产出 task-tree.json;本 skill 可把多任务委派给多 Agent |
 | `skill-runtime` | 契约消费方 | Agent 委派的 `assigned_skill` 引用 skill,该 skill 的 runtime.yaml 提供 timeout/retry/degrade |
-| `failure-casebook` | 协作方 | 委派超时/失败时记录失败码,下次同名任务委派前注入预防提示 |
+| `failure-casebook` | 协作方 | 委派超时/失败时显式调用 `failure-casebook` record 子命令记录失败码,下次同名任务委派前注入预防提示 |
 | `agent-runtime-exec` | 执行后端 | 本 skill 定义协议(规则),agent-runtime-exec 实现执行器(运行);用户要"实际运行多 Agent"时,本 skill 委托 agent-runtime-exec 执行(Phase 4 新增,见 §六.1) |
 | `skill-creator` | 上游 | 新建 Agent 配置(agents/openai.yaml)时参考本 skill 的协议 |
 

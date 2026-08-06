@@ -66,6 +66,7 @@ workflow.yaml 是机读的工作流执行计划,顶层字段:`name`(必填) / `s
 | `runtime` | string | 否 | 引用的 runtime.yaml 路径(skill-runtime 契约) |
 | `confirm` | object | type=pause 时必填 | AskUserQuestion 配置:`{question, options[]}` |
 | `title` | string | 否 | 步骤标题(人读) |
+| `optional` | boolean | 否 | 仅 type=pause 时有意义;默认 false;true 表示可选暂停点(允许跳过);false 表示强制暂停 |
 
 完整字段规范、JSON Schema 与约束见 `references/workflow-yaml-schema.md`。
 
@@ -200,7 +201,7 @@ task-planner 产出 task-tree.json
    重新评估剩余步骤是否需要调整(如裁剪后续阶段、更换 skill)。重规划由编排总纲或上层 agent 决策。
 3. **保留执行轨迹**:失败时 `workflow-exec-report.json` 不丢失,写入 ABORTED 记录与失败原因,
    便于复盘与 `failure-casebook` 记录。
-4. **failure-casebook 记录**:回退触发后,`failure-casebook` 自动记录失败码 + 修复方法,
+4. **failure-casebook 记录**:回退触发后,失败时显式调用 `failure-casebook` record 子命令记录失败码 + 修复方法,
    下次同名 skill 执行前注入预防提示(与 skill-runtime §八 协作)。
 5. **失败不阻塞**:workflow 层失败时 `run_workflow.py` 退出码 1,但执行轨迹已保存,
    调用方可根据轨迹决定是否 resume 或重规划,不强制中断整个 agent 会话。
@@ -362,3 +363,10 @@ skill-usage-tracker 记录调用数据(耗时/失败率)
 
 adaptive-tuner 或 overrides 文件不可用时,workflow-runtime 标 WARNING 并使用本地 runtime.yaml 值,
 不阻塞 workflow 执行(与"失败不阻塞"原则一致)。
+
+### 13.7 与 adaptive-tuner apply 的职责分工
+
+- **adaptive-tuner apply 子命令**:**持久化**合并覆盖到 runtime.yaml 本地字段(先备份再覆盖 timeout/retry),适用于离线调优场景。
+- **workflow-runtime 运行时合并**:**运行时**合并 external_overrides 引用的 overrides 文件到 step.runtime,不修改 runtime.yaml 本地字段,适用于在线执行场景。
+- **两者不冲突**:apply 后 runtime.yaml 本地字段已被优化值覆盖,external_overrides 字段保留(供 workflow-runtime 运行时再做一次合并,值相同不会出 bug)。
+- **推荐顺序**:先 adaptive-tuner apply 持久化基线优化 → workflow-runtime 运行时按需合并临时 overrides。

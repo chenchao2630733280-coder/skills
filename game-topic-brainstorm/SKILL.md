@@ -9,7 +9,7 @@ description: "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprin
 
 **与 game-blueprint 的关系**:本 skill 产出"选什么题",game-blueprint 产出"怎么做"。本 skill **不生成蓝图**,只做选题验证。
 
-**设计原则复用**:本 skill 不重复定义设计原则,直接引用 `game-blueprint/references/` 下的原则文件做选题验证。
+**设计原则复用**:本 skill 不重复定义设计原则,直接引用 `../game-blueprint/references/` 下的原则文件做选题验证。
 
 ---
 
@@ -56,7 +56,7 @@ description: "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprin
 
 ### Step 2:品类定位
 
-读取 `game-blueprint/references/design-principles-overview.md` §二 品类决策树,根据用户的工程量预算初判品类:
+读取 `../game-blueprint/references/design-principles-overview.md` §二 品类决策树,根据用户的工程量预算初判品类:
 
 | 工程量 | 倾向品类 | 原因 |
 |---|---|---|
@@ -126,9 +126,9 @@ description: "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprin
 
 | 品类 | 读取原则文件 | 验证用原则 |
 |---|---|---|
-| 即时反馈类 | `game-blueprint/references/design-principles-instant-feedback.md` | 超休闲六原则 / 混合休闲五原则 |
-| 价值揭示类 | `game-blueprint/references/design-principles-value-reveal.md` | 价值揭示四原则 |
-| 思考顿悟类 | `game-blueprint/references/design-principles-puzzle.md` | 解谜六原则 |
+| 即时反馈类 | `../game-blueprint/references/design-principles-instant-feedback.md` | 超休闲六原则 / 混合休闲五原则 |
+| 价值揭示类 | `../game-blueprint/references/design-principles-value-reveal.md` | 价值揭示四原则 |
+| 思考顿悟类 | `../game-blueprint/references/design-principles-puzzle.md` | 解谜六原则 |
 
 每个候选填写验证表:
 

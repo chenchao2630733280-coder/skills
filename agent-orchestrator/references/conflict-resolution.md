@@ -2,7 +2,7 @@
 
 > agent-orchestrator 的多 Agent 结果冲突解决策略参考。merge 时查阅。
 
-## 一、三种冲突解决策略
+## 一、四种冲突解决策略
 
 ### 1. 优先级(priority,默认)
 
@@ -74,6 +74,28 @@ python scripts/orchestrate.py merge --correlation-id T1 --strategy human
 
 ---
 
+### 4. 最新优先(latest)
+
+**规则**:保留 timestamp 最大的结果,丢弃其他结果。适用于幂等性写入场景(如配置更新、状态覆盖),最后写入者胜出。
+
+**适用**:多 Agent 并发写入同一资源且操作幂等时(对齐 agent-runtime-exec/references/conflict-strategies.md §一第 12 行 latest 策略)。
+
+**命令**:
+```bash
+python scripts/orchestrate.py merge --correlation-id T1 --strategy latest
+```
+
+**示例**:
+```
+sub-1 result: timestamp=2026-08-06T10:00:00+08:00  summary: "配置=v1"
+sub-2 result: timestamp=2026-08-06T10:05:00+08:00  summary: "配置=v2"  <- 取这个(timestamp 最大)
+sub-3 result: timestamp=2026-08-06T09:58:00+08:00  summary: "配置=v1"
+```
+
+**退化场景**:无任何 ok 结果时,转人工裁决。
+
+---
+
 ## 二、策略选择速查
 
 | 场景 | 推荐策略 | 说明 |
@@ -82,6 +104,7 @@ python scripts/orchestrate.py merge --correlation-id T1 --strategy human
 | 对等模式,需多数共识 | voting | >50% 一致取胜 |
 | 冲突无法自动解决 | human | 转人工 |
 | 结果重要性高 | human | 强制人工确认 |
+| 幂等写入/最后写入者胜出 | latest | 取 timestamp 最大 |
 | 不确定 | priority | 默认最稳 |
 
 ---
@@ -94,6 +117,7 @@ python scripts/orchestrate.py merge --correlation-id T1 --strategy human
 | 扇入(Fan-in) | voting(多 Agent 独立产出) |
 | 管道(Pipeline) | 通常无冲突(串行单结果) |
 | 协商(Negotiation) | voting / human |
+| 并发写入(幂等) | latest(最后写入者胜出) |
 
 ---
 
@@ -105,6 +129,7 @@ python scripts/orchestrate.py merge --correlation-id T1 --strategy human
   - priority:取首个(并提示)
   - voting:无法投票,转人工
   - human:已转人工,等待标注
+  - latest:无可用结果,转人工
 
 **超时转人工流程**:
 ```

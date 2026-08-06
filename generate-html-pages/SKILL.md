@@ -114,7 +114,7 @@ output/site/
 
 | 工件 | 路径 | 生产者 | 用途 |
 |------|------|--------|------|
-| `pages.json` | `output/spec/pages.json` | generate-system-prd | 页面注册表(id/title/devices/archetypeId/applicableStates/actionIds) |
+| `pages.json` | `output/spec/pages.json` | generate-system-prd + generate-prototype（富化） | 页面注册表(id/title/devices/archetypeId/applicableStates/actionIds) |
 | `navigation.json` | `output/spec/navigation.json` | generate-prototype | 导航结构(PC侧栏、移动端Tab) |
 | `actions.json` | `output/spec/actions.json` | generate-prototype | 页面动作 |
 | `overlays.json` | `output/spec/overlays.json` | generate-prototype | 弹层 |

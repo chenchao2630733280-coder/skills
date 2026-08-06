@@ -5,6 +5,10 @@ description: 使用产品配置层与执行引擎层审核通用 PRD、需求说
 
 # PRD Quality Checker
 
+## 定位声明
+
+本 skill 是**修改类审查 skill**（非只读）：在 Improve 模式下会修改 PRD 文档以完善缺陷；在 Audit 模式下只读不写。与 guardrail/code-review/diff-reviewer/skill-auditor 等只读审查 skill 不同，本 skill 具有 PRD 修改能力。
+
 目标：在下游工作开始前，基于可定位的文档证据发现会造成范围误解、规则冲突、无法验收或返工的产品问题，并给出可复核的质量门禁结论。
 
 ## 双层架构

@@ -207,6 +207,7 @@ session-snapshot 支持在关键节点自动触发快照（由 workflow-runtime 
 | 阶段完成 | `auto-stage` | 编排总纲在阶段完成时调 save |
 | 失败回退 | `auto-fail` | workflow-runtime 在 on_fail 触发时调 save |
 | 用户手动 | `manual` | 用户显式调 save |
+| agent-runtime-exec | 执行状态持久化 | agent-runtime-exec 的执行状态可被 session-snapshot 快照保存 |
 
 **注入机制**：workflow-runtime 调用 save 后，把 `snapshot_id` 写入执行轨迹，便于后续恢复。
 

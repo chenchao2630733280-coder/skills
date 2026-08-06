@@ -7,7 +7,6 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 本 Skill 是开发阶段总入口。它按项目现状执行实施规划、数据层、后端、前端、集成、测试和部署准备，目标是交付**当前环境中可运行并有验证证据的系统**，而不是只输出代码样例。
 
-
 ## 全局安装、项目隔离与执行真实性
 
 1. 当前项目根目录是 TRAE 当前打开的目标工作区根目录；所有相对路径均从该目录解析。
@@ -20,7 +19,7 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 8. 遇到外部服务、凭据、网络或基础设施缺失时，完成可离线完成的部分，并在报告中记录准确阻塞项，不得伪造成功。
 9. 所有实现必须可追溯到 `PXX / BR-XXX / VR-XXX / PERM-XXX / SM-XXX / SXX`；映射写入 `./output/build/traceability.json`。
 10. 不覆盖无关文件；对高风险变更采用增量修改、兼容迁移和可回滚方案。
-
+11. 高风险变更（如删除文件、修改配置、数据库迁移）前，调用 guardrail 前置检查（检查 output/ 路径是否在敏感清单）。
 
 ## 适用场景
 
@@ -117,3 +116,11 @@ output/build/
 ```
 
 最终回复必须说明：实际完成范围、启动命令、验证命令、通过情况、未完成项和下一阻塞，不得仅说“系统已生成”。
+
+## 可选：产出 workflow.yaml 交 workflow-runtime 驱动执行
+
+本 skill 的编排阶段（Stage 1-6）可由 workflow-runtime skill 编译为可执行 workflow.yaml。编译命令：
+python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --master SKILL.md --section "编排阶段" --output workflow.yaml
+
+产出 workflow.yaml（可选产物）。详见 ../workflow-runtime/SKILL.md。
+

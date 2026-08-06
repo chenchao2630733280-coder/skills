@@ -350,4 +350,5 @@ description: "Generates terminal-aware page prototype documents for admin web, m
 - 页面标注使用 `SXX` 编号，按真实功能区域生成（不固定数量）；当需要机器可读工件时，向 `output/spec/annotations.json` 写入，结构参考 `../_shared/references/schemas/annotations.example.json`。
 - `annotations.json` 由本 Skill 创建和维护；`generate-html-pages` 不读取、不绑定标注（不生成 `data-spec-id`/`data-page-id`），`generate-portal` 在门户层读取 `annotations.json` 并按 PXX 分组展示标注。
 - 其他可选工件（`actions.json`、`navigation.json`、`overlays.json`、`components.json`、`design-tokens.json`）写入 `output/spec/`，结构参考 `../_shared/references/schemas/` 下对应示例。
+- `design-tokens.json` 的消费者：`generate-html-pages` + `generate-portal` + `implement-frontend`
 - **本 Skill 更新 `output/spec/pages.json`（富化）**：在 generate-system-prd 产出的 pages.json 基础上，填充 `archetypeId`（页面原型分类 ID）、`applicableStates`（适用状态）、`actionIds`（关联动作）、`specIds`（关联标注 SXX）等富化字段。generate-html-pages 读取这些字段路由 HTML 生成；product-pipeline-master §十质量门禁"原型 | pages.json 的 archetypeId 已填充"依赖此富化。

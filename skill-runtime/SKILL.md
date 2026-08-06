@@ -1,6 +1,6 @@
 ---
 name: "skill-runtime"
-description: "Agent Runtime 层 skill。定义 skill 运行时元数据契约(输入校验 schema / 超时 / 重试策略 / 降级规则),所有 skill 声明 runtime.yaml,被 workflow-runtime 与 skill-auditor 校验。当要统一 skill 运行时行为或校验 skill 是否符合运行时契约时调用。"
+description: "Agent Runtime 层 skill。定义 runtime.yaml 运行时元数据契约(timeout/retry/degrade/external_overrides),被 workflow-runtime 与 skill-auditor 校验。所有 skill 渐进式接入 runtime.yaml。当要统一 skill 运行时行为或校验 skill 是否符合运行时契约时调用。"
 ---
 
 # skill-runtime
@@ -50,7 +50,7 @@ runtime.yaml 是每个 skill **可选**声明的运行时元数据文件,位于 
 | `degrade[].trigger` | string | 是 | - | 触发条件描述(如"生图失败") |
 | `degrade[].action` | string | 是 | - | 降级动作(如"占位图(纯色+文字标识)") |
 | `degrade[].target` | string | 否 | null | 降级目标路径(glob 模式) |
-| `external_overrides` | string | 否 | null | 引用 adaptive-tuner 产出的 overrides 文件路径(相对 skill 根目录);加载后覆盖本地 timeout/retry/degrade 字段。覆盖优先级:external_overrides > 本地字段 > 默认值 |
+| `external_overrides` | string | 否 | null | 引用 adaptive-tuner 产出的 overrides 文件路径(相对 skill 根目录);加载后覆盖本地 timeout/retry 字段(不覆盖 inputs/outputs/degrade,后者是 skill 声明契约)。覆盖优先级:external_overrides > 本地字段 > 默认值 |
 
 > **类型约定**:`integer (秒)` 表示非负整数,单位秒;`string` 表示非空字符串;`boolean` 为 true/false;`array` 缺省为 `[]`,`object` 缺省为对应空对象。
 >
@@ -209,7 +209,7 @@ python scripts/validate_runtime.py scan
 | `workflow-runtime` | 消费方 | 调度 skill 前读 runtime.yaml,按 `timeout` 设定超时、按 `retry` 决定重试、按 `degrade` 决定降级 |
 | `skill-auditor` | 校验方 | 第 6 维度"运行时契约"对照本 skill 的 schema 审查(见 `skill-auditor/references/audit-runtime.md`) |
 | `_shared/validate.ps1` | 校验方 | 扩展后检查"声明了 runtime.yaml 的 skill 内容必须符合 skill-runtime schema" |
-| `failure-casebook` | 协作方 | 降级触发后,`failure-casebook` 自动记录失败码 + 修复方法,下次同名 skill 执行前注入预防提示 |
+| `failure-casebook` | 协作方 | 降级触发后,失败时显式调用 `failure-casebook` record 子命令记录失败码 + 修复方法,下次同名 skill 执行前注入预防提示 |
 | `adaptive-tuner` | 覆盖方 | 产出 `runtime-overrides.yaml`;runtime.yaml 的 `external_overrides` 字段引用该文件,实现数据驱动的参数自适应优化(Phase 4 新增) |
 | `skill-creator` | 上游 | 新建 skill 时可参考本 skill 的 schema 决定是否声明 runtime.yaml |
 

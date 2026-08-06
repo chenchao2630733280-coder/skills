@@ -146,6 +146,14 @@ skill-usage-tracker 记录调用数据(耗时/失败率)
 
 **元技能层接入方式**:新建 Agent 体系层 skill 时,先调 `agent-builder` 确定架构定位和模式选择,再用 `skill-creator` 创建文件骨架。`agent-builder` 提供"怎么设计",`skill-creator` 提供"怎么写"。
 
+## Checkpoint 机制
+
+每完成一个 todo 任务后，自动提交本地 git checkpoint：
+- commit message 以 "checkpoint(...)" 开头
+- 支持回退：`git reset --hard HEAD~1` 回到上一个 checkpoint
+- 回退后需重跑相关质量门禁
+- 触发时机：每完成一个 todo / 质量门禁 FAIL / 会话上下文丢失时用户主动触发
+
 ## 编号体系（追溯用）
 
 PRD 产出 `PXX / BR-XXX / VR-XXX(V/S/C/E) / PERM-XXX / SM-XXX / TXX`；原型阶段产出 `SXX / ACT-XXX / OV-XXX / CMP-XXX / CMD-XXX`；各阶段校验产生 `CHK-XXX / TBD-XXX`。完整登记表见 `generate-system-prd/SKILL.md` 第七节"编号体系"。

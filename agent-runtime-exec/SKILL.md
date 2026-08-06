@@ -6,7 +6,7 @@ description: "Agent Runtime 执行层 skill。基于 agent-orchestrator 定义�
 # agent-runtime-exec — Agent Runtime 执行层
 
 agent-runtime-exec 是 AI Agent 体系第四阶段升级的 **Agent Runtime 执行层 skill**。它基于
-`agent-orchestrator` 定义的通信协议，实现多 Agent 的实际调度执行（委派/收集/合并/监控），
+`agent-orchestrator` 定义的通信协议，实现多 Agent 的实际调度执行（委派/收集/合并/监控）,
 把"协议定义"升级为"实际运行"。
 
 - **执行器非协议**：本 skill 实现实际调度，`agent-orchestrator` 定义协议规范。
@@ -170,8 +170,13 @@ python scripts/resolve_conflicts.py resolve \
   "delegations": [
     {
       "msg_id": "M001",
+      "correlation_id": "T1",
+      "type": "delegate",
       "from": "master-agent",
       "to": "sub-agent-1",
+      "payload": { "task": "生成游戏蓝图", "skill": "game-blueprint" },
+      "ack_required": true,
+      "timestamp": "2026-08-06T10:00:00+08:00",
       "task": "生成游戏蓝图",
       "assigned_skill": "game-blueprint",
       "deadline": "2026-08-06T10:05:00+08:00",
@@ -185,6 +190,29 @@ python scripts/resolve_conflicts.py resolve \
   "summary": null
 }
 ```
+
+**delegations 字段说明**:
+
+协议必填字段(来自 agent-orchestrator 消息):
+
+- `msg_id`(string,必填):消息 ID
+- `correlation_id`(string,必填):来自 agent-orchestrator 消息,同任务全部消息共享
+- `type`(string,必填):消息类型(delegate/collect/merge 等)
+- `from`(string,必填):消息发送方
+- `to`(string,必填):消息接收方
+- `payload`(object,必填):消息负载
+- `ack_required`(boolean,必填):是否需要确认
+- `timestamp`(string,必填):ISO8601 时间戳
+
+执行器扩展字段(本 skill 维护):
+
+- `task`(string):任务描述
+- `assigned_skill`(string):委派给的 skill
+- `deadline`(string):截止时间(ISO8601)
+- `status`(string):pending/running/completed/failed/timeout
+- `started_at`(string|null):实际开始时间
+- `completed_at`(string|null):实际完成时间
+- `result`(object|null):执行结果
 
 ### 6.2 agent-exec-report.json(执行报告)
 
@@ -211,11 +239,11 @@ python scripts/resolve_conflicts.py resolve \
 
 | skill | 关系 | 协作方式 |
 |-------|------|---------|
-| `agent-orchestrator` | 协议来源 | 读取其 `orchestration-protocol.md` 遵循协议;读取其 `agent-messages.json` 获取委派消息 |
+| `agent-orchestrator` | 协议来源 | 读取其 `orchestration-protocol.md` 遵循协议;由 agent-orchestrator 通过 delegate 命令的 --tasks 参数传入委派任务(agent-runtime-exec 不直接读取 agent-messages.json,而是通过命令参数接收委派) |
 | `workflow-runtime` | 互补 | workflow-runtime 编排 skill(细粒度),本 skill 编排 Agent(粗粒度);Agent 内部可用 workflow-runtime |
 | `task-planner` | 上游 | task-planner 产出 task-tree.json;本 skill 把多任务委派给多 Agent |
 | `skill-runtime` | 契约消费方 | 委派的 `assigned_skill` 引用 skill,该 skill 的 runtime.yaml 提供 timeout/retry/degrade |
-| `failure-casebook` | 协作方 | 执行失败/超时时记录失败码,下次同名任务委派前注入预防提示 |
+| `failure-casebook` | 协作方 | 执行失败/超时时显式调用 failure-casebook record 子命令记录失败码,下次同名任务委派前注入预防提示 |
 | `session-snapshot` | 持久化 | 执行状态可被 session-snapshot 快照保存,支持跨会话恢复 |
 
 调用链示例:
@@ -232,11 +260,12 @@ task-planner 产出 task-tree.json
 
 本 skill 的失败 **不阻断主流程**:
 
-- 单个子 Agent 失败:标记 `failed`,继续 collect 其他结果,不中断整体。
-- 子 Agent 超时:标记 `timeout`,转人工裁决(merge --strategy human)。
+- 单个子 Agent 失败:标记 `failed`,继续 collect 其他结果,不中断整体;调 failure-casebook record 子命令记录失败码。
+- 子 Agent 超时:标记 `timeout`,转人工裁决(merge --strategy human);调 failure-casebook record 子命令记录失败码。
 - 执行状态文件读写失败:只打 WARNING,返回空结果,exit code 0(delegate)或 1(collect/merge)。
 - 冲突无法自动解决:标 `unresolved`,提示人工裁决,不强制合并。
 - **设计原则**:执行器是辅助调度,不是关键路径,宁可降级到人工也不能拖垮主流程。
+- **标准动作**:任何失败/超时均显式调用 `failure-casebook record` 子命令记录失败码 + 修复方法,供下次同名任务委派前注入预防提示。
 
 超时处理详见 `references/timeout-handling.md`。
 

@@ -154,7 +154,7 @@ output/site/mobile/
 1. 按 `pages.json` 页面清单逐页生成移动端 HTML
 2. 移动端先按 `archetypeId` 选择页面原型，再生成对应 HTML 结构（详见 `references/mobile-archetype-specs.md`）；页面骨架模板见 `references/mobile-page-skeleton.md`
 3. 双端场景下移动端与 PC 端同名页面内容对应但布局不同
-4. 从 `annotations.json`/`overlays.json`/`actions.json` 提取字段、筛选、卡片列、弹窗（移动端优先 Drawer，复杂任务使用全屏页）、操作，填充示例数据
+4. 从 `overlays.json` / `actions.json` / `pages.json`（applicableStates / actionIds）提取字段、筛选、卡片列、弹窗（移动端优先 Drawer，复杂任务使用全屏页）、操作，填充示例数据（不读取 `annotations.json`，标注仅供 `generate-portal` 展示）
 5. 所有跳转链接指向移动端内的正确页面文件
 6. 按 `permissions.json` 的 `validation` 字段控制字段显隐和操作可用性
 
@@ -257,7 +257,7 @@ output/site/mobile/
 
 | 工件 | 路径 | 生产者 | 移动端用途 |
 |------|------|--------|------|
-| `pages.json` | `output/spec/pages.json` | generate-system-prd | 页面注册表（id/title/moduleId/type/route/devices/coreTask/archetypeId/applicableStates/actionIds/specIds） |
+| `pages.json` | `output/spec/pages.json` | generate-system-prd + generate-prototype（富化） | 页面注册表（id/title/moduleId/type/route/devices/coreTask/archetypeId/applicableStates/actionIds/specIds） |
 | `navigation.json` | `output/spec/navigation.json` | generate-prototype | 移动端底部 Tab 配置 |
 | `actions.json` | `output/spec/actions.json` | generate-prototype | 页面动作（按钮、提交、跳转） |
 | `overlays.json` | `output/spec/overlays.json` | generate-prototype | 弹层（Drawer/Sheet/全屏页） |
@@ -282,10 +282,10 @@ output/site/mobile/
 | CSS色值 | `design-tokens.json` | 原型文档设计规范 | 用户UI规范优先；缺失项使用本Skill默认移动端Token |
 | 移动端页面原型 | `pages.json`（archetypeId/coreTask） | 原型文档页面结构 | 选择 service-home、content-home、category-search、media-list、detail、cart/orders、profile、public-account 或 realtime |
 | 状态标签 | `state-machines.json` | PRD 状态枚举 | 移动端 `.m-tag-xxx` |
-| 筛选条件 | `annotations.json`（display） | 原型文档页面规格 | 移动端精简入口+Drawer/上下文展开层 |
-| 卡片字段 | `annotations.json`（display） | 原型文档页面规格 | 移动端卡片字段 |
-| 表单字段 | `annotations.json`（display/interaction） | 原型文档页面规格 | 移动端单列 |
-| 概览指标 | `annotations.json`（display） | 原型文档页面规格 | 移动端2列网格 |
+| 筛选条件 | `overlays.json`（display） + `actions.json`（filter） | 原型文档页面规格 | 移动端精简入口+Drawer/上下文展开层 |
+| 卡片字段 | `overlays.json`（display） | 原型文档页面规格 | 移动端卡片字段 |
+| 表单字段 | `actions.json`（interaction） + `overlays.json`（display） | 原型文档页面规格 | 移动端单列 |
+| 概览指标 | `pages.json`（display） + `actions.json`（display） | 原型文档页面规格 | 移动端2列网格 |
 | 弹窗 | `overlays.json` | 原型文档页面规格 | 移动端优先 Drawer，复杂任务使用全屏页 |
 | 按钮与操作 | `actions.json` | 原型文档页面规格 | 按 actionIntents 实现交互，参见 §六 |
 | 权限控制 | `permissions.json` | PRD 权限矩阵 | 按 validation 字段控制字段显隐和操作可用性 |

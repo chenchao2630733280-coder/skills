@@ -145,6 +145,7 @@ python scripts/suggest.py [--from <开始日期>] [--to <结束日期>]
 | `failure-casebook` | 关联方 | 失败记录关联 call_id,查询时可返回调用上下文 |
 | `skill-auditor` | 消费方 | 可读取统计数据辅助评测 skill 质量 |
 | `replanner` | 消费方 | 重规划时参考慢 skill / 高失败率 skill 数据 |
+| `adaptive-tuner` | 数据消费方 | 读取本 skill 产出的 usage-stats.json 作为调优数据源 |
 
 ---
 
