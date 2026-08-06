@@ -25,4 +25,6 @@ workflow-exec-report.json
 
 # Local workspace memory / sync (not part of the published skills collection)
 .workbuddy/
-.trae/
+# .trae 下仅跟踪 documents(设计文档),排除其他临时文件
+.trae/*
+!.trae/documents/
