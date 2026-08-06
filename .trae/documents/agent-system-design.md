@@ -141,7 +141,7 @@ c:\Users\26307\.agents\skills\
   ▼
 [2] 调 product-pipeline-master（编排总纲）
     → 决策：端类型=PC 管理后台, 裁剪=跳过移动端阶段
-    → 产出执行顺序：项目初始化→需求澄清→PRD→PRD质量检查→工程蓝图→原型→门户→前端→后端→数据层→集成→测试→部署
+    → 产出执行顺序：需求澄清→PRD→PRD质量检查→工程蓝图→原型→门户→前端→后端→数据层→集成→测试→部署
   │
   ▼
 [3] 调 workflow-runtime（执行引擎）
@@ -149,94 +149,90 @@ c:\Users\26307\.agents\skills\
     → 每个阶段对应一个 step, 阶段间插入 pause(人工确认点)
   │
   ▼
-[4] 执行 step 1: 调 rd-init skill
-    → 从 GitLab 拉取 AI Product R&D 模板, 初始化项目骨架
+[4] 执行 step 1: 调 brainstorm-product-feature skill
+    → 澄清早期功能想法, 评估可行性
+    → 产出需求澄清文档 docs/FEATURE_BRAINSTORM.md
     → 调 skill-usage-tracker 记录这次调用
   │
   ▼
-[5] 执行 step 2: 调 brainstorm-product-feature skill
-    → 澄清早期功能想法, 评估可行性
-    → 产出需求澄清文档 docs/FEATURE_BRAINSTORM.md
-  │
-  ▼
-[6] ⏸ pause: 人工确认点 1
+[5] ⏸ pause: 人工确认点 1
     → AskUserQuestion: "需求已澄清, 进入 PRD 生成? [进入/回退/终止]"
     → 用户选"进入" → 继续
   │
   ▼
-[7] 执行 step 3: 调 generate-system-prd skill
+[6] 执行 step 2: 调 generate-system-prd skill
     → 逐章生成企业级 PRD（页面规格/权限/状态机/非功能需求）
     → 产出 docs/PRD.md + output/spec/*.json 工件
   │
   ▼
-[8] 执行 step 4: 调 prd-quality-checker skill（质量门禁）
+[7] 执行 step 3: 调 prd-quality-checker skill（质量门禁）
     → 审核 PRD 的目标/用户/范围边界/规则/验收等 15+ 维度
     → 产出 Markdown 门禁报告 → PASS
   │
   ▼
-[9] ⏸ pause: 人工确认点 2
+[8] ⏸ pause: 人工确认点 2
     → AskUserQuestion: "PRD 已通过质量门禁, 进入工程蓝图? [进入/回退/终止]"
     → 用户选"进入" → 继续
   │
   ▼
-[10] 执行 step 5: 调 plan-system-implementation skill
-     → 由 PRD/原型/仓库生成技术实施蓝图（架构/模块/API 契约/交付增量）
-     → 产出 docs/IMPLEMENTATION_PLAN.md
+[9] 执行 step 4: 调 plan-system-implementation skill
+    → 由 PRD/原型/仓库生成技术实施蓝图（架构/模块/API 契约/交付增量）
+    → 产出 docs/IMPLEMENTATION_PLAN.md
   │
   ▼
-[11] 执行 step 6: 调 generate-prototype skill
+[10] 执行 step 5: 调 generate-prototype skill
      → 消费上游 JSON 工件, 将 PRD 转为 HTML 原型
      → 路由到 generate-html-pc-admin（PC 管理后台风格）
      → 产出 output/site/pc/ + build-report.json
   │
   ▼
-[12] ⏸ pause: 人工确认点 3
+[11] ⏸ pause: 人工确认点 3
      → AskUserQuestion: "原型已生成, 进入总控门户? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[13] 执行 step 7: 调 generate-portal skill
+[12] 执行 step 6: 调 generate-portal skill
      → 消费 build-report.json, 产出总控演示门户（跨端预览+标注）
   │
   ▼
-[14] ⏸ pause: 人工确认点 4
+[13] ⏸ pause: 人工确认点 4
      → AskUserQuestion: "门户已就绪, 进入工程实现? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[15] 执行 step 8: 并行调 implement-frontend / implement-backend / implement-data-layer
+[14] 执行 step 7: 并行调 implement-frontend / implement-backend / implement-data-layer
      → 前端: 原型转生产级前端（类型化API/可访问性/权限/测试）
      → 后端: 实现 API/领域服务/校验/授权/集成测试
      → 数据层: 实现 schema/migration/constraints/seed/repo
      → 三层并行, 汇聚后继续
   │
   ▼
-[16] 执行 step 9: 调 integrate-system skill
+[15] 执行 step 8: 调 integrate-system skill
      → 前后端+DB+认证+权限+文件+异步任务集成
      → 替换 mock 为真实流程
   │
   ▼
-[17] 执行 step 10: 调 test-and-harden-system skill
+[16] 执行 step 9: 调 test-and-harden-system skill
      → 单元/集成/E2E/安全/可访问性/性能/lint/类型/构建检查
      → 修复阻塞缺陷, 产出验收报告
   │
   ▼
-[18] ⏸ pause: 人工确认点 5
+[17] ⏸ pause: 人工确认点 5
      → AskUserQuestion: "系统已验收通过, 进入部署? [进入/回退/终止]"
      → 用户选"进入" → 继续
   │
   ▼
-[19] 执行 step 11: 调 package-and-deploy-system skill
+[18] 执行 step 10: 调 package-and-deploy-system skill
      → 容器化/CI/CD/迁移/健康检查/可观测/备份/回滚
      → 或调 web-static-deploy（纯静态前端走 GitHub Pages/Vercel/CloudBase）
   │
   ▼
-[20] 完成 → 返回部署 URL + 验收报告路径
+[19] 完成 → 返回部署 URL + 验收报告路径
 ```
 
-这是完整产研流水线（13 阶段 + 5 个确认点）。实际使用中可按需裁剪：
-- 只做 PRD+原型：执行到 step 7 停止
-- 只做工程实现：从 step 8 开始
+这是完整产研流水线（12 阶段 + 5 个确认点）。实际使用中可按需裁剪：
+- 只做 PRD+原型：执行到 step 6 停止
+- 只做工程实现：从 step 7 开始
 - 只做部署：直接调 package-and-deploy-system 或 web-static-deploy
 
 ### 2.3 关键架构原则
@@ -695,7 +691,6 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 | 产研阶段 | skill | 作用 |
 |---------|-------|------|
-| 项目初始化 | rd-init | 从 GitLab 拉取 AI Product R&D 模板，初始化新产研项目骨架 |
 | 需求澄清 | brainstorm-product-feature | 早期功能想法的澄清、可行性评估、隐藏假设检查 |
 | 系统规划 | generate-system-prd | 生成企业级 PRD（页面规格/权限/状态机/非功能需求） |
 | PRD 质量门禁 | prd-quality-checker | 审核 PRD 的目标/用户/范围/规则/验收等 15+ 维度，产出门禁报告 |
@@ -771,7 +766,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 这套系统的核心理念：
 
-1. **Skill 是能力底座，不是 Agent** —— 23 个产研业务 skill + 24 个 Agent 体系 skill = 47 个能力单元，覆盖从需求到部署的完整产研链路，任何宿主都能调用
+1. **Skill 是能力底座，不是 Agent** —— 22 个产研业务 skill + 24 个 Agent 体系 skill = 46 个能力单元，覆盖从需求到部署的完整产研链路，任何宿主都能调用
 2. **人机协同是最优模式** —— AI 做执行，人做决策，不是全自动才好
 3. **12 维度缺一不可** —— 每个维度解决一类问题，少了就会卡住
 4. **失败是常态，系统为失败而设计** —— 重试、降级、回退、不阻塞
