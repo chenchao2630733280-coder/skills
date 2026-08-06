@@ -111,6 +111,33 @@ screenshot-operation-manual  截图操作手册（DOCX/PDF/Markdown）
 
 **Phase 3 接入方式**:workflow-runtime 执行 workflow.yaml 时,每步 skill 调用前后调 skill-usage-tracker record 记录调用数据(分配 call_id 贯穿链路);failure-casebook 记录失败时关联 call_id(related_call_id 字段);codebase-rag 与宿主 SearchCodebase 互补(宿主实时,本 skill 持久化+跨会话);prompt-registry 渐进式接入(先 game-*/implement-* 试点);agent-orchestrator 定义协议,实际多 Agent 运行依赖宿主。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五。
 
+### Phase 4 自适应与执行落地层（2026-08-06 升级）
+
+| Skill | 职责 |
+|---|---|
+| `adaptive-tuner` | Data 层(基于 skill-usage-tracker 数据自动生成 skill 参数优化建议,产出 runtime-overrides.yaml,需用户确认) |
+| `session-snapshot` | Memory 层(会话状态快照与跨会话恢复,save/restore/list/diff/clean) |
+| `agent-runtime-exec` | Agent Runtime 执行层(基于 agent-orchestrator 协议实现多 Agent 实际调度执行器,delegate/collect/merge/monitor) |
+
+**Phase 4 扩展的已有 skill**:
+
+| Skill | 扩展内容 |
+|---|---|
+| `skill-runtime` | runtime.yaml 新增 `external_overrides` 字段,三层覆盖优先级(overrides > 本地 > 默认),引用 adaptive-tuner 产出的 runtime-overrides.yaml |
+| `workflow-runtime` | 新增 §十三"自适应优化"章节,执行前读 external_overrides 合并 timeout/retry,形成数据驱动闭环;接入 adaptive-tuner |
+| `agent-orchestrator` | 新增 §六.1"执行后端"章节,委托 agent-runtime-exec 实际运行多 Agent;协议定义与执行实现职责分离 |
+
+**Phase 4 接入方式(自适应闭环)**:
+```
+skill-usage-tracker 记录调用数据(耗时/失败率)
+  → adaptive-tuner analyze 分析数据,生成 tuning-suggestions.json
+  → adaptive-tuner suggest 产出 runtime-overrides.yaml(需用户确认)
+  → workflow-runtime 执行时读取 external_overrides,用优化参数调度
+  → 执行结果再次被 skill-usage-tracker 记录 → (循环)
+```
+
+覆盖优先级:`external_overrides`(adaptive-tuner 产出) > runtime.yaml 本地字段 > 默认值。失败不阻塞:overrides 文件缺失或解析失败时回退到本地值并标 WARNING。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六。
+
 ## 编号体系（追溯用）
 
 PRD 产出 `PXX / BR-XXX / VR-XXX(V/S/C/E) / PERM-XXX / SM-XXX / TXX`；原型阶段产出 `SXX / ACT-XXX / OV-XXX / CMP-XXX / CMD-XXX`；各阶段校验产生 `CHK-XXX / TBD-XXX`。完整登记表见 `generate-system-prd/SKILL.md` 第七节"编号体系"。
@@ -188,3 +215,18 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 扩展 skill-auditor：新增第 6 维度"运行时契约"（现 6 模式 6 维度）+ references/audit-runtime.md
 - 扩展 failure-casebook：新增 auto-query 子命令（skill 执行前自动查询历史失败，注入预防提示）
 - 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十四
+
+### 2026-08-06 AI Agent 体系升级（第三阶段完成）
+- 新增 4 个 Phase 3 数据与协作层 skill：codebase-rag(Context 持久化索引) + skill-usage-tracker(Data 调用统计) + prompt-registry(Model prompt 版本管理) + agent-orchestrator(多 Agent 协同协议)
+- 扩展 workflow-runtime：执行 workflow.yaml 时每步调 skill-usage-tracker record 记录调用数据(分配 call_id 贯穿链路)
+- 扩展 failure-casebook：记录失败时关联 call_id(related_call_id 字段)
+- _shared/validate.ps1 扩展 2 项检查(检查 10 prompt-registry references / 检查 11 agent-orchestrator references),检查 7 newSkills 加 Phase 3 的 4 个 skill
+- 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五
+
+### 2026-08-06 AI Agent 体系升级（第四阶段完成）
+- 新增 3 个 Phase 4 自适应与执行落地层 skill：adaptive-tuner(Data 自适应优化) + session-snapshot(Memory 会话快照) + agent-runtime-exec(Agent Runtime 执行器)
+- 扩展 skill-runtime：runtime.yaml 新增 `external_overrides` 字段,三层覆盖优先级(overrides > 本地 > 默认),references/runtime-schema.md 新增 §九
+- 扩展 workflow-runtime：新增 §十三"自适应优化"章节,接入 adaptive-tuner 形成数据驱动闭环(记录→分析→覆盖→执行→再记录)
+- 扩展 agent-orchestrator：新增 §六.1"执行后端"章节,委托 agent-runtime-exec 实际运行多 Agent,协议定义与执行实现职责分离
+- _shared/validate.ps1 扩展 3 项检查(检查 12 adaptive-tuner / 检查 13 agent-runtime-exec / 检查 14 session-snapshot references),检查 7 newSkills 加 Phase 4 的 3 个 skill(现 23 个),共 14 项检查全 PASS
+- 详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六

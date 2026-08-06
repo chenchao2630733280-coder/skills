@@ -106,7 +106,7 @@ foreach ($name in $readonlySkills) {
 if ($roMissing -eq 0) { Pass "全部审查类 skill 声明了'只读'约束(共 $($readonlySkills.Count) 个)" }
 
 # ---------- 7. 新 skill frontmatter 必填 name + description ----------
-$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator')
+$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator','adaptive-tuner','session-snapshot','agent-runtime-exec')
 $fmMissing = 0
 foreach ($name in $newSkills) {
     $md = Join-Path $ws "$name/SKILL.md"
@@ -209,6 +209,60 @@ if (Test-Path $aoDir) {
 } else {
     Fail "agent-orchestrator skill 目录不存在"
     $aoFail++
+}
+
+# ---------- 12. adaptive-tuner 关键 references 必须存在(Phase 4 新增) ----------
+$atDir = Join-Path $ws 'adaptive-tuner'
+$atFail = 0
+if (Test-Path $atDir) {
+    $atRefs = @('references/tuning-rules.md','references/override-format.md')
+    foreach ($ref in $atRefs) {
+        $refPath = Join-Path $atDir $ref
+        if (-not (Test-Path $refPath)) {
+            Fail "adaptive-tuner 缺失 references 文件:$ref"
+            $atFail++
+        }
+    }
+    if ($atFail -eq 0) { Pass "adaptive-tuner references 完整(tuning-rules.md + override-format.md)" }
+} else {
+    Fail "adaptive-tuner skill 目录不存在"
+    $atFail++
+}
+
+# ---------- 13. agent-runtime-exec 关键 references 必须存在(Phase 4 新增) ----------
+$areDir = Join-Path $ws 'agent-runtime-exec'
+$areFail = 0
+if (Test-Path $areDir) {
+    $areRefs = @('references/execution-modes.md','references/conflict-strategies.md','references/timeout-handling.md')
+    foreach ($ref in $areRefs) {
+        $refPath = Join-Path $areDir $ref
+        if (-not (Test-Path $refPath)) {
+            Fail "agent-runtime-exec 缺失 references 文件:$ref"
+            $areFail++
+        }
+    }
+    if ($areFail -eq 0) { Pass "agent-runtime-exec references 完整(3 份执行器参考文件)" }
+} else {
+    Fail "agent-runtime-exec skill 目录不存在"
+    $areFail++
+}
+
+# ---------- 14. session-snapshot 关键 references 必须存在(Phase 4 新增) ----------
+$ssDir = Join-Path $ws 'session-snapshot'
+$ssFail = 0
+if (Test-Path $ssDir) {
+    $ssRefs = @('references/snapshot-schema.md','references/restore-strategy.md')
+    foreach ($ref in $ssRefs) {
+        $refPath = Join-Path $ssDir $ref
+        if (-not (Test-Path $refPath)) {
+            Fail "session-snapshot 缺失 references 文件:$ref"
+            $ssFail++
+        }
+    }
+    if ($ssFail -eq 0) { Pass "session-snapshot references 完整(snapshot-schema.md + restore-strategy.md)" }
+} else {
+    Fail "session-snapshot skill 目录不存在"
+    $ssFail++
 }
 
 # ---------- 汇总 ----------

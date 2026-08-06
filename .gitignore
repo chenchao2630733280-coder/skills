@@ -17,6 +17,7 @@ node_modules/
 *.log
 .tmp/
 tmp/
+.tmp_*
 
 # Generated validation / execution reports (transient artifacts)
 runtime-contract-report.json

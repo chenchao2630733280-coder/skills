@@ -31,7 +31,6 @@
 - `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
 - `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
 - `rd-init`：由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目。
-- `pet-health-product-simulator`：模拟/测试中文宠物主人健康分诊对话机器人产品交互（非兽医诊断）。
 
 ### 6. AI Agent 体系层（2026-08-06 升级）
 - **Tool 层**：`tool-git-ops` / `tool-ci-ops` / `tool-deploy-ops` / `tool-db-ops` / `tool-monitor-ops`——封装 Git/CI/部署/DB/监控操作,默认只读优先,变更类需用户确认。
@@ -41,6 +40,7 @@
 - **接入方式**：编排总纲(product-pipeline-master / game-forge-master)末尾的可选 Tool 确认点会按需调用 Tool 层 + guardrail 前置检查;各高频 skill 质量检查清单末尾含“产物自评”项(可选调 skill-auditor 执行后评测)。详细计划见 `.trae/documents/agent-system-upgrade-plan.md`。
 - **Phase 2 运行时层**（2026-08-06 升级）：`skill-runtime`(runtime.yaml 契约) / `task-planner`(任务规划) / `replanner`(重规划) / `workflow-runtime`(工作流执行引擎)——把编排总纲的执行顺序升级为可执行 workflow.yaml，支持暂停/恢复/跳过/回退/并行调度。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十四。
 - **Phase 3 数据与协作层**（2026-08-06 升级）：`codebase-rag`(Context 持久化索引) / `skill-usage-tracker`(Data 调用统计) / `prompt-registry`(Model prompt 注册) / `agent-orchestrator`(多 Agent 协同协议)——补齐 Context/Data/Model/协同四大能力,从"自主运行"升级为"数据驱动+智能协作"。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十五。
+- **Phase 4 自适应与执行落地层**（2026-08-06 升级）：`adaptive-tuner`(Data 自适应优化) / `session-snapshot`(Memory 会话快照) / `agent-runtime-exec`(Agent Runtime 执行器)——补齐"数据驱动自适应闭环 + 会话状态持久化 + 多 Agent 实际执行"三大能力,从"数据驱动+智能协作"升级为"智能自适应+协同运行"。扩展 skill-runtime(runtime.yaml 新增 external_overrides)/workflow-runtime(接入 adaptive-tuner)/agent-orchestrator(委托 agent-runtime-exec)。详细计划见 `.trae/documents/agent-system-upgrade-plan.md` §十六。
 
 ---
 
@@ -73,7 +73,6 @@
 | implement-frontend | 将页面规格与静态原型实现为生产级前端(集成真实 API/类型/权限/测试) | pages.json、annotations.json、design-tokens.json、原型 HTML、架构与后端契约 | 前端源码、主题配置、API 客户端、测试、frontend-implementation-report.md、更新追溯表 |
 | integrate-system | 将前后端/数据层/认证/权限/外部服务联调成可运行端到端系统 | API 契约、各已实现层、环境配置 | integration-report.md、environment-matrix.md、contract-drift.json、更新追溯表 |
 | package-and-deploy-system | 将已测系统整理为可重复构建/可运维的交付物(容器/CI/回滚文档) | 发布门禁文件、测试报告、构建产物 | 基础设施文件(infra/deploy/.github)、release-manifest.json、deployment-report.md、operations-runbook.md、handoff-checklist.md |
-| pet-health-product-simulator | 模拟/测试中文宠物主人健康分诊对话机器人产品交互(非兽医诊断) | 交互模式(模拟/脚本/QA/场景/交接)+ 参考契约/协议/风险模型 | 对话流程脚本、QA 报告、场景用例、状态机/API/UI 需求(实现交接) |
 | plan-system-implementation | 由 PRD/原型/仓库生成可执行的工程实施蓝图(架构/切片/任务板) | output/spec/*.json、PRD、原型、当前代码仓库 | implementation-plan.md、architecture.json、task-board.json、traceability.json、risk-register.md、ADR 决策记录 |
 | prd-quality-checker | 在下游工作前基于证据审核 PRD 质量，输出门禁报告(Audit/Improve) | 主 PRD/需求基线、关联清单、产品配置、可选上下文 | Markdown 门禁报告(READY/CONDITIONAL/NOT_READY)+ 可选 JSON + AI 开发准备度附录 |
 | product-pipeline-master | 产品工作台总编排调度中枢(端判定/阶段裁剪/串联下游)，本身不产出文件 | 用户需求 | 调度下游 6 主线 + 3 旁线 skill 产物(固定路径)，本 skill 不直接产出业务文件 |
@@ -101,6 +100,9 @@
 | skill-usage-tracker | Data 层(记录 skill 调用数据,统计高频/慢/失败率,纯记录不阻塞) | skill 名 + 耗时 + 状态 | records.jsonl + usage-stats.json + optimization-suggestions.md |
 | prompt-registry | Model 层(集中管理 prompt 模板,版本化+变体管理+对比) | skill 名 + prompt 模板 + 版本 | prompt-registry.json + prompts/{skill}/{version}.md |
 | agent-orchestrator | 多 Agent 协同(定义通信协议+任务委派+结果汇总) | 任务 + Agent 列表 | orchestration-protocol.md + agent-messages.json |
+| adaptive-tuner | Data 层(基于调用数据自动生成 skill 参数优化建议) | skill-usage-tracker 的 usage-stats.json | tuning-suggestions.json + runtime-overrides.yaml(需用户确认) |
+| session-snapshot | Memory 层(会话状态快照与跨会话恢复) | 当前会话上下文 + 快照 ID | snapshot-{id}.json + restore-report.md |
+| agent-runtime-exec | Agent Runtime 执行层(多 Agent 实际调度执行器) | 委派任务 + Agent 列表 | agent-exec-report.json + merged-result.json |
 
 ---
 
@@ -341,7 +343,10 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [ai-short-drama-project-development](./ai-short-drama-project-development/SKILL.md)
 
 **其他 / 垂直**
-- [pet-health-product-simulator](./pet-health-product-simulator/SKILL.md)
+- [frontend-design](./frontend-design/SKILL.md)
+- [brainstorm-product-feature](./brainstorm-product-feature/SKILL.md)
+- [build-working-system](./build-working-system/SKILL.md)
+- [rd-init](./rd-init/SKILL.md)
 
 **AI Agent 体系层**（2026-08-06 升级）
 - [tool-git-ops](./tool-git-ops/SKILL.md) - [tool-ci-ops](./tool-ci-ops/SKILL.md) - [tool-deploy-ops](./tool-deploy-ops/SKILL.md) - [tool-db-ops](./tool-db-ops/SKILL.md) - [tool-monitor-ops](./tool-monitor-ops/SKILL.md)
@@ -350,6 +355,7 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [project-knowledge-base](./project-knowledge-base/SKILL.md) - [failure-casebook](./failure-casebook/SKILL.md)
 - [skill-runtime](./skill-runtime/SKILL.md) - [task-planner](./task-planner/SKILL.md) - [replanner](./replanner/SKILL.md) - [workflow-runtime](./workflow-runtime/SKILL.md)（Phase 2 运行时层）
 - [codebase-rag](./codebase-rag/SKILL.md) - [skill-usage-tracker](./skill-usage-tracker/SKILL.md) - [prompt-registry](./prompt-registry/SKILL.md) - [agent-orchestrator](./agent-orchestrator/SKILL.md)（Phase 3 数据与协作层）
+- [adaptive-tuner](./adaptive-tuner/SKILL.md) - [session-snapshot](./session-snapshot/SKILL.md) - [agent-runtime-exec](./agent-runtime-exec/SKILL.md)（Phase 4 自适应与执行落地层）
 
 **公共引用**
 - [_shared/](./_shared/)（公共 schema、UI 设计标准、校验脚本，非独立 skill）
