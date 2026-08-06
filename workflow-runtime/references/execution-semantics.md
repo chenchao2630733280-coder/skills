@@ -63,6 +63,10 @@
 - 暂停点不可跳过:即使 step 有 `next`,也必须先暂停等用户确认
 - 一个 pause 节点对应一次 AskUserQuestion 调用
 - 暂停时 `run_workflow.py` 退出码为 0(正常暂停,非失败)
+- **optional pause**(`optional: true`):该暂停点可选,允许跳过。执行动作:
+  1. 若上游条件满足(如用户已明确要"提交/部署"),正常暂停并 AskUserQuestion
+  2. 若上游条件不满足(如用户未提及 Tool 操作),自动跳过该 pause 节点,按 `next` 继续执行(等价于 SKIP)
+  3. 典型场景:可选 Tool 确认点(如 product-pipeline-master 确认点 5),默认不强制出现
 
 ## 三、恢复(resume)
 

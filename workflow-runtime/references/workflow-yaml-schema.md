@@ -38,6 +38,7 @@ workflow.yaml 是单个 YAML 文件,通常位于工作台根目录或项目目�
 | `parallel_with` | string | 否 | null | 与本步并行执行的 step id(双向声明) |
 | `runtime` | string | 否 | null | 引用的 runtime.yaml 路径(相对 skill 根目录),见第五节 |
 | `confirm` | object | type=pause 时必填 | - | AskUserQuestion 配置,见第三节 |
+| `optional` | boolean | 否 | false | 仅 type=pause 时有意义;true 表示该暂停点可选(允许跳过,如可选 Tool 确认点);false 表示强制暂停 |
 | `title` | string | 否 | null | 步骤标题(人读,便于简报) |
 
 约束:
@@ -128,6 +129,7 @@ runtime: ../game-asset-forge/runtime.yaml
           "next": { "type": ["string", "null"] },
           "parallel_with": { "type": ["string", "null"] },
           "runtime": { "type": ["string", "null"] },
+          "optional": { "type": "boolean" },
           "title": { "type": ["string", "null"] },
           "confirm": {
             "type": "object",

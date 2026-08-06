@@ -250,11 +250,13 @@ generate-html-pages 产出:
    - ⏸ **人工确认点 4**：门户质量门禁 PASS 后，简报门户路径/iframe 预览状态，AskUserQuestion 询问"进入实施规划(可选) / 流水线完成 / 回退修复门户"
    - ⏸ **人工确认点 5（可选 Tool）**：门户完成后(或确认点 4 选"流水线完成"后),若用户明确要"提交/部署",AskUserQuestion 询问"提交产物到 Git / 部署到平台 / 跳过 Tool 操作"
      - 选"提交到 Git" → 调用 `tool-git-ops`(commit 产物目录,默认不 push)
-     - 选"部署到平台" → 调用 `tool-deploy-ops`(需先 git commit)
+     - 选"部署到平台" → 判定部署目标:
+       - 纯静态前端(无后端/无数据库) → 调用 `web-static-deploy`(GitHub Pages / Vercel / Netlify / CloudBase / COS)
+       - 含后端/数据库的完整系统 → 调用 `tool-deploy-ops`(需先 git commit)
      - 选"跳过" → 进入阶段 6(若尚未进入)或结束
    - Tool 操作前过 `guardrail` 前置检查(检查 output/ 路径是否在敏感清单)
-6. （可选）原型评审通过后，调用 `plan-system-implementation`，产出实施蓝图
-   - **实施阶段（Stage 3）的下游编排由 `build-working-system` 承担**：当用户进入工程实现阶段时，由 `build-working-system` 按 P0 垂直切片**按名调用** `implement-data-layer` / `implement-backend` / `implement-frontend` 三个专用 skill，本 skill 不直接介入三层并行调度的细节。详见 `../build-working-system/SKILL.md` Stage 3。
+6. （可选）原型评审通过后，调用 `plan-system-implementation`，**首次产出**实施蓝图（architecture.json / task-board.json / traceability.json）
+   - **与 build-working-system 的边界**：本阶段（product-pipeline-master 阶段6）是 plan-system-implementation 的**首次产出**方；后续进入 `build-working-system` 时，其 Stage 1 会**恢复或更新**已有蓝图（不重复首次产出），然后才进入 Stage 3 按 P0 垂直切片按名调用 `implement-data-layer` / `implement-backend` / `implement-frontend`。两个编排器不重复执行同一份蓝图的首次产出。
 
 ### 旁线流程（可与主线任意阶段并行）
 

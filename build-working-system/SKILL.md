@@ -40,7 +40,7 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 ### Stage 1：实施规划
 
-执行 `plan-system-implementation` 的规则，生成或更新架构、任务板和追溯矩阵。
+执行 `plan-system-implementation` 的规则，**恢复或更新**已有架构、任务板和追溯矩阵（若 product-pipeline-master 阶段6已首次产出实施蓝图，本阶段为更新；若直接从 build-working-system 启动，本阶段为首次产出）。
 
 ### Stage 2：基础可运行骨架
 

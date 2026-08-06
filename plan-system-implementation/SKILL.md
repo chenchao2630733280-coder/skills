@@ -92,7 +92,7 @@ output/build/
 
 `task-board.json` 每个任务至少包含：`id`、`sliceId`、`title`、`sourceIds`、`dependencies`、`targetFiles`、`verificationCommands`、`status`。
 
-输出文件的结构可参考 Skill 自带 `references/schemas/` 下的示例（只读）：`implementation-plan.example.json`、`task-board.example.json`、`traceability.example.json`、`acceptance-matrix.example.json`、`release-manifest.example.json`。
+输出文件的结构可参考 `../_shared/references/schemas/` 下的共享示例（唯一事实来源，不要在本地重建拷贝）：`implementation-plan.example.json`、`task-board.example.json`、`traceability.example.json`、`acceptance-matrix.example.json`、`release-manifest.example.json`。
 
 ## 质量门禁
 
