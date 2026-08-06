@@ -95,8 +95,8 @@ c:\Users\26307\.agents\skills\
 ┌─────────────────────────────────────────────────────────────┐
 │                  编排层（流程大脑）                          │
 │                                                             │
-│   game-forge-master      product-pipeline-master            │
-│   (游戏流水线总纲)        (产品工作台流水线总纲)              │
+│   product-pipeline-master                                    │
+│   (产研工作台流水线总纲)                                     │
 │                                                             │
 │   职责：决定"做什么、按什么顺序、哪些阶段跳过"                │
 └───────────────────────────┬─────────────────────────────────┘
@@ -130,18 +130,18 @@ c:\Users\26307\.agents\skills\
 
 ### 2.2 数据流：一次完整调用怎么走
 
-以"用 Phaser 生成一个躲避障碍小游戏"为例：
+以"从需求到原型生成一个产研项目的 PRD 和 HTML 原型"为例：
 
 ```
-用户："生成一个躲避障碍小游戏"
+用户："帮我做一份电商后台的 PRD 和原型"
   │
   ▼
-[1] 宿主理解目标 → 识别这是"游戏生成"场景
+[1] 宿主理解目标 → 识别这是"产研工作台"场景
   │
   ▼
-[2] 调 game-forge-master（编排总纲）
-    → 决策：引擎=Phaser, 类型=2D, 裁剪=跳过 3D 阶段
-    → 产出执行顺序：蓝图→规格→美术→代码→集成→打磨
+[2] 调 product-pipeline-master（编排总纲）
+    → 决策：端类型=PC 管理后台, 裁剪=跳过移动端阶段
+    → 产出执行顺序：需求规格→PRD→原型→门户
   │
   ▼
 [3] 调 workflow-runtime（执行引擎）
@@ -149,27 +149,27 @@ c:\Users\26307\.agents\skills\
     → 每个阶段对应一个 step, 阶段间插入 pause(人工确认点)
   │
   ▼
-[4] 执行 step 1: 调 game-blueprint skill
-    → 产出 docs/GAME_BLUEPRINT.md
+[4] 执行 step 1: 调 brainstorm-product-feature skill
+    → 产出需求澄清文档 docs/FEATURE_BRAINSTORM.md
     → 调 skill-usage-tracker 记录这次调用
   │
   ▼
-[5] 执行 step 2: 调 game-quality-gate(Gate 0)
-    → 校验蓝图合规性 → PASS
+[5] 执行 step 2: 调 generate-system-prd skill
+    → 产出 PRD 文档 docs/PRD.md
+    → 调质量门检查 PRD 合规性 → PASS
   │
   ▼
 [6] ⏸ pause: 人工确认点 1
-    → AskUserQuestion: "蓝图已生成, 进入规格设计? [进入/回退/终止]"
+    → AskUserQuestion: "PRD 已生成, 进入原型设计? [进入/回退/终止]"
     → 用户选"进入" → 继续
   │
   ▼
-[7] 执行 step 3: 调 game-spec skill → 产出 PRD + 技术设计
-[8] 执行 step 4: 调 game-art-spec → 产出美术规范
-[9] 执行 step 5: 调 game-asset-forge + game-code-forge (并行)
-    → 产出 assets/ 和 src/
-[10] ⏸ pause: 人工确认点 → 用户确认
-[11] 执行 step 6: 调 game-integrate → 产出 dist/ 可运行游戏
-[12] 完成 → 返回最终产物路径
+[7] 执行 step 3: 调 generate-prototype skill
+    → 消费上游 JSON 工件, 产出 HTML 原型 output/site/pc/
+[8] ⏸ pause: 人工确认点 2 → 用户确认原型方向
+[9] 执行 step 4: 调 generate-portal skill
+    → 产出总控演示门户,集成跨端预览与标注
+[10] 完成 → 返回最终产物路径
 ```
 
 ### 2.3 关键架构原则
@@ -226,7 +226,7 @@ c:\Users\26307\.agents\skills\
 |------|------|
 | 何时调用 | "要统一 skill 运行时行为 / 校验 runtime.yaml"时调用 |
 | 核心规范 | runtime.yaml 的字段速查表（timeout/retry/inputs/outputs） |
-| 示例 | game-asset-forge 的 runtime.yaml 完整示例 |
+| 示例 | generate-prototype 的 runtime.yaml 完整示例 |
 | scripts | `python validate_runtime.py check --skill xxx` |
 | references | runtime-schema.md（字段详细规范）+ degrade-patterns.md（降级模式） |
 | 关键约束 | 只读不写、失败不阻塞、声明后必符 schema |
@@ -304,10 +304,10 @@ references/（按需读，不强制全读）
 
 | 场景 | AI 自动可能出错 | 人工确认的价值 |
 |------|----------------|--------------|
-| 生成蓝图 | 方向跑偏 | 你看一眼就知道对不对 |
-| 生成美术规范 | 风格不对 | 你比 AI 更懂审美 |
-| 代码集成完成 | 跑不起来 | 你运行一下就知道 |
+| 需求澄清完成 | 理解偏了 | 你看一眼就知道对不对 |
 | PRD 完成 | 漏了关键需求 | 你比 AI 更懂业务 |
+| 原型方向确定 | 风格不对 | 你比 AI 更懂用户习惯 |
+| 门户集成完成 | 预览链接错 | 你点一下就知道 |
 
 **确认点的标准动作**（三选项）：
 
@@ -324,7 +324,7 @@ AskUserQuestion:
 按选择执行
 ```
 
-**例外**：阶段 1（脑暴/蓝图）可选不设确认点，因为产出简单，用户可直接进入下一阶段。
+**例外**：阶段 1（需求澄清/脑暴）可选不设确认点，因为产出简单，用户可直接进入下一阶段。
 
 ### 4.3 失败处理：两层防御
 
@@ -361,10 +361,10 @@ skill 重试+降级都失败
 ```
 [第1轮] skill 按默认 timeout=300 跑
          → 实际跑了 500 秒,超时失败
-         → skill-usage-tracker 记录:"game-asset-forge 跑了 500 秒,失败"
+         → skill-usage-tracker 记录:"generate-prototype 跑了 500 秒,失败"
 
 [第2轮] adaptive-tuner 分析数据
-         → "game-asset-forge 经常超时,建议 timeout=900"
+         → "generate-prototype 经常超时,建议 timeout=900"
          → 产出 runtime-overrides.yaml(需用户确认)
 
 [第3轮] workflow-runtime 执行前
@@ -394,7 +394,7 @@ skill 重试+降级都失败
 | 理由 | 说明 |
 |------|------|
 | 每阶段都要确认 | 确认点之间本来就是单个 skill 一次跑完，自动 loop 只省"输入一句话"的负担 |
-| 人工决策质量更高 | AI 不知道"这个蓝图对不对""这个美术风格好不好"——你知道 |
+| 人工决策质量更高 | AI 不知道"这份 PRD 对不对""这个原型风格好不好"——你知道 |
 | 失败需要人判断 | AI 失败时可能走错方向，自动重试可能越走越偏 |
 | 业务上下文在用户脑子里 | AI 不知道你的真实需求和偏好 |
 
@@ -527,7 +527,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 - 记忆层 2 个：project-knowledge-base / failure-casebook
 - 评测层扩展：skill-auditor（5 模式 5 维度）
 
-类比：厨房买齐了厨师、服务员、收银员、监控、安全规章。
+类比：产研团队招齐了产品经理、前端、后端、QA、运维,配上代码审查和发布规章。
 
 **Phase 2：自主运行（"能自己跑流程"）**
 
@@ -541,7 +541,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 关键升级：编排总纲的"执行顺序"可以从文档变成可执行程序。
 
-类比：餐厅经理有了排班系统，不用老板手动指挥每个厨师。
+类比：产研团队有了项目管理系统和迭代排期,不用老板手动指挥每个人。
 
 **Phase 3：数据驱动+智能协作（"有记忆、会协作"）**
 
@@ -553,7 +553,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 - prompt-registry：prompt 模板版本化管理
 - agent-orchestrator：多 Agent 协同协议
 
-类比：餐厅有了数据分析、菜谱版本管理、多经理协同机制。
+类比：产研团队有了工时统计、需求版本管理、多团队协同机制。
 
 **Phase 4：智能自适应+协同运行（"会自我优化"）**
 
@@ -569,7 +569,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 - workflow-runtime 接入 adaptive-tuner（自适应闭环）
 - agent-orchestrator 接入 agent-runtime-exec（协议落地）
 
-类比：餐厅会根据数据自动调整每道菜的烹饪时间，经理换班也能无缝接手。
+类比：产研团队会根据历史数据自动调整每个任务的预估工时,跨会话/跨天也能恢复进度。
 
 ### 6.3 关键设计决策回顾
 
@@ -619,19 +619,34 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 ## 第八章 附录
 
-### 8.1 24 个 skill 完整清单
+### 8.1 产研工作台相关 skill 完整清单
 
-**业务生成层**（不在 12 维度内，是业务 skill）
-- generate-system-prd / generate-prototype / generate-html-pages / generate-portal
-- generate-html-mobile / generate-html-pc-admin
-- game-blueprint / game-spec / game-art-spec / game-asset-forge / game-code-forge / game-integrate / game-polish / game-quality-gate
-- game-forge-master / game-topic-brainstorm / short-drama-game-adapt
-- product-pipeline-master / build-working-system
-- implement-frontend / implement-backend / implement-data-layer / integrate-system / test-and-harden-system / package-and-deploy-system
-- plan-system-implementation / brainstorm-product-feature / frontend-design / ruanzhu-doc-generator / bid-functional-solution / screenshot-operation-manual
-- ai-short-drama-topic-planner
+**产研业务生成层**（业务 skill，按产研工作流组织）
 
-**Agent 体系层 24 个**（12 维度）
+| 产研阶段 | skill | 作用 |
+|---------|-------|------|
+| 需求澄清 | brainstorm-product-feature | 早期功能想法的澄清与可行性评估 |
+| 系统规划 | generate-system-prd | 生成企业级 PRD（含页面规格/权限/状态机） |
+| 工程蓝图 | plan-system-implementation | 由 PRD/原型/仓库生成可执行工程实施蓝图 |
+| 原型生成 | generate-prototype | 将 PRD 转为 HTML 原型 |
+| 原型生成 | generate-html-pages | HTML 原型生成路由器（判定端类型） |
+| 原型生成 | generate-html-mobile | 移动端 HTML 原型 |
+| 原型生成 | generate-html-pc-admin | PC 管理后台 HTML 原型 |
+| 总控门户 | generate-portal | 生成总控演示门户（跨端预览+标注） |
+| 前端实现 | implement-frontend | 将原型转为生产级前端 |
+| 后端实现 | implement-backend | 实现后端 API/领域服务/测试 |
+| 数据层 | implement-data-layer | 实现数据库 schema/migration/seed |
+| 系统集成 | integrate-system | 前后端+DB+认证+权限+文件集成 |
+| 测试加固 | test-and-harden-system | 单元/集成/E2E/安全/性能测试 |
+| 部署交付 | package-and-deploy-system | 容器化/CI/CD/备份/回滚 |
+| 全流程编排 | product-pipeline-master | 产研工作台流水线总纲（决策+裁剪+确认点） |
+| 全流程编排 | build-working-system | 可运行系统总编排器 |
+| 前端设计 | frontend-design | 视觉设计指导（排版/配色/组件） |
+| 软著文档 | ruanzhu-doc-generator | 软件著作权申请文档生成 |
+| 标书方案 | bid-functional-solution | 标书功能建设方案生成 |
+| 操作手册 | screenshot-operation-manual | 由截图生成操作手册 |
+
+**Agent 体系层 24 个**（12 维度，支撑所有业务 skill 运行）
 
 | 维度 | skill |
 |------|-------|
