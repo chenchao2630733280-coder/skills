@@ -1,0 +1,231 @@
+{
+  "auditMode": "collection",
+  "timestamp": "2026-08-07T13:30:00+08:00",
+  "target": ["C:/Users/26307/.workbuddy/skills/ 下全部 62 个 skill"],
+  "benchmark": null,
+  "userRulings": {
+    "date": "2026-08-07",
+    "summary": "用户裁定 ISSUE-001~004 四项 CRITICAL 为理解错误/非问题,人工排除;有效 CRITICAL = 0",
+    "dismissedIssues": ["ISSUE-001", "ISSUE-002", "ISSUE-003", "ISSUE-004"]
+  },
+  "dimensions": {
+    "structure": { "enabled": true, "critical": 2, "warning": 4, "info": 3 },
+    "consistency": { "enabled": true, "critical": 1, "warning": 4, "info": 2 },
+    "robustness": { "enabled": true, "critical": 0, "warning": 3, "info": 1 },
+    "extensibility": { "enabled": true, "critical": 1, "warning": 1, "info": 1 },
+    "execution": { "enabled": false, "note": "无执行产物,跳过" },
+    "runtime": { "enabled": true, "critical": 0, "warning": 1, "info": 2 }
+  },
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "dismissed": true,
+      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
+      "description": "game-forge-master 模板索引指向不存在的 .trae/skills/game-template/ 路径,实际模板已内化到 game-code-forge/references/engine-*-template.md",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 188, "content": ".trae/skills/game-template/   (随 skill 分发的模板参考)" },
+      "suggestion": "模板索引改为引用 game-code-forge/references/engine-{engine}-template.md",
+      "plan": ["game-forge-master/SKILL.md §五 模板索引替换为引用 game-code-forge/references/", "删除 .trae/skills/game-template 引用", "全库 grep 确认无残留"]
+    },
+    {
+      "id": "ISSUE-002",
+      "dimension": "structure",
+      "severity": "CRITICAL",
+      "dismissed": true,
+      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
+      "description": "ai-short-drama-topic-planner SKILL.md 达 1055 行,远超 500 行阈值,懒加载失败",
+      "evidence": { "file": "ai-short-drama-topic-planner/SKILL.md", "line": 1, "content": "1055 lines; 趋势雷达引擎 §六 约 273 行未抽离" },
+      "suggestion": "按趋势雷达/热点融合/评分系统拆分为 3 个 references",
+      "plan": ["创建 references/trend-radar-engine.md", "创建 references/hotspot-matrix.md", "创建 references/scoring-model.md", "SKILL.md 章节替换为索引块", "wc -l 验证 ≤500"]
+    },
+    {
+      "id": "ISSUE-003",
+      "dimension": "structure",
+      "severity": "CRITICAL",
+      "dismissed": true,
+      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
+      "description": "ai-short-drama-project-development SKILL.md 878 行,frontmatter 前有标题行且章节编号混乱",
+      "evidence": { "file": "ai-short-drama-project-development/SKILL.md", "line": 1, "content": "# AI短剧项目开发总监 位于 frontmatter 之前" },
+      "suggestion": "frontmatter 提到首行,按模块拆分 references",
+      "plan": ["frontmatter 移至首行", "拆分 role-and-defaults/development-flow/character-system 三个 references", "统一章节编号", "wc -l 验证 ≤500"]
+    },
+    {
+      "id": "ISSUE-004",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "dismissed": true,
+      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
+      "description": "skill-runtime 引用 ../game-art-spec/references/asset-manifest.schema.json 但全库不存在(schema 内联在 game-art-spec SKILL.md §三)",
+      "evidence": { "file": "skill-runtime/SKILL.md", "line": 74, "content": "schema: ../game-art-spec/references/asset-manifest.schema.json" },
+      "suggestion": "从 game-art-spec 内联 schema 抽离为独立文件",
+      "plan": ["提取 game-art-spec §三 JSON schema 写入 references/asset-manifest.schema.json", "SKILL.md §三 替换为索引块", "验证 validate_runtime.py PASS"]
+    },
+    {
+      "id": "ISSUE-005",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "端类型命名跨 skill 不一致:pc-admin / pc_admin / admin_web 三种写法并存",
+      "evidence": { "file": "product-pipeline-master/SKILL.md + generate-prototype/SKILL.md + generate-html-pages/SKILL.md", "line": null, "content": "pc-admin×11, pc_admin×6, admin_web×3" },
+      "suggestion": "统一为 pc-admin(kebab-case)",
+      "plan": ["全库 pc_admin 替换为 pc-admin", "admin_web 文档化映射"]
+    },
+    {
+      "id": "ISSUE-006",
+      "dimension": "structure",
+      "severity": "WARNING",
+      "description": "15+ 个 description 超过 200 字符上限,最长 579 字符(web-static-deploy)",
+      "evidence": { "file": "web-static-deploy/SKILL.md + bid-functional-solution/SKILL.md 等", "line": 2, "content": "description 长度 579/498/433/371..." },
+      "suggestion": "description 精简至 ≤200 字符,细节移入正文",
+      "plan": ["逐个精简 15 个超标 description"]
+    },
+    {
+      "id": "ISSUE-007",
+      "dimension": "structure",
+      "severity": "WARNING",
+      "description": "rd-init frontmatter 标题前置 + description 字段重复 2 次",
+      "evidence": { "file": "rd-init/SKILL.md", "line": 1, "content": "# rd-init 在 frontmatter 前,description 出现 2 次" },
+      "suggestion": "frontmatter 提到首行,删除重复 description",
+      "plan": ["删除首行标题", "删除 L9 重复 description"]
+    },
+    {
+      "id": "ISSUE-008",
+      "dimension": "structure",
+      "severity": "WARNING",
+      "description": "16 个 skill 处于 301-500 行可接受区间,接近阈值",
+      "evidence": { "file": "game-integrate(453)/game-art-spec(444)/game-asset-forge(418) 等 16 个", "line": null, "content": "wc -l 统计" },
+      "suggestion": "逐步抽离大段代码/规则到 references",
+      "plan": ["按需抽离,不强制立即改"]
+    },
+    {
+      "id": "ISSUE-009",
+      "dimension": "robustness",
+      "severity": "WARNING",
+      "description": "短剧系列健壮性薄弱:topic-planner 全文 0 处失败/降级/回退机制",
+      "evidence": { "file": "ai-short-drama-topic-planner/SKILL.md", "line": null, "content": "grep -c 失败|降级|回退 → 0" },
+      "suggestion": "补充失败回退章节(重试 N 轮 → 降级人工推荐池)",
+      "plan": ["两个短剧 SKILL.md 各新增失败回退章节"]
+    },
+    {
+      "id": "ISSUE-010",
+      "dimension": "structure",
+      "severity": "WARNING",
+      "description": "部分 >300 行 skill 无 references 使用指引表",
+      "evidence": { "file": "game-forge-master/game-spec/game-topic-brainstorm/brainstorm-product-feature", "line": null, "content": "refs=N" },
+      "suggestion": "建立 references 使用指引表或标注无 references",
+      "plan": ["逐个补充索引表"]
+    },
+    {
+      "id": "ISSUE-011",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "build-report.json 的 device 值写法不一致:device:mobile vs device=pc",
+      "evidence": { "file": "generate-html-mobile/SKILL.md L175 + generate-html-pc-admin/SKILL.md L240", "line": null, "content": "device:mobile / device=pc" },
+      "suggestion": "统一为 device: \"mobile\" / device: \"pc\"",
+      "plan": ["对齐两处描述文本"]
+    },
+    {
+      "id": "ISSUE-012",
+      "dimension": "runtime",
+      "severity": "WARNING",
+      "description": "24 个 runtime.yaml 中多数为最小声明(仅 timeout),未声明 inputs/outputs/degrade",
+      "evidence": { "file": "24 个 runtime.yaml", "line": null, "content": "schema 校验全部通过但内容精简" },
+      "suggestion": "关键流水线 skill 补齐完整契约",
+      "plan": ["优先为 game-* 补齐 inputs/outputs/degrade"]
+    },
+    {
+      "id": "ISSUE-013",
+      "dimension": "runtime",
+      "severity": "WARNING",
+      "description": "两个超大短剧 skill 未声明 runtime.yaml",
+      "evidence": { "file": "ai-short-drama-*/SKILL.md", "line": null, "content": "rt=N" },
+      "suggestion": "添加 runtime.yaml(timeout ≥600s, retry 2 轮)",
+      "plan": ["新建 2 个 runtime.yaml"]
+    },
+    {
+      "id": "ISSUE-014",
+      "dimension": "robustness",
+      "severity": "INFO",
+      "description": ".trae-cn/ 数据目录为旧工具命名,5 个子目录当前缺失(脚本会自动创建)",
+      "evidence": { "file": "~/.trae-cn/", "line": null, "content": "tuner-overrides/prompts/knowledge/codebase-index/tuner-backups MISSING" },
+      "suggestion": "暂缓,不阻塞;后续可迁移 .workbuddy 命名",
+      "plan": ["可选迁移"]
+    },
+    {
+      "id": "ISSUE-015",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "game-art-spec 内联 schema 未抽离,随 ISSUE-004 一并处理",
+      "evidence": { "file": "game-art-spec/SKILL.md", "line": 48, "content": "§三 内联 JSON schema 约 80 行" },
+      "suggestion": "随 ISSUE-004 抽离",
+      "plan": ["同 ISSUE-004"]
+    },
+    {
+      "id": "ISSUE-016",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "frontmatter 语言与正文不完全一致(中文 skill 用英文 description 等)",
+      "evidence": { "file": "generate-* 系列等 25 个", "line": null, "content": "frontmatter 扫描" },
+      "suggestion": "description 语言与正文一致",
+      "plan": ["按需对齐"]
+    },
+    {
+      "id": "ISSUE-017",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "部分 skill 章节编号体系不统一(短剧系列混用 # 一、 与 ## 4.1)",
+      "evidence": { "file": "ai-short-drama-*/SKILL.md", "line": null, "content": "混用两套编号" },
+      "suggestion": "拆分时统一编号",
+      "plan": ["随 ISSUE-002/003 处理"]
+    },
+    {
+      "id": "ISSUE-018",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "两总纲人工确认点数(1~6 vs 1~5)与 workflow-runtime pause 语义需人工核对",
+      "evidence": { "file": "game-forge-master/SKILL.md L365 + product-pipeline-master/SKILL.md L318", "line": null, "content": "确认点 1~6 / 1~5" },
+      "suggestion": "核对确认点数与 pause 节点数一致",
+      "plan": ["人工核对"]
+    },
+    {
+      "id": "ISSUE-019",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "_shared 共享引用完整性良好(健康项)",
+      "evidence": { "file": "_shared/references/(18 个文件)", "line": null, "content": "MISSING_SHARED_TOTAL: 0" },
+      "suggestion": "保持现状",
+      "plan": ["无"]
+    },
+    {
+      "id": "ISSUE-020",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "跨 skill 引用路径校验全部通过(健康项)",
+      "evidence": { "file": "generate-html-pages/references/interaction-patterns.md 等", "line": null, "content": "精确解析 0 个真幽灵(除 ISSUE-004)" },
+      "suggestion": "保持现状",
+      "plan": ["无"]
+    },
+    {
+      "id": "ISSUE-021",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "执行语义引用与 Unity BuildScript 方法链抽查通过(健康项)",
+      "evidence": { "file": "workflow-runtime/references/execution-semantics.md + game-code-forge/references/engine-unity-template.md", "line": null, "content": "BuildWindows/BuildWebGL 定义与调用一致" },
+      "suggestion": "保持现状",
+      "plan": ["无"]
+    }
+  ],
+  "summary": {
+    "total": 26,
+    "critical": 4,
+    "warning": 13,
+    "info": 9
+  },
+  "topSuggestions": [
+    { "rank": 1, "title": "修复 game-forge-master 模板索引指向", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-001" },
+    { "rank": 2, "title": "抽离 asset-manifest.schema.json", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-004+015" },
+    { "rank": 3, "title": "拆分两个超大短剧 SKILL.md", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-002+003+013" },
+    { "rank": 4, "title": "统一端类型命名", "roi": "⭐⭐⭐⭐", "issue": "ISSUE-005" },
+    { "rank": 5, "title": "精简超长 description", "roi": "⭐⭐⭐⭐", "issue": "ISSUE-006" }
+  ]
+}

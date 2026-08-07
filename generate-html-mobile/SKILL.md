@@ -172,7 +172,7 @@ output/site/mobile/
 
 向 `output/site/build-report.json`（结构见 `../_shared/references/schemas/html-build-report.example.json`）写入移动端部分，供 `generate-portal` 消费：
 
-- `outputs`：每个移动端页面文件的 `pageId`、`device:mobile`、`path`、`contentHash`、`applicableStates`、`annotationMode`
+- `outputs`：每个移动端页面文件的 `pageId`、`device: "mobile"`、`path`、`contentHash`、`applicableStates`、`annotationMode`
 - `checks`：链接完整性、端内一致性、状态覆盖等移动端校验结果
 - `unstructuredItems`：从文档兜底提取的字段（`generatedByFallback: true`）
 - `openIssues`：未实现的 TODO（HTML 注释形式）、跳过项及原因

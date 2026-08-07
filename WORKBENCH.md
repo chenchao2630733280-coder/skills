@@ -142,9 +142,12 @@ skill-usage-tracker 记录调用数据(耗时/失败率)
 
 | Skill | 职责 |
 |---|---|
+| `rd-init` | 工作台加载器(扫描 skills 目录全部 skill,生成 `.workbench-index.json` 索引和完整性报告,让 AI 快速掌握工作台全貌) |
 | `agent-builder` | Skill 工程化元技能(12 维度架构框架+标准创建流程+7 大设计模式+结构模板,用于新建 Agent 体系层 skill 时指导) |
 
-**元技能层接入方式**:新建 Agent 体系层 skill 时,先调 `agent-builder` 确定架构定位和模式选择,再用 `skill-creator` 创建文件骨架。`agent-builder` 提供"怎么设计",`skill-creator` 提供"怎么写"。
+**元技能层接入方式**:
+- **工作台加载**:首次使用工作台时调 `rd-init` 扫描全部 skill,生成机器可读索引和完整性报告(frontmatter 规范/references 路径/runtime.yaml 声明)。
+- **新建 Agent skill**:先调 `agent-builder` 确定架构定位和模式选择,再用 `skill-creator` 创建文件骨架。`agent-builder` 提供"怎么设计",`skill-creator` 提供"怎么写"。
 
 ## skill 调度归类
 
@@ -264,3 +267,10 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 3 份 references:`agent-architecture-framework.md`(12 维度详解) + `skill-creation-patterns.md`(7 大模式) + `skill-template.md`(结构模板)
 - 与 `skill-creator` 互补:agent-builder 提供"怎么设计 Agent skill",skill-creator 提供"怎么写 skill 文件"
 - validate.ps1 检查 7 newSkills 从 23 扩展到 24(加 agent-builder)
+
+### 2026-08-07 rd-init 重构为工作台加载器
+- 从项目初始化器(创建目录/project.yaml/project-brief.json)重构为工作台加载器,职责收敛为扫描 skills 目录全部 skill + 生成 `.workbench-index.json` 索引 + 输出完整性报告
+- 扫描全部 61 个 skill(含 rd-init 自身),按五大类分类:工作台元 skill(1) / 产研业务层(22) / 游戏流水线(11) / AI 短剧(2) / Agent 体系层(25,含 12 维度细分统计)
+- 完整性校验:SKILL.md 存在(CRITICAL) / frontmatter name 存在(CRITICAL) / description 存在(WARNING) / runtime.yaml 声明(INFO) / references 路径存在(WARNING,支持 skill 目录内 + _shared/references/ + 跨 skill 目录三种合法位置)
+- 同步修复:ai-short-drama-project-development 的 frontmatter 格式错误(标题在 `---` 前)
+- WORKBENCH.md 元技能层新增 rd-init 收录

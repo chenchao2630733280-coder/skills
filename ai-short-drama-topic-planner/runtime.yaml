@@ -1,0 +1,31 @@
+# runtime.yaml — ai-short-drama-topic-planner
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 用户选题需求
+    type: text
+    required: true
+    description: 一句话需求或结构化选题方向（受众/类型/集数/题材/调性等）
+  - name: 趋势上下文
+    type: text
+    required: false
+    description: 当前热点、上升信号、未来事件窗口等可选上下文
+outputs:
+  - path: 选题候选集（结构化 JSON，遵循 schemas/topic-output-v2.1.schema.json）
+    type: inline
+  - path: 趋势雷达报告
+    type: inline
+degrade:
+  - trigger: 生成选题与历史相似度过高
+    action: 触发相似度惩罚重生成，最多 3 轮；仍不通过则降级为人工推荐池
+    target: 选题候选集
+  - trigger: 趋势数据获取失败
+    action: 跳过趋势雷达，仅基于内置变量池生成选题并标注"无趋势增强"
+    target: 趋势雷达报告
+  - trigger: 用户对全部候选均不满意
+    action: 收集否定反馈，调整变量池配额后重新生成一轮；超过 2 轮仍不满意则暂停，输出当前候选 + 否定原因清单交人工
+    target: 选题候选集

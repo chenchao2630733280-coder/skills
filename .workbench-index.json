@@ -1,0 +1,804 @@
+{
+  "schemaVersion": "1.0",
+  "scanned_at": "2026-08-07T14:31:07",
+  "skills_dir": "C:\\Users\\26307\\.agents\\skills",
+  "total_skills": 61,
+  "categories": {
+    "agent-system": 25,
+    "drama": 2,
+    "product": 22,
+    "game": 11,
+    "workbench": 1
+  },
+  "runtime_yaml_count": 26,
+  "warning_count": 0,
+  "critical_count": 0,
+  "skills": [
+    {
+      "name": "adaptive-tuner",
+      "dir": "adaptive-tuner",
+      "description": "Data 自适应优化层 skill。基于 skill-usage-tracker 的调用统计数据，自动生成 skill 参数优化建议（timeout/retry/降级阈值），产出 runtime-overrides.yaml 供 workflow-runtime 应用。当要基于历史数据优化 skill 运行时参数、或用户要'看 skill 调优建议'时调用。不自动应用，需用户确认。",
+      "category": "agent-system",
+      "agent_dimension": "Data",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/override-format.md",
+        "references/tuning-rules.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "agent-builder",
+      "dir": "agent-builder",
+      "description": "创建 AI Agent 体系层 skill 的元技能。提供 12 维度架构框架、标准创建流程、7 大设计模式和结构模板。当要新建 Agent 体系层 skill、设计 Agent 架构、或沉淀 Agent 建设经验时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Skill",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/agent-architecture-framework.md",
+        "references/skill-creation-patterns.md",
+        "references/skill-template.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "agent-orchestrator",
+      "dir": "agent-orchestrator",
+      "description": "多 Agent 协同 skill。定义 Agent 间通信协议(消息格式/任务委派/结果汇总),支持主从与对等模式。当任务超出单 skill 范围需多 Agent 协作、或要编排多个子 Agent 并行/串行时调用。本身定义协议与编排逻辑,实际多 Agent 运行依赖宿主。",
+      "category": "agent-system",
+      "agent_dimension": "Agent Runtime",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/agent-protocol.md",
+        "references/conflict-resolution.md",
+        "references/delegation-patterns.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "agent-runtime-exec",
+      "dir": "agent-runtime-exec",
+      "description": "Agent Runtime 执行层 skill。基于 agent-orchestrator 定义的通信协议，实现多 Agent 实际调度执行器（委派/收集/合并/冲突解决）。当要把多 Agent 协同从'协议定义'升级为'实际运行'，或要并行调度多个子 Agent 执行任务时调用。本身是执行器，依赖宿主提供 Agent 实例。",
+      "category": "agent-system",
+      "agent_dimension": "Agent Runtime",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/conflict-strategies.md",
+        "references/execution-modes.md",
+        "references/timeout-handling.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "ai-short-drama-project-development",
+      "dir": "ai-short-drama-project-development",
+      "description": "短剧选题确认后的项目开发总监。当用户已确定短剧选题后调用，依次完成选题复核、故事发动机、核心规则、主角目标、人物关系、对手系统、核心秘密、故事阶段、情绪曲线、悬念卡点、分集大纲、制作商业可行性、风险诊断 13 步，将选题转化为可推进、可拍摄、可进入正式剧本创作的项目。",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "ai-short-drama-topic-planner",
+      "dir": "ai-short-drama-topic-planner",
+      "description": "Generate, diversify, trend-enhance, evaluate, and refine AI short-drama story topics. Use when the user asks for short-drama concepts, high-concept premises, viewing-motivation analysis, topic diversification, trend radar, future event windows, topic comparison, or continued creative branching.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "bid-functional-solution",
+      "dir": "bid-functional-solution",
+      "description": "Create or revise bid/tender functional construction方案 documents from PRDs, requirement specifications, screenshot folders, prototype image sets, flowcharts, or existing DOCX files. Use when you need to turn a requirements document or a folder of screenshots into a 标书功能建设方案 module, reorganize content by 图片、功能说明、功能描述, infer functions from UI images, polish requirement language into bid-ready capability statements, remove out-of-scope functions, or generate/update a professional Word deliverable.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/content-patterns.md",
+        "references/screenshot-folder.md",
+        "references/session-case.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "brainstorm-product-feature",
+      "dir": "brainstorm-product-feature",
+      "description": "Explores and refines an early-stage product feature idea before PRD writing. Invoke when the user has a rough feature concept and needs clarification questions, hidden-assumption checks, feasibility evaluation, user-flow exploration, risks, edge cases, constraints, and alternatives.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "build-working-system",
+      "dir": "build-working-system",
+      "description": "Orchestrates the complete conversion of existing PRD, page specifications, and prototypes into a runnable, tested, and deployable system. Use when the user asks to generate, build, implement, or finish the whole system rather than one technical layer.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "code-review",
+      "dir": "code-review",
+      "description": "代码审查 skill。接收 PR 或 diff,检查代码质量/安全/性能/可维护性问题,产出审查报告+修复建议。当用户要'审查代码/Review PR/检查代码质量'时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Engineering",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/review-report-template.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "codebase-rag",
+      "dir": "codebase-rag",
+      "description": "Context 层 skill。对代码库做持久化语义索引,支持跨会话检索与大型项目分块索引。与宿主 SearchCodebase 互补(宿主实时索引,本 skill 持久化+跨会话+支持分块策略)。当大型项目需持久化代码索引或跨会话检索代码时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Context",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/embedding-models.md",
+        "references/indexing-strategy.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "debug-fix",
+      "dir": "debug-fix",
+      "description": "调试修复 skill。接收错误日志/堆栈/复现步骤,定位 Bug 根因并修复。当用户要'调试/修 Bug/排查错误'时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Engineering",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/debug-patterns.md",
+        "references/debug-workflow.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "diff-reviewer",
+      "dir": "diff-reviewer",
+      "description": "变更审查 skill。审查产物变更的 diff,标红'删除核心文件''大幅删减''配置变更'等风险操作。当 skill 产出后或用户要'审查变更/检查 diff'时调用。只读不写。",
+      "category": "agent-system",
+      "agent_dimension": "Guardrail",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/diff-risk-rules.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "failure-casebook",
+      "dir": "failure-casebook",
+      "description": "失败案例库 skill。每次 skill 执行失败时自动记录'失败码+原因+修复方法',下次同名 skill 执行前先查避免重复踩坑。当 skill 执行失败或要查询历史失败案例时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Memory",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/casebook-schema.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "frontend-design",
+      "dir": "frontend-design",
+      "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "game-art-spec",
+      "dir": "game-art-spec",
+      "description": "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产出美术规范、ASSET_MANIFEST.json 资源清单(机读)和音频规范。当被 game-forge-master 调度到本阶段,或用户要'生成美术规范/资源清单'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/asset-fix-recipes.md",
+        "references/card-bg-spec.md",
+        "references/style-baseline-cartoon-casual-hide-seek.md",
+        "references/style-baseline-chibi-xianxia-ink.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-asset-forge",
+      "dir": "game-asset-forge",
+      "description": "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执行 AI 生图、图集打包、音频占位,产出 assets/ 目录。当被 game-forge-master 调度到本阶段,或用户要'生成游戏美术资源/切图打包'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/card-bg-spec.md",
+        "references/format-conversion-guide.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-blueprint",
+      "dir": "game-blueprint",
+      "description": "AI 游戏生成流水线阶段 1。基于用户一句话需求生成一页纸游戏蓝图,定义类型/平台/引擎/玩法/范围/复杂度。当用户要'生成游戏蓝图'、'开始游戏生成流程'或被 game-forge-master 调度到本阶段时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/design-principles-economy.md",
+        "references/design-principles-instant-feedback.md",
+        "references/design-principles-monetization.md",
+        "references/design-principles-narrative-adaptation.md",
+        "references/design-principles-overview.md",
+        "references/design-principles-puzzle.md",
+        "references/design-principles-value-reveal.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-code-forge",
+      "dir": "game-code-forge",
+      "description": "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity 五引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/engine-canvas-template.md",
+        "references/engine-godot-template.md",
+        "references/engine-phaser-template.md",
+        "references/engine-pixi-template.md",
+        "references/engine-unity-template.md",
+        "references/pitfall-atlas-frame-format.md",
+        "references/pitfall-balance-validation.md",
+        "references/pitfall-phaser-text-wrap.md",
+        "references/pitfall-phaser-ui-overlay-input.md",
+        "references/pitfall-sprite-body-offset.md",
+        "references/pitfall-state-visual-feedback.md",
+        "references/web-config-template.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-forge-master",
+      "dir": "game-forge-master",
+      "description": "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity)、阶段裁剪规则、模板索引、失败回退策略与质量门接入。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/execution-semantics.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-integrate",
+      "dir": "game-integrate",
+      "description": "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export-release 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/build-report-template.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-polish",
+      "dir": "game-polish",
+      "description": "AI 游戏生成流水线阶段 6(可选)。在 game-integrate 产出可运行游戏后,叠加视觉/手感/反馈层面的动画与效果打磨,不改变核心玩法与数值。当被 game-forge-master 调度到本阶段,或用户要'优化游戏效果/让画面更好看/加特效/提升手感/打磨动画'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/asset-fix-recipes.md",
+        "references/overlay-spec.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-quality-gate",
+      "dir": "game-quality-gate",
+      "description": "AI 游戏生成流水线的跨阶段质量门。在 4 个关键节点(规格后/美术后/资源代码后/集成前)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/实跑验证游戏产物'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/engine-checks-godot.md",
+        "references/engine-checks-phaser.md",
+        "references/engine-checks-pixi.md",
+        "references/engine-checks-unity.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "game-spec",
+      "dir": "game-spec",
+      "description": "AI 游戏生成流水线阶段 2。读取游戏蓝图,生成详细 PRD(玩法/数值/UI/关卡/状态机)和 TECH_DESIGN(目录/模块/类设计/接口契约)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏 PRD/技术设计'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "game-topic-brainstorm",
+      "dir": "game-topic-brainstorm",
+      "description": "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprint 之前调用,帮用户从0到1结构化脑暴游戏选题,用爆款原则验证候选,输出 Top N 选题方案。当用户要'脑暴游戏选题/想做什么游戏/找游戏点子/选题方向'时调用。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/design-principles-instant-feedback.md",
+        "references/design-principles-overview.md",
+        "references/design-principles-puzzle.md",
+        "references/design-principles-value-reveal.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-html-mobile",
+      "dir": "generate-html-mobile",
+      "description": "仅生成任务型移动端HTML原型页面(综合入口/内容发现/分类检索/图文列表/沉浸详情/交易/个人中心/公共账户/实时信息)。PC管理后台请用 generate-html-pc-admin;双端或端未明时由 generate-html-pages 路由器调度。",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/interaction-patterns.md",
+        "references/mobile-archetype-specs.md",
+        "references/mobile-navbar-template.md",
+        "references/mobile-page-skeleton.md",
+        "references/mobile-product-design-standards.md",
+        "references/mobile-tokens-and-classes.md",
+        "references/pc-admin-navigation-style.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-html-pages",
+      "dir": "generate-html-pages",
+      "description": "HTML原型生成路由器:判断端类型,调度到PC管理后台(generate-html-pc-admin)或移动端(generate-html-mobile)子skill,并汇总构建报告。不直接持有端专属规范。",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/interaction-patterns.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-html-pc-admin",
+      "dir": "generate-html-pc-admin",
+      "description": "仅生成PC管理后台HTML原型页面(vue-admin-plus风格:深色侧栏+工作区页签)。移动端请用 generate-html-mobile;双端或端未明时由 generate-html-pages 路由器调度。",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/interaction-patterns.md",
+        "references/pc-admin-navigation-style.md",
+        "references/pc_admin_ui_spec.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-portal",
+      "dir": "generate-portal",
+      "description": "Generates the project demo portal (index.html) with three-pane navigation, cross-device iframe preview, and PRD-driven annotations. Use when HTML prototype pages exist under output/site/ and a unified review portal is needed.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/annotation-standards.md",
+        "references/ui-design-standards.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-prototype",
+      "dir": "generate-prototype",
+      "description": "Generates terminal-aware page prototype documents for admin web, mobile apps, H5, mini programs, hybrid, and multi-end products from an existing system PRD.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/pc_admin_ui_spec.md",
+        "references/prototype-design-standards.md",
+        "references/ui-design-standards.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "generate-system-prd",
+      "dir": "generate-system-prd",
+      "description": "Generates structured PRDs for enterprise management systems, native mobile apps, mobile web, mini programs, and multi-end products. Selects terminal-specific rules for domain models, user flows, page specs, permissions, device capabilities, and non-functional requirements.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/brainstorming-gate.md",
+        "references/pc_admin_ui_spec.md",
+        "references/prd-document-template.md",
+        "references/prd-stage-boundary.md",
+        "references/product-design-standards.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "guardrail",
+      "dir": "guardrail",
+      "description": "安全护栏 skill。在 skill 执行前后做安全检查:敏感路径保护/操作分级/diff 审查。当编排总纲或其他 skill 要执行变更操作时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Guardrail",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/operation-levels.md",
+        "references/sensitive-paths.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "implement-backend",
+      "dir": "implement-backend",
+      "description": "Implements production backend APIs, domain services, validation, authorization, auditing, integrations, and automated tests from PRD and architecture contracts. Use when generating or completing the server side of a system.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "implement-data-layer",
+      "dir": "implement-data-layer",
+      "description": "Implements production database schemas, migrations, constraints, seed data, repositories, and transaction rules from the system data model and implementation plan. Use when building or updating the persistence layer.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "implement-frontend",
+      "dir": "implement-frontend",
+      "description": "Converts approved page specifications and HTML prototypes into a production frontend integrated with real application architecture, typed APIs, accessibility, validation, permissions, and tests.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "integrate-system",
+      "dir": "integrate-system",
+      "description": "Integrates frontend, backend, database, authentication, permissions, files, asynchronous jobs, and external services into a runnable end-to-end system. Use after major layers exist or when mocks must be replaced with real flows.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "package-and-deploy-system",
+      "dir": "package-and-deploy-system",
+      "description": "Prepares a verified application for reproducible local and production deployment with containers, environment contracts, CI/CD, migrations, health checks, observability, backup, rollback, and release documentation.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "plan-system-implementation",
+      "dir": "plan-system-implementation",
+      "description": "Creates an executable technical implementation plan from existing PRD, page specifications, prototype, and repository. Use before coding a production system or when architecture, stack, module boundaries, API contracts, and delivery increments must be decided.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "prd-quality-checker",
+      "dir": "prd-quality-checker",
+      "description": "使用产品配置层与执行引擎层审核通用 PRD、需求说明或需求基线。支持一次性 Audit 审核和逐题 Improve 完善，基于原文证据检查目标、用户、范围边界、流程、业务对象、规则、状态、权限、异常、跨章节一致性、需求追踪、结构化验收、指标、依赖、风险和交付准备度，并输出 Markdown 门禁报告及可选 JSON 结果。用于进入信息架构、方案设计、排期、开发或验收前的完整、快速和增量审核；也支持 AI 开发准备度附录。适用于不同项目、行业、文档结构和技术栈。",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/ai-readiness.md",
+        "references/checklist.md",
+        "references/domain-risk-prompts.md",
+        "references/execution-contract.md",
+        "references/incremental-review.md",
+        "references/product-configuration.md",
+        "references/report-template.md",
+        "references/rule-version.md",
+        "references/scoring.md",
+        "references/structured-output.md",
+        "references/traceability-and-consistency.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "product-pipeline-master",
+      "dir": "product-pipeline-master",
+      "description": "产品工作台的总编排调度中枢。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/execution-semantics.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "project-knowledge-base",
+      "dir": "project-knowledge-base",
+      "description": "项目知识库 skill。结构化存储团队规范/架构决策(ADR)/历史事故/代码规范,供其他 skill 执行前查询。当其他 skill 要获取项目上下文/历史决策/团队规范时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Memory",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/kb-schema.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "prompt-registry",
+      "dir": "prompt-registry",
+      "description": "Model 层 skill(部分)。集中管理各 skill 的 prompt 模板,支持版本化+变体管理+对比。当要统一管理 prompt、做 A/B 测试、或检索某 skill 的 prompt 时调用。不负责模型路由(依赖宿主)。",
+      "category": "agent-system",
+      "agent_dimension": "Model",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/prompt-structure.md",
+        "references/prompt-versioning.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "rd-init",
+      "dir": "rd-init",
+      "description": "工作台加载器。扫描 skills 目录全部 skill，生成工作台索引和完整性报告，让 AI 快速掌握工作台全貌。仅用于工作台加载，不生成业务产物。",
+      "category": "workbench",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "refactor",
+      "dir": "refactor",
+      "description": "代码重构 skill。在不改变功能的前提下改善代码结构/可读性/性能。当用户要'重构/优化代码结构/消除技术债'时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Engineering",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/refactor-patterns.md",
+        "references/refactor-safety.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "replanner",
+      "dir": "replanner",
+      "description": "重规划器 skill。当子任务失败或上下文变化时,动态调整 task-tree(重排/跳过/拆分/合并)。当 workflow-runtime 检测到任务失败或用户变更需求时调用,产出调整后的 task-tree 与变更说明。",
+      "category": "agent-system",
+      "agent_dimension": "Planning",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/impact-analysis.md",
+        "references/replan-strategies.md",
+        "references/task-tree-schema.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "ruanzhu-doc-generator",
+      "dir": "ruanzhu-doc-generator",
+      "description": "Generate Chinese software copyright application documentation DOCX files from product screenshots for PC management backends and mobile apps/miniprograms. Use when asked to create, draft, or package 软著文档, 产品说明书, 操作说明书, 软件著作权材料, or screenshot-based documentation, especially when screenshots may contain both PC后台 and 移动端 and must be split into separate DOCX deliverables.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/content-standards.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "screenshot-operation-manual",
+      "dir": "screenshot-operation-manual",
+      "description": "Generate complete PC web admin and mobile app operation manuals from screenshots, screen recordings, or screenshot folders. Use when you must analyze provided UI screenshots and produce a professional user guide/manual in DOCX/PDF/Markdown/HTML, including module descriptions, screenshots with captions, filters, buttons, list fields, form fields, operation steps, workflow use cases, mobile-specific flows, and FAQ-style appendices.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/authoring-guidelines.md",
+        "references/manual-spec-format.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "session-snapshot",
+      "dir": "session-snapshot",
+      "description": "会话持久化层 skill。把当前会话的关键状态（任务进度/已产出文件/上下文摘要）快照保存，支持跨会话恢复。当会话上下文将丢失、或要在新会话继续未完成任务时调用。与宿主内置记忆互补（宿主会话级，本 skill 显式快照+跨会话恢复）。",
+      "category": "agent-system",
+      "agent_dimension": "Memory",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/restore-strategy.md",
+        "references/snapshot-schema.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-game-adapt",
+      "dir": "short-drama-game-adapt",
+      "description": "把已有短剧/热门IP/社会热梗的'设定与爽点'转化为可玩游戏机制的方法论。当用户想'把某个短剧/影视/小说/社会热点改成游戏'、做 IP 改编游戏化、或为大众向小游戏找题材切入点时调用。涵盖:提取设定做机制(不搬剧情)的 6 角度转化框架、大众记忆点优先原则、广告双价值(IAA)模型、不可逆操作+付费安全阀门模式。本 skill 是'已有题材→机制'的改编方法论,区别于 game-topic-brainstorm 的从0脑暴。",
+      "category": "game",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/design-principles-narrative-adaptation.md",
+        "references/event-card-production.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "skill-auditor",
+      "dir": "skill-auditor",
+      "description": "审查 skill 质量并给出优化建议(6 模式+6 维度,产出报告+JSON)。当用户要'审查/优化/分析 skill 质量'、'对比 skill 与基准'、'审查流水线一致性'、'审查运行时契约'时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Evaluation",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/audit-consistency.md",
+        "references/audit-execution.md",
+        "references/audit-extensibility.md",
+        "references/audit-report-template.md",
+        "references/audit-robustness.md",
+        "references/audit-runtime.md",
+        "references/audit-structure.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "skill-runtime",
+      "dir": "skill-runtime",
+      "description": "Agent Runtime 层 skill。定义 runtime.yaml 运行时元数据契约(timeout/retry/degrade/external_overrides),被 workflow-runtime 与 skill-auditor 校验。所有 skill 渐进式接入 runtime.yaml。当要统一 skill 运行时行为或校验 skill 是否符合运行时契约时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Agent Runtime",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/audit-runtime.md",
+        "references/degrade-patterns.md",
+        "references/runtime-schema.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "skill-usage-tracker",
+      "dir": "skill-usage-tracker",
+      "description": "Data 层 skill。记录每次 skill 调用数据(名称/耗时/成败/产物),统计高频/慢/失败率 skill,产出优化建议。当 workflow-runtime 执行 skill 时自动记录,或用户要'看 skill 使用统计/优化建议'时调用。纯记录不阻塞执行。",
+      "category": "agent-system",
+      "agent_dimension": "Data",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/metrics-definition.md",
+        "references/retention-policy.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "task-planner",
+      "dir": "task-planner",
+      "description": "通用任务规划器 skill。把复杂需求拆解为子任务树+依赖关系+优先级,产出 task-tree.json。当编排总纲外有复杂需求需规划、或用户要'拆解任务/规划执行步骤'时调用。区别于编排总纲的'流水线阶段裁剪',本 skill 面向任意任务的通用规划。",
+      "category": "agent-system",
+      "agent_dimension": "Planning",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/dependency-rules.md",
+        "references/task-tree-schema.md",
+        "references/wbs-patterns.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "test-and-harden-system",
+      "dir": "test-and-harden-system",
+      "description": "Runs and improves unit, integration, end-to-end, security, accessibility, performance, lint, type, and build checks; fixes blocking defects and produces evidence-based acceptance reports.",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "tool-ci-ops",
+      "dir": "tool-ci-ops",
+      "description": "CI/CD 工具层 skill。封装'触发 CI''查询构建状态''读取测试报告'操作。当编排总纲或其他 skill 要触发持续集成或查询构建结果时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Tool",
+      "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "tool-db-ops",
+      "dir": "tool-db-ops",
+      "description": "数据库工具层 skill。封装'跑 migration''查询数据''回滚迁移'操作。当 implement-data-layer 或其他 skill 要执行数据库操作时调用。生产环境只读。",
+      "category": "agent-system",
+      "agent_dimension": "Tool",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/db-safety.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "tool-deploy-ops",
+      "dir": "tool-deploy-ops",
+      "description": "部署工具层 skill。封装'部署到各平台''回滚''健康检查'操作,支持 GitHub Pages / Vercel / Netlify / CloudBase / COS。当编排总纲或其他 skill 要部署产物时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Tool",
+      "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "tool-git-ops",
+      "dir": "tool-git-ops",
+      "description": "Git 工具层 skill。封装 git add/commit/branch/push/diff/log 操作,支持'只提交产物目录''自动生成 commit message''创建 PR 分支'。当编排总纲或其他 skill 要把产物提交到 Git 时调用。",
+      "category": "agent-system",
+      "agent_dimension": "Tool",
+      "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "tool-monitor-ops",
+      "dir": "tool-monitor-ops",
+      "description": "监控工具层 skill。封装'查日志''查 metric''查 trace'操作。当 debug-fix 或其他 skill 要排查线上问题时调用。只读。",
+      "category": "agent-system",
+      "agent_dimension": "Tool",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/monitor-platforms.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "web-static-deploy",
+      "dir": "web-static-deploy",
+      "description": "Deploy web frontends (static HTML/JS, Vite/React/Vue builds) to production. Use when a user asks how to publish, deploy, or host a web app or game, or wants to choose among GitHub Pages, Vercel, Netlify, CloudBase or COS, CloudStudio. This skill decides whether the app is PURE STATIC (no backend, browser localStorage only) or NEEDS A DATABASE (CloudBase document DB plus auth plus cloud functions), then executes the matching deploy path and covers the silent-404 failure modes (private repo, Pages source not set to GitHub Actions, TXT domain verification, CNAME persistence).",
+      "category": "product",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/cloudbase.md",
+        "references/github-pages.md",
+        "references/postbuild-snippet.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "workflow-runtime",
+      "dir": "workflow-runtime",
+      "description": "工作流执行引擎 skill。把编排总纲的执行顺序转为可执行 workflow.yaml,支持暂停/恢复/跳过/回退/并行调度。当要把流水线从'文档描述'升级为'可执行工作流',或要驱动 task-tree 执行时调用。本身是执行引擎,不产出业务文件。",
+      "category": "agent-system",
+      "agent_dimension": "Workflow",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/execution-semantics.md",
+        "references/runtime-schema.md",
+        "references/workflow-yaml-schema.md"
+      ],
+      "warnings": []
+    }
+  ],
+  "warnings": []
+}

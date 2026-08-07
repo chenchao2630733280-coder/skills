@@ -1,0 +1,32 @@
+# runtime.yaml — ai-short-drama-project-development
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 已确认选题
+    type: text
+    required: true
+    description: 经 ai-short-drama-topic-planner 确认或用户直接提供的选题（含高概念、受众、类型、集数等）
+  - name: 选题评估上下文
+    type: text
+    required: false
+    description: 选题阶段的观看动力、趋势、变量分布等评估产物
+outputs:
+  - path: 项目开发文档（13 步：选题复核→故事发动机→核心规则→主角目标→人物关系→对手系统→核心秘密→故事阶段→情绪曲线→悬念卡点→分集大纲→制作商业可行性→风险诊断）
+    type: inline
+degrade:
+  - trigger: 选题复核未通过（核心冲突不成立或观看动力不足）
+    action: 阻断后续步骤，输出复核问题清单，建议回退到 ai-short-drama-topic-planner 重新选题
+    target: 选题复核
+  - trigger: 分集大纲集数与目标不匹配
+    action: 重新调整故事阶段划分与悬念卡点分布，最多 2 轮；仍不匹配则标注缺口交人工
+    target: 分集大纲
+  - trigger: 制作商业可行性检查未通过
+    action: 输出风险点与降级方案（如减少场景/简化特效/调整集数），不阻断大纲产出
+    target: 制作商业可行性
+  - trigger: 单步生成质量不达标（用户反馈或自评未通过）
+    action: 该步重做最多 2 轮；仍不通过则保留当前版本并标注"待人工修订"后继续下一步
+    target: 当前步骤
