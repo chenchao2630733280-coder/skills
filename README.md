@@ -1,6 +1,8 @@
 # AI Agent Skills 技能集合
 
 > 一套面向 AI 编码助手的 skill 集合，覆盖 **AI 游戏生成、产品需求与系统交付、前端原型、文档/标书生成、短剧策划** 等场景。每个 skill 目录内含 `SKILL.md` 作为技能定义；`_shared/` 为公共引用与校验脚本，本身不是独立 skill。
+>
+> **首次使用工作台时**：先运行 `rd-init` 扫描全部 skill 目录，生成 `.workbench-index.json` 索引和完整性报告，让 AI 一目了然地掌握工作台全貌（有哪些 skill、分属哪条流水线、frontmatter 是否规范、references 路径是否完整、哪些 skill 已接入 runtime.yaml）。新增或删除 skill 后建议重跑。
 
 ---
 
@@ -26,13 +28,15 @@
 - `ai-short-drama-topic-planner`：AI 短剧高概念选题策划，生成/筛选/评估/发散差异化选题并叠加趋势雷达。
 - `ai-short-drama-project-development`：选题确认后的项目开发总监，将选题转化为可拍摄的项目开发方案。
 
-### 5. 其他 / 垂直
+### 5. 工作台元 skill
+- `rd-init`：工作台加载器。扫描 skills 目录全部 skill，生成 `.workbench-index.json` 索引和完整性报告（frontmatter 规范/references 路径/runtime.yaml 声明），让 AI 快速掌握工作台全貌。不生成业务产物。
+
+### 6. 其他 / 垂直
 - `frontend-design`：为新建/重构 UI 提供独特、有意图的视觉设计指导（配色、排版、布局、签名元素）。
 - `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
 - `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
-- `rd-init`：由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目。
 
-### 6. AI Agent 体系层（2026-08-06 升级）
+### 7. AI Agent 体系层（2026-08-06 升级）
 - **Tool 层**：`tool-git-ops` / `tool-ci-ops` / `tool-deploy-ops` / `tool-db-ops` / `tool-monitor-ops`——封装 Git/CI/部署/DB/监控操作,默认只读优先,变更类需用户确认。
 - **工程 skill**：`code-review` / `debug-fix` / `refactor`——补齐研发链路的审查/调试/重构能力。
 - **安全与评测**：`guardrail`(前置拦截) / `diff-reviewer`(后置审查) / `skill-auditor`(已扩展为 5 模式 5 维度,含执行后评测)。
@@ -77,7 +81,7 @@
 | plan-system-implementation | 由 PRD/原型/仓库生成可执行的工程实施蓝图(架构/切片/任务板) | output/spec/*.json、PRD、原型、当前代码仓库 | implementation-plan.md、architecture.json、task-board.json、traceability.json、risk-register.md、ADR 决策记录 |
 | prd-quality-checker | 在下游工作前基于证据审核 PRD 质量，输出门禁报告(Audit/Improve) | 主 PRD/需求基线、关联清单、产品配置、可选上下文 | Markdown 门禁报告(READY/CONDITIONAL/NOT_READY)+ 可选 JSON + AI 开发准备度附录 |
 | product-pipeline-master | 产品工作台总编排调度中枢(端判定/阶段裁剪/串联下游)，本身不产出文件 | 用户需求 | 调度下游 6 主线 + 3 旁线 skill 产物(固定路径)，本 skill 不直接产出业务文件 |
-| rd-init | 由初步需求从 GitLab 拉取 AI 产研模板并初始化新项目 | "初步需求如下："后的需求文本 | .rd-init-brief.md、project.yaml、workflow_state.yaml、asset_map.json、项目说明(不生成 PRD/代码) |
+| rd-init | 工作台加载器：扫描 skills 目录全部 skill，生成索引和完整性报告 | skills 目录路径 | `.workbench-index.json`(索引) + 对话报告(分类统计/警告清单) |
 | ruanzhu-doc-generator | 由产品截图生成中文软著产品说明书 DOCX(区分 PC 后台与移动端) | 截图文件夹 + 可选 PRD/README/产品事实 | `(管理后台)产品说明书.docx`/`(移动端)产品说明书.docx`(混合时两份) |
 | screenshot-operation-manual | 由截图/录屏生成 PC 后台与移动端操作手册(DOCX/PDF/MD/HTML) | 截图/录屏/截图文件夹、平台分类 | manual_spec.json + 操作手册.docx(封面、目录、模块说明、步骤、FAQ) |
 | skill-runtime | Agent Runtime 层(定义 runtime.yaml 契约:timeout/retry/inputs/outputs/degrade) | skill 目录 | runtime-contract-report.json(校验结果) |
@@ -333,7 +337,9 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [frontend-design](./frontend-design/SKILL.md)
 - [brainstorm-product-feature](./brainstorm-product-feature/SKILL.md)
 - [build-working-system](./build-working-system/SKILL.md)
-- [rd-init](./rd-init/SKILL.md)
+
+**工作台元 skill**
+- [rd-init](./rd-init/SKILL.md)（工作台加载器：扫描全部 skill 生成索引和完整性报告）
 
 **文档与标书**
 - [bid-functional-solution](./bid-functional-solution/SKILL.md)
@@ -348,7 +354,6 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [frontend-design](./frontend-design/SKILL.md)
 - [brainstorm-product-feature](./brainstorm-product-feature/SKILL.md)
 - [build-working-system](./build-working-system/SKILL.md)
-- [rd-init](./rd-init/SKILL.md)
 
 **AI Agent 体系层**（2026-08-06 升级）
 - [tool-git-ops](./tool-git-ops/SKILL.md) - [tool-ci-ops](./tool-ci-ops/SKILL.md) - [tool-deploy-ops](./tool-deploy-ops/SKILL.md) - [tool-db-ops](./tool-db-ops/SKILL.md) - [tool-monitor-ops](./tool-monitor-ops/SKILL.md)

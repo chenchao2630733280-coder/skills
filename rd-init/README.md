@@ -16,6 +16,6 @@ python .agents/skills/rd-init/scripts/rd-init.py --skills-dir .agents/skills
 ## 功能
 
 - 扫描全部 skill 目录，解析 frontmatter 和 runtime.yaml
-- 按产研业务层/游戏流水线/AI 短剧/Agent 体系层分类
-- 校验完整性：frontmatter 规范、references 路径存在性
+- 按五大类分类：工作台元 skill / 产研业务层 / 游戏流水线 / AI 短剧 / Agent 体系层
+- 校验完整性：frontmatter 规范、references 路径存在性（支持 skill 目录内 + `_shared/references/` + 跨 skill 目录三种合法位置）
 - Agent 体系层按 12 维度细分统计

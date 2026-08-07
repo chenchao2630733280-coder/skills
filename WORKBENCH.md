@@ -1,8 +1,12 @@
-# 产品工作台（Product Workbench）
+# AI Agent Skills 工作台
 
-一套覆盖"从想法到实施"完整产品交付流水线的 Skill 集合，外加文档交付物生成能力。本文件是工作台的总索引。
+一套面向 AI 编码助手的 skill 集合，覆盖**产品交付、AI 游戏生成、AI 短剧策划、AI Agent 体系层**四大领域，外加文档交付物生成能力。本文件是工作台的总索引。
+
+> **首次使用工作台**：先运行 `rd-init` 扫描全部 skill 目录，生成 `.workbench-index.json` 索引和完整性报告，让 AI 一目了然地掌握工作台全貌。新增或删除 skill 后建议重跑。
 
 ## 流水线总览
+
+### 一、产品交付流水线
 
 ```text
 【总编排】
@@ -33,7 +37,45 @@ screenshot-operation-manual  截图操作手册（DOCX/PDF/Markdown）
 
 主线 Skill 的顺序是推荐顺序，不是强制依赖；PRD 可从需求、脑暴、原型、HTML、代码或运行系统证据生成或逆向重建（详见 `generate-system-prd/references/prd-stage-boundary.md`）。
 
-## Skill 清单
+### 二、AI 游戏生成流水线
+
+```text
+【总编排】
+game-forge-master            调度中枢：引擎选择（Phaser 3 / Pixi.js / 纯Canvas / Godot 4 / Unity）+ 阶段裁剪 + 失败回退
+        ↓
+game-topic-brainstorm        阶段0（可选）：游戏选题脑暴
+        ↓
+game-blueprint               阶段1：一页纸游戏蓝图（类型/平台/引擎/玩法/范围）
+        ↓
+game-spec                    阶段2：详细 PRD + 技术设计
+        ↓
+game-art-spec                阶段3：美术规范 + ASSET_MANIFEST.json + 音频规范
+        ↓
+┌────────────────────┐  ┌────────────────────┐
+│ game-asset-forge   │  │ game-code-forge    │  (可并行)
+│ 阶段4a：AI 生图    │  │ 阶段4b：工程代码   │
+├────────────────────┘  └────────────────────┘
+        ↓
+game-integrate               阶段5：集成构建 + 浏览器自测 + 验收报告
+        ↓
+game-polish                  阶段6（可选）：视觉/手感/反馈效果打磨
+```
+
+**质量门**：`game-quality-gate` 在 4 个关键节点（规格后/美术后/资源代码后/集成前）介入做契约校验与实跑预检，不通过则阻断流水线。
+
+### 三、AI 短剧策划
+
+```text
+ai-short-drama-topic-planner          短剧选题生成与优化（含趋势雷达）
+        ↓ 选题确认
+ai-short-drama-project-development    短剧项目开发（13 步流程：选题复核→故事发动机→核心规则→人物关系→分集大纲→风险诊断）
+```
+
+两个短剧 skill 均已接入 `runtime.yaml`（topic-planner timeout=600s / project-development timeout=900s）并含"失败回退与降级"章节（L1-L3 分层回退）。
+
+## Skill 清单（产品交付流水线）
+
+> 游戏流水线 skill 清单详见 `game-forge-master/SKILL.md`；短剧 skill 清单详见各 skill 的 SKILL.md；Agent 体系层 skill 清单见下文"Agent 体系层"章节。
 
 | Skill | 阶段 | 主要产出 | 默认输出位置 |
 |-------|------|---------|-------------|
@@ -274,3 +316,13 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 完整性校验:SKILL.md 存在(CRITICAL) / frontmatter name 存在(CRITICAL) / description 存在(WARNING) / runtime.yaml 声明(INFO) / references 路径存在(WARNING,支持 skill 目录内 + _shared/references/ + 跨 skill 目录三种合法位置)
 - 同步修复:ai-short-drama-project-development 的 frontmatter 格式错误(标题在 `---` 前)
 - WORKBENCH.md 元技能层新增 rd-init 收录
+
+### 2026-08-07 短剧 skill 接入运行时契约 + 失败回退
+- 两个短剧 skill 新增 `runtime.yaml`:`ai-short-drama-topic-planner`(timeout=600s,retry=2) / `ai-short-drama-project-development`(timeout=900s,retry=2),均含 inputs/outputs/degrade 声明
+- 两个短剧 SKILL.md 新增"失败回退与降级"章节,定义 L1-L3 分层回退策略:
+  - topic-planner:5 类场景(相似度过高/趋势缺失/用户不满意/自检未通过/失败记录)
+  - project-development:4 类场景(选题复核未通过/大纲集数不匹配/制作可行性未通过/单步质量不达标)
+- runtime.yaml 声明总数从 24 增至 26
+
+### 2026-08-07 build-report.json device 字段写法统一
+- `generate-html-mobile` 和 `generate-html-pc-admin` 的 device 字段写法统一为 `device: "mobile"` / `device: "pc"`(原 mobile 用冒号、pc 用等号,下游解析需兼容两种)
