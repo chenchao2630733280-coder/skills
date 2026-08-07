@@ -37,8 +37,26 @@ def _now_iso():
 
 
 def _gen_call_id():
-    ts = datetime.now(LOCAL_TZ).strftime("%Y%m%d%H%M%S")
-    return f"call-{ts}"
+    """生成 call_id,格式 call-{YYYYMMDD}-{序号}(如 call-20260806-001)。
+
+    序号 = 当天已记录的 call_id 数量 + 1(三位补零)。
+    若无法读取记录,回退为毫秒数 %1000(三位补零)。
+    与 workflow-runtime/SKILL.md §12.2 声明的格式一致。
+    """
+    now = datetime.now(LOCAL_TZ)
+    date_str = now.strftime("%Y%m%d")
+    try:
+        records = _read_records()
+        today_prefix = f"call-{date_str}-"
+        today_count = sum(
+            1 for r in records
+            if isinstance(r, dict) and isinstance(r.get("call_id"), str)
+            and r["call_id"].startswith(today_prefix)
+        )
+        seq = today_count + 1
+    except Exception:
+        seq = (now.microsecond // 1000) % 1000  # 毫秒数 0-999
+    return f"call-{date_str}-{seq:03d}"
 
 
 def _ensure_dir():

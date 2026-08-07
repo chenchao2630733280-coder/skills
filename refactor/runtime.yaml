@@ -5,3 +5,10 @@ retry:
   max: 1
   backoff: fixed
   interval: 10
+outputs:
+  - path: refactor-plan.md
+    type: file
+  - path: refactor-report.md
+    type: file
+  - path: refactor-report.json
+    type: file

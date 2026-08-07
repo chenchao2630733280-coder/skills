@@ -5,3 +5,6 @@ retry:
   max: 2
   backoff: exponential
   interval: 15
+outputs:
+  - path: deploy-ops-report.json
+    type: file

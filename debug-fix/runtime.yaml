@@ -5,6 +5,12 @@ retry:
   max: 2
   backoff: exponential
   interval: 10
+outputs:
+  - path: debug-report.md
+    type: file
+  - path: debug-report.json
+    type: file
+    optional: true
 degrade:
   - trigger: 修复失败
     action: 标记未修复并记录原因

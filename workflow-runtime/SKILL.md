@@ -199,6 +199,8 @@ task-planner 产出 task-tree.json
    - runtime 层重试与降级用尽后,才上升到 workflow 层的 `on_fail`。
 2. **失败时调 replanner 重规划**:若 `on_fail=abort` 或回退超限,可触发重规划——
    重新评估剩余步骤是否需要调整(如裁剪后续阶段、更换 skill)。重规划由编排总纲或上层 agent 决策。
+   (注:replanner 为手动触发工具,`run_workflow.py` 在 `on_fail=abort` 或回退超限时输出提示
+   "建议运行 `replanner replan --input task-tree.json --failure <失败信息>`",不自动调用。)
 3. **保留执行轨迹**:失败时 `workflow-exec-report.json` 不丢失,写入 ABORTED 记录与失败原因,
    便于复盘与 `failure-casebook` 记录。
 4. **failure-casebook 记录**:回退触发后,失败时显式调用 `failure-casebook` record 子命令记录失败码 + 修复方法,

@@ -41,8 +41,8 @@ DEFAULT_MAX_RETRIES = 3
 # 编排总纲执行顺序的模式识别正则
 # 章节头:如 "## 七、执行顺序" / "## 八、执行顺序"
 RE_SECTION = re.compile(r"^##\s+([七八九十]+|[0-9]+)、?执行顺序")
-# 暂停点:"⏸ **人工确认点 N**"
-RE_PAUSE = re.compile(r"⏸\s*\*\*人工确认点\s*(\d+)\*\*")
+# 暂停点:"⏸ **人工确认点 N**" 或 "⏸ **人工确认点 N（可选 Tool）**"(数字后可有括号注解)
+RE_PAUSE = re.compile(r"⏸\s*\*\*人工确认点\s*(\d+)[^*]*\*\*")
 # 调用 skill:"调用 `xxx`"  (可能多个,如 "调用 `game-asset-forge` 和 `game-code-forge`")
 RE_SKILL = re.compile(r"调用\s+`([^`]+)`")
 # 并行同伴 skill:"和 `xxx`" / "与 `xxx`"(并行行中跟在首个 skill 后的同伴)
@@ -53,8 +53,8 @@ RE_OUTPUTS = re.compile(r"产出\s+`([^`]+)`")
 RE_PARALLEL = re.compile(r"\*\*并行\*\*\s*调用")
 # 回退:"FAIL 则回 N 修复"
 RE_BACK_TO = re.compile(r"FAIL\s*则\s*回\s*(\d+)")
-# 可选标记:"(可选)" / "（可选）"
-RE_OPTIONAL = re.compile(r"[（(]可选[）)]")
+# 可选标记:"(可选)" / "（可选）" / "（可选 Tool）"(可选后可跟说明)
+RE_OPTIONAL = re.compile(r"[（(]可选[^）)]*[）)]")
 
 
 def _now_iso():
@@ -129,6 +129,25 @@ def validate_workflow(data):
         if stype not in STEP_TYPE_ENUM:
             errors.append("steps[%d].%s.type:必须为 %s" % (idx, sid, "/".join(STEP_TYPE_ENUM)))
 
+        # step 级未知字段检测
+        known_step_fields = {"id", "type", "skill", "args", "outputs", "on_fail", "next",
+                             "parallel_with", "runtime", "confirm", "optional", "title"}
+        unknown_step = set(step.keys()) - known_step_fields
+        if unknown_step:
+            errors.append("steps[%d].%s:含未知字段:%s" % (idx, sid, sorted(unknown_step)))
+
+        # 可选字段类型校验
+        if "args" in step and not isinstance(step["args"], dict):
+            errors.append("steps[%d].%s.args:必须为对象" % (idx, sid))
+        if "outputs" in step and not isinstance(step["outputs"], list):
+            errors.append("steps[%d].%s.outputs:必须为数组" % (idx, sid))
+        if "runtime" in step and not (step["runtime"] is None or isinstance(step["runtime"], str)):
+            errors.append("steps[%d].%s.runtime:必须为字符串或 null" % (idx, sid))
+        if "optional" in step and not isinstance(step["optional"], bool):
+            errors.append("steps[%d].%s.optional:必须为布尔值" % (idx, sid))
+        if "title" in step and not (step["title"] is None or isinstance(step["title"], str)):
+            errors.append("steps[%d].%s.title:必须为字符串或 null" % (idx, sid))
+
         # type=skill 时 skill 必填
         if stype == "skill":
             if not _is_nonempty_string(step.get("skill")):
@@ -136,6 +155,10 @@ def validate_workflow(data):
 
         # type=pause 时 confirm 必填
         if stype == "pause":
+            # pause 与 skill/args/outputs 互斥(暂停点不应声明执行类字段)
+            for mutex_field in ("skill", "args", "outputs"):
+                if mutex_field in step:
+                    errors.append("steps[%d].%s:type=pause 时不应声明 %s" % (idx, sid, mutex_field))
             confirm = step.get("confirm")
             if not isinstance(confirm, dict):
                 errors.append("steps[%d].%s:type=pause 时 confirm 必填且为对象" % (idx, sid))
@@ -327,6 +350,14 @@ def compile_from_master(master_path, section_name, source_label):
         is_parallel = bool(RE_PARALLEL.search(line_stripped))
         is_optional = bool(RE_OPTIONAL.search(line_stripped))
         outputs_found = RE_OUTPUTS.findall(line_stripped)
+        # 并行行中"和 `path`"模式的补充识别(如 "分别产出 `assets/` 和 `src/`")
+        # 仅识别像路径的产物(含 / 或 .),避免把同伴 skill 名误当产物路径
+        if is_parallel:
+            extra_outputs = re.findall(r"和\s*`([^`]+)`", line_stripped)
+            for extra in extra_outputs:
+                looks_like_path = "/" in extra or "." in extra
+                if looks_like_path and extra not in outputs_found:
+                    outputs_found.append(extra)
         back_match = RE_BACK_TO.search(line_stripped)
 
         # 并行行中追加同伴 skill("和 `xxx`" / "与 `xxx`"),去重

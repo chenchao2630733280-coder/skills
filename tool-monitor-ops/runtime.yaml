@@ -5,3 +5,6 @@ retry:
   max: 1
   backoff: fixed
   interval: 5
+outputs:
+  - path: monitor-ops-report.json
+    type: file

@@ -8,4 +8,5 @@ retry:
 outputs:
   - path: code-review-report.md
     type: file
-    optional: true
+  - path: code-review-report.json
+    type: file

@@ -86,9 +86,9 @@
 
 两种跳过场景:
 
-1. **裁剪跳过**:编排总纲裁剪某阶段时,对应 step 标记为 SKIP,直接走 `next`
-   - 由编排总纲在编译时决定(标记 step 的 `skipped: true`,或直接从 steps 中移除)
-   - `run_workflow.py` 遇到 skipped step 时打印"跳过:{title}"并直接到 next
+1. **裁剪跳过**:编排总纲裁剪某阶段时,对应 step 从 steps 数组中移除(编译时裁剪)
+   - 由编排总纲在编译时决定(直接从 steps 中移除该 step,workflow.yaml 不保留被裁剪的 step)
+   - `run_workflow.py` 执行时不遇到被裁剪的 step,直接按数组顺序执行保留下来的步骤
 
 2. **失败跳过(on_fail.action=skip)**:step 失败后跳过本步,继续执行 next
    - 适用于非关键步骤(如可选的 game-polish)

@@ -73,6 +73,10 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 调用 `test-and-harden-system` skill 运行质量门禁、修复阻塞缺陷并输出证据。
 
+**Stage 5 前可选（代码审查）**：调用 `code-review` 审查 implement-* 产出的代码，产出 `code-review-report.md/json`。代码审查与 test-and-harden-system 的测试/安全检查互补，前者关注代码质量/可维护性，后者关注功能正确性/安全性。
+
+**Stage 5 后可选（技术债重构）**：若 code-review 发现技术债，调用 `refactor` 进行代码重构，产出 `refactor-plan.md` + `refactor-report.md/json`。重构后建议再次调用 `code-review` 复核。
+
 ### Stage 6：部署准备与交付
 
 调用 `package-and-deploy-system` skill 生成可重复构建、容器/CI、部署文档、运维手册和发布清单。

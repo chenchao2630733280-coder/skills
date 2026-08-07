@@ -20,7 +20,10 @@
 
 import argparse
 import json
+import os
+import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -35,6 +38,16 @@ except Exception:  # pragma: no cover
 REPORT_FILENAME = "workflow-exec-report.json"
 STATE_FILENAME = "workflow-state.json"
 END_MARKER = "__end__"
+
+# skills 工作台根目录(用于定位 track_usage.py / casebook_ops.py)
+_SKILLS_ROOT = Path(__file__).resolve().parents[2]
+_TRACK_USAGE_PY = _SKILLS_ROOT / "skill-usage-tracker" / "scripts" / "track_usage.py"
+_CASEBOOK_PY = _SKILLS_ROOT / "failure-casebook" / "scripts" / "casebook_ops.py"
+
+# external_overrides 默认查找路径(不依赖每个 skill 单独声明)
+_DEFAULT_OVERRIDES_PATHS = [
+    Path.home() / ".trae-cn" / "tuner-overrides" / "runtime-overrides.yaml",
+]
 
 
 def _now_iso():
@@ -146,22 +159,17 @@ def load_runtime_yaml(runtime_ref, workflow_dir):
     return data, warnings
 
 
-def merge_external_overrides(local_runtime, overrides_ref, skill_name, workflow_dir):
+def merge_external_overrides(local_runtime, overrides_path, skill_name):
     """合并 external_overrides 引用的 overrides 文件。
 
-    overrides_ref 是相对 skill 根目录的路径（runtime.yaml 中的 external_overrides 字段值）。
-    从 overrides 文件中筛选当前 skill 名对应的 overrides，用其 timeout/retry 覆盖本地值。
+    overrides_path 是已解析的绝对路径(由 resolve_runtime_params 传入)。
+    支持 list 格式(adaptive-tuner 产出,每项含 skill 字段)和 dict 格式(旧式,以 skill 名为 key)。
+    用其 timeout/retry 覆盖本地值,不覆盖 inputs/outputs/degrade。
 
     返回 (merged_runtime, warnings)。
     """
     warnings = []
-    if not overrides_ref:
-        return local_runtime, warnings
-
-    # overrides 文件路径解析：相对 workflow.yaml 所在目录
-    overrides_path = Path(workflow_dir) / overrides_ref
-    if not overrides_path.exists():
-        warnings.append("external_overrides 引用文件不存在: %s" % overrides_ref)
+    if not overrides_path or not overrides_path.exists():
         return local_runtime, warnings
 
     yaml_err = _ensure_yaml()
@@ -179,13 +187,20 @@ def merge_external_overrides(local_runtime, overrides_ref, skill_name, workflow_
         warnings.append("overrides 文件顶层非 object")
         return local_runtime, warnings
 
-    # 筛选当前 skill 名对应的 overrides
-    overrides_list = overrides_data.get("overrides", {})
-    if not isinstance(overrides_list, dict):
-        warnings.append("overrides 字段非 object")
+    overrides_field = overrides_data.get("overrides", [])
+    # 支持 list 格式(adaptive-tuner 产出)和 dict 格式(旧式)
+    skill_overrides = None
+    if isinstance(overrides_field, list):
+        for item in overrides_field:
+            if isinstance(item, dict) and item.get("skill") == skill_name:
+                skill_overrides = item
+                break
+    elif isinstance(overrides_field, dict):
+        skill_overrides = overrides_field.get(skill_name)
+    else:
+        warnings.append("overrides 字段非 array/object: %s" % type(overrides_field).__name__)
         return local_runtime, warnings
 
-    skill_overrides = overrides_list.get(skill_name)
     if not skill_overrides:
         # 当前 skill 无 overrides，用本地值
         return local_runtime, warnings
@@ -222,7 +237,9 @@ def resolve_runtime_params(step, workflow_dir):
 
     流程：
     1. 读取 step.runtime 引用的 runtime.yaml
-    2. 若 runtime.yaml 含 external_overrides，读取 overrides 文件
+    2. 确定 overrides 文件路径:
+       a. 若 runtime.yaml 含 external_overrides,相对 runtime.yaml 所在目录解析(D4-013)
+       b. 否则查找默认路径 _DEFAULT_OVERRIDES_PATHS(D5-003,不依赖 skill 单独声明)
     3. 从 overrides 中筛选当前 skill 名对应的 overrides
     4. 用 overrides 的 timeout/retry 覆盖本地值
     5. 返回最终参数 (timeout, retry, warnings)
@@ -244,11 +261,26 @@ def resolve_runtime_params(step, workflow_dir):
     local_runtime, rt_warnings = load_runtime_yaml(runtime_ref, workflow_dir)
     warnings.extend(rt_warnings)
 
-    # 2. 合并 external_overrides
+    # 2. 确定 overrides 文件路径
+    #    runtime.yaml 所在目录 = runtime.yaml 文件路径的父目录(skill 根目录)
+    runtime_path = Path(workflow_dir) / runtime_ref
+    runtime_dir = runtime_path.parent
+
     external_ref = local_runtime.get("external_overrides")
     if external_ref:
+        # runtime.yaml 显式声明 external_overrides:相对 runtime.yaml 所在目录解析(D4-013)
+        overrides_path = runtime_dir / external_ref
+    else:
+        # 未声明:查找默认路径(D5-003)
+        overrides_path = None
+        for candidate in _DEFAULT_OVERRIDES_PATHS:
+            if candidate.exists():
+                overrides_path = candidate
+                break
+
+    if overrides_path:
         merged_runtime, eo_warnings = merge_external_overrides(
-            local_runtime, external_ref, skill_name, workflow_dir
+            local_runtime, overrides_path, skill_name
         )
         warnings.extend(eo_warnings)
     else:
@@ -281,6 +313,102 @@ def compute_retry_delay(retry, attempt):
     if backoff == "exponential":
         return interval * (2 ** attempt)
     return interval
+
+
+# --------------------------------------------------------------------------- #
+# skill-usage-tracker 与 failure-casebook 接入(D4-017/D5-001/D5-004 闭环修复)
+# --------------------------------------------------------------------------- #
+def _run_subprocess(script_path, args_list, timeout=15):
+    """运行子脚本,返回 (returncode, stdout, stderr)。失败不抛异常。"""
+    if not script_path.exists():
+        return 1, "", "脚本不存在: %s" % script_path
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path)] + args_list,
+            capture_output=True, text=True, timeout=timeout, encoding="utf-8",
+        )
+        return result.returncode, result.stdout, result.stderr
+    except subprocess.TimeoutExpired:
+        return 1, "", "子脚本超时(%ds): %s" % (timeout, script_path.name)
+    except Exception as exc:
+        return 1, "", "子脚本异常: %s" % exc
+
+
+def _track_usage_before(skill_name, pipeline_name):
+    """执行 skill 前记录调用,返回 call_id(失败返回 None,不阻塞)。
+
+    对应 SKILL.md §十二.1 的"执行前 record"。
+    """
+    if not _TRACK_USAGE_PY.exists():
+        return None
+    args = ["record", "--skill", skill_name, "--status", "success",
+            "--caller", "workflow-runtime"]
+    if pipeline_name:
+        args.extend(["--pipeline", pipeline_name])
+    rc, stdout, stderr = _run_subprocess(_TRACK_USAGE_PY, args)
+    if rc != 0:
+        sys.stdout.write("  ⚠ usage-tracker 记录失败(已忽略): %s\n" % stderr.strip())
+        return None
+    # 从 stdout 解析 call_id:"PASS  记录已写入:call-20260807-001  skill=..."
+    for line in stdout.splitlines():
+        if "记录已写入:" in line:
+            parts = line.split("记录已写入:")
+            if len(parts) >= 2 and parts[1].split():
+                return parts[1].split()[0]
+    return None
+
+
+def _track_usage_after(call_id, skill_name, status, duration_ms=None,
+                       outputs=None, error_code=None):
+    """执行 skill 后更新调用记录(失败不阻塞)。
+
+    对应 SKILL.md §十二.1 的"执行后 record"。
+    """
+    if not call_id or not _TRACK_USAGE_PY.exists():
+        return
+    args = ["record", "--skill", skill_name, "--call-id", call_id,
+            "--status", status, "--caller", "workflow-runtime"]
+    if duration_ms is not None:
+        args.extend(["--duration-ms", str(duration_ms)])
+    if outputs:
+        args.extend(["--outputs"] + list(outputs))
+    if error_code and status == "fail":
+        args.extend(["--error-code", error_code])
+    rc, stdout, stderr = _run_subprocess(_TRACK_USAGE_PY, args)
+    if rc != 0:
+        sys.stdout.write("  ⚠ usage-tracker 更新失败(已忽略): %s\n" % stderr.strip())
+
+
+def _casebook_auto_query(skill_name):
+    """执行 skill 前查询历史失败案例,返回 preventive_hints 列表(失败返回空列表)。
+
+    对应 failure-casebook/SKILL.md §六 的"执行前 auto-query"。
+    """
+    if not _CASEBOOK_PY.exists():
+        return []
+    rc, stdout, stderr = _run_subprocess(
+        _CASEBOOK_PY, ["auto-query", "--skill", skill_name])
+    if rc != 0:
+        return []
+    try:
+        result = json.loads(stdout)
+        return result.get("preventive_hints", [])
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+
+def _casebook_record(skill_name, code, reason, fix):
+    """skill 执行失败时记录失败案例(失败不阻塞)。
+
+    对应 workflow-runtime/SKILL.md §八第4点的"失败时 record"。
+    """
+    if not _CASEBOOK_PY.exists():
+        return
+    args = ["record", "--skill", skill_name, "--code", code,
+            "--reason", reason, "--fix", fix]
+    rc, stdout, stderr = _run_subprocess(_CASEBOOK_PY, args)
+    if rc != 0:
+        sys.stdout.write("  ⚠ casebook 记录失败(已忽略): %s\n" % stderr.strip())
 
 
 def append_step_record(report, step_id, status, outputs=None, error=None, duration=None, retries=0):
@@ -380,12 +508,16 @@ def print_execution_plan(workflow, step_index):
 # --------------------------------------------------------------------------- #
 # 实际执行(非 dry-run)
 # --------------------------------------------------------------------------- #
-def execute_workflow(workflow, step_index, report, dry_run=False, workflow_dir=None):
+def execute_workflow(workflow, step_index, report, dry_run=False,
+                     workflow_dir=None, simulate_failure=None):
     """按 steps 顺序执行工作流。
 
     dry_run=True 时只打印计划(由 print_execution_plan 处理,本函数不被调用)。
     dry_run=False 时:逐 step 调度,遇到 pause 则暂停并保存状态。
-    实际调用 skill 由宿主/AI 完成,本脚本只模拟执行流程并记录轨迹。
+    实际调用 skill 由宿主/AI 完成,本脚本模拟执行流程并记录轨迹,
+    同时接入 usage-tracker/failure-casebook 闭环,并实现 on_fail/parallel 语义。
+
+    simulate_failure: set of step_id,模拟这些 step 执行失败(用于测试 on_fail 逻辑)。
 
     返回 (status, exit_code):
       status ∈ {"done", "paused", "aborted"}
@@ -396,15 +528,108 @@ def execute_workflow(workflow, step_index, report, dry_run=False, workflow_dir=N
         return "aborted", 1
 
     first_id = workflow["steps"][0].get("id")
-    return execute_from_step(workflow, step_index, report, first_id, dry_run=dry_run, workflow_dir=workflow_dir)
+    return execute_from_step(workflow, step_index, report, first_id,
+                             dry_run=dry_run, workflow_dir=workflow_dir,
+                             simulate_failure=simulate_failure)
 
 
-def execute_from_step(workflow, step_index, report, start_id, dry_run=False, workflow_dir=None):
-    """从指定 step 开始执行。"""
+def _execute_skill_step(step, report, workflow_dir, pipeline_name, simulate_failure):
+    """执行单个 skill step,返回 "done" 或 "fail"。
+
+    接入点(对应 SKILL.md 声明):
+    - 执行前:failure-casebook auto-query 查询历史失败案例(D5-004)
+    - 执行前:skill-usage-tracker record 获取 call_id(D4-017/D5-001)
+    - 执行后:skill-usage-tracker record 更新状态(D4-017/D5-001)
+    - 失败时:failure-casebook record 记录失败案例(D5-004)
+
+    实际 skill 调用由宿主/AI 完成,本函数模拟执行结果:
+    - 默认成功(status="done")
+    - 若 step.id 在 simulate_failure 集合中,模拟失败(status="fail")
+    """
+    sid = step.get("id")
+    title = step.get("title", sid)
+    skill_name = step.get("skill", "")
+
+    sys.stdout.write("\n[执行] %s (id=%s, skill=%s)\n" % (title, sid, skill_name))
+
+    # 1. failure-casebook auto-query(执行前查询历史失败案例)
+    hints = _casebook_auto_query(skill_name)
+    if hints:
+        sys.stdout.write("  ℹ 历史失败预防提示:\n")
+        for h in hints:
+            sys.stdout.write("    - %s\n" % h)
+
+    # 2. usage-tracker 记录(执行前,获取 call_id)
+    call_id = _track_usage_before(skill_name, pipeline_name)
+
+    # 3. 解析 runtime 参数(读取 runtime.yaml + 合并 external_overrides)
+    runtime_ref = step.get("runtime")
+    timeout = 300
+    retry = {"max": 0, "backoff": "fixed", "interval": 5}
+    if runtime_ref:
+        sys.stdout.write("  runtime: %s\n" % runtime_ref)
+        timeout, retry, rt_warnings = resolve_runtime_params(step, workflow_dir)
+        for w in rt_warnings:
+            sys.stdout.write("  ⚠ %s\n" % w)
+        sys.stdout.write("  timeout=%ds retry(max=%d,backoff=%s,interval=%ds)\n" % (
+            timeout, retry["max"], retry["backoff"], retry["interval"]))
+
+    # 4. 模拟执行(实际调用由宿主完成,脚本记录轨迹+调用闭环接入)
+    start_ts = time.time()
+    is_failure = sid in simulate_failure
+    status = "fail" if is_failure else "done"
+
+    append_step_record(report, sid, status=status, outputs=step.get("outputs", []))
+    if runtime_ref:
+        report["steps"][-1]["runtime"] = {"timeout": timeout, "retry": retry}
+    save_report(report)
+
+    duration_ms = int((time.time() - start_ts) * 1000)
+    outputs_list = step.get("outputs", [])
+
+    if is_failure:
+        sys.stdout.write("  ✗ 模拟失败\n")
+        # 5. usage-tracker 更新(失败)
+        _track_usage_after(call_id, skill_name, "fail", duration_ms,
+                           outputs_list, "SIMULATED_FAILURE")
+        # 6. failure-casebook 记录失败案例
+        _casebook_record(skill_name, "SIMULATED_FAILURE",
+                         "模拟失败(用于测试 on_fail 逻辑)",
+                         "检查 skill 输入参数与上下游契约")
+    else:
+        sys.stdout.write("  → 完成,产物: %s\n" % (", ".join(outputs_list) or "(无)"))
+        # 5. usage-tracker 更新(成功)
+        _track_usage_after(call_id, skill_name, "success", duration_ms, outputs_list)
+
+    return status
+
+
+def execute_from_step(workflow, step_index, report, start_id, dry_run=False,
+                      workflow_dir=None, simulate_failure=None):
+    """从指定 step 开始执行。
+
+    升级后实现(对应 execution-semantics.md):
+    - on_fail 三分支:back_to(回退重跑)/skip(跳过继续)/abort(终止)(D4-009)
+    - parallel_with 汇聚点:同组 step 全部执行后才继续 next(D4-010)
+    - retry_counts 累计:back_to 时累加,超 max_retries 升级为 abort(D4-011)
+
+    simulate_failure: set of step_id,模拟这些 step 执行失败(用于测试 on_fail 逻辑)。
+    """
     current_id = start_id
-    retry_counts = {}  # step_id → 累计回退次数
+    retry_counts = {}  # step_id → 累计回退次数(D4-011)
+    pipeline_name = workflow.get("name", "")
+    simulate_failure = simulate_failure or set()
+    # parallel_handled 记录已被作为 parallel_with 伙伴执行的 step_id(D4-010)
+    # 当线性遍历到这些 step 时跳过(避免重复执行);back_to 时清空以允许重新执行
+    parallel_handled = set()
 
     while current_id and current_id != END_MARKER:
+        # 跳过已被并行调度处理的 step(避免并行组重复执行)(D4-010)
+        if current_id in parallel_handled:
+            step = step_index.get(current_id, {})
+            current_id = step.get("next", END_MARKER)
+            continue
+
         step = step_index.get(current_id)
         if step is None:
             sys.stderr.write("step 不存在: %s\n" % current_id)
@@ -443,39 +668,63 @@ def execute_from_step(workflow, step_index, report, start_id, dry_run=False, wor
             sys.stdout.write("用户确认后运行: run_workflow.py resume --state %s\n" % state_path)
             return "paused", 0
 
-        # skill 节点:模拟执行(实际调用由宿主完成)
-        sys.stdout.write("\n[执行] %s (id=%s, skill=%s)\n" % (title, sid, step.get("skill", "")))
+        # parallel_with 汇聚点处理(D4-010)
+        # 遇到 parallel_with 时,先执行同组伙伴,再执行当前 step,然后走共同 next
+        parallel_ref = step.get("parallel_with")
+        if parallel_ref and parallel_ref in step_index and parallel_ref not in parallel_handled:
+            partner_step = step_index[parallel_ref]
+            sys.stdout.write("\n[并行调度] %s 与 %s 并行执行\n" % (sid, parallel_ref))
+            _execute_skill_step(partner_step, report, workflow_dir,
+                                pipeline_name, simulate_failure)
+            parallel_handled.add(parallel_ref)
 
-        # 解析 runtime 参数（读取 runtime.yaml + 合并 external_overrides）
-        runtime_ref = step.get("runtime")
-        if runtime_ref:
-            sys.stdout.write("  runtime: %s\n" % runtime_ref)
-            timeout, retry, rt_warnings = resolve_runtime_params(step, workflow_dir)
-            for w in rt_warnings:
-                sys.stdout.write("  ⚠ %s\n" % w)
-            sys.stdout.write("  timeout=%ds retry(max=%d,backoff=%s,interval=%ds)\n" % (
-                timeout, retry["max"], retry["backoff"], retry["interval"]))
-        else:
-            timeout = 300
-            retry = {"max": 0, "backoff": "fixed", "interval": 5}
+        # 执行当前 skill step
+        result = _execute_skill_step(step, report, workflow_dir,
+                                     pipeline_name, simulate_failure)
 
-        # 模拟执行（实际调用由宿主完成，脚本只记录轨迹）
-        # 注：timeout 和 retry 参数记录在 step record 中，供宿主参考
-        # 实际场景下宿主应按 timeout 设定执行超时，按 retry 决定重试
-        append_step_record(
-            report, sid, status="done",
-            outputs=step.get("outputs", []),
-        )
-        # 在 record 中补充 runtime 参数
-        if runtime_ref:
-            report["steps"][-1]["runtime"] = {
-                "timeout": timeout,
-                "retry": retry,
-            }
-        save_report(report)
-        sys.stdout.write("  → 完成,产物: %s\n" % (", ".join(step.get("outputs", [])) or "(无)"))
+        # on_fail 处理(D4-009/D4-011)
+        if result == "fail":
+            on_fail = step.get("on_fail", {})
+            action = on_fail.get("action", "abort")
 
-        # 解析下一步
+            if action == "back_to":
+                target = on_fail.get("target", current_id)
+                max_retries = on_fail.get("max_retries", 3)
+                retry_counts[target] = retry_counts.get(target, 0) + 1
+
+                if retry_counts[target] > max_retries:
+                    # 超限升级为 abort(D4-011)
+                    sys.stdout.write("  ⚠ 回退超限(%d > %d),升级为 abort\n" % (
+                        retry_counts[target], max_retries))
+                    report["status"] = "aborted"
+                    report["finished_at"] = _now_iso()
+                    save_report(report)
+                    sys.stdout.write("\n建议运行: python replanner/scripts/replan.py "
+                                     "replan --input task-tree.json --failure %s\n" % sid)
+                    return "aborted", 1
+                else:
+                    # 清空 parallel_handled,允许回退后重新执行并行组(D4-010)
+                    parallel_handled.clear()
+                    sys.stdout.write("  ⤴ 回退到 %s (第 %d 次,上限 %d)\n" % (
+                        target, retry_counts[target], max_retries))
+                    current_id = target
+                    continue
+
+            elif action == "skip":
+                sys.stdout.write("  ⏭ 跳过 %s,继续下一步\n" % sid)
+                nxt = step.get("next", END_MARKER)
+                current_id = nxt
+                continue
+
+            else:  # abort
+                report["status"] = "aborted"
+                report["finished_at"] = _now_iso()
+                save_report(report)
+                sys.stdout.write("\n建议运行: python replanner/scripts/replan.py "
+                                 "replan --input task-tree.json --failure %s\n" % sid)
+                return "aborted", 1
+
+        # 成功,继续下一步
         nxt = resolve_next(step, step_index)
         sys.stdout.write("  → next: %s\n" % nxt)
         current_id = nxt
@@ -508,8 +757,17 @@ def cmd_run(args):
         save_report(report)
         return 0
 
+    # 解析 --simulate-failure(逗号分隔的 step_id 列表,用于测试 on_fail 逻辑)
+    simulate_failure = set()
+    if getattr(args, "simulate_failure", None):
+        simulate_failure = {
+            s.strip() for s in args.simulate_failure.split(",") if s.strip()
+        }
+
     workflow_dir = Path(args.input).resolve().parent
-    status, exit_code = execute_workflow(workflow, step_index, report, dry_run=False, workflow_dir=workflow_dir)
+    status, exit_code = execute_workflow(
+        workflow, step_index, report, dry_run=False,
+        workflow_dir=workflow_dir, simulate_failure=simulate_failure)
     return exit_code
 
 
@@ -644,6 +902,8 @@ def build_parser():
     )
     p_run.add_argument("--input", required=True, help="workflow.yaml 路径")
     p_run.add_argument("--dry-run", action="store_true", help="干跑模式:只输出执行计划,不调用 skill")
+    p_run.add_argument("--simulate-failure", default=None,
+                       help="模拟指定 step 失败(逗号分隔的 step_id,用于测试 on_fail 逻辑)")
     p_run.set_defaults(func=cmd_run)
 
     # resume

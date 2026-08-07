@@ -13,6 +13,8 @@ diff-reviewer 是**变更后置审查** skill,职责是在 skill 产出或代码
 **只读不写**:diff-reviewer 不修改任何被审查的产物,仅产出审查报告
 (`diff-review-report.md` 人读 + `diff-review-report.json` 机读)。
 
+**与 guardrail 的关系**:guardrail 内置 `diff_review.py` 脚本实现变更审查功能,本 skill 提供独立的深度变更审查能力。当 guardrail 的内置审查不够深入时,可调用本 skill 进行补充审查。
+
 与 guardrail 的区别:
 - **guardrail 是前置拦截**:在操作执行前判断是否为禁止级操作,命中则阻断,不让操作发生。
 - **diff-reviewer 是后置审查**:在操作已经执行后,对实际产生的 diff 做风险标注与提醒,

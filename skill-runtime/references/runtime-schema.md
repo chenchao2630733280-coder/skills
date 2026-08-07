@@ -262,6 +262,10 @@ overrides:
 - 引用的文件必须是合法 YAML(可被 PyYAML 解析)
 - 文件不存在或解析失败标 FAIL
 
+> 注:`workflow-runtime` 的 `run_workflow.py` 解析 `external_overrides` 时,以 runtime.yaml 所在目录
+> (即 skill 根目录)为基准。若 runtime.yaml 位于 skill 根目录,则与"相对 skill 根目录"语义一致;
+> 若 runtime.yaml 位于子目录,则以 runtime.yaml 所在目录为基准解析(以 `validate_runtime.py` 行为为准)。
+
 ### 9.5 合并流程(workflow-runtime 负责)
 
 1. workflow-runtime 执行 step 前,读取 step.skill 的 runtime.yaml

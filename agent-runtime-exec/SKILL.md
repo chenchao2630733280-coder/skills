@@ -50,12 +50,21 @@ agent-runtime-exec 是 AI Agent 体系第四阶段升级的 **Agent Runtime 执�
 | 运行 | 不启动 Agent | 调度已存在的 Agent（不创建） |
 | 粒度 | Agent 协同 | Agent 执行轨迹 |
 
-**调用链**：
+**调用链**:
 ```
 agent-orchestrator 定义协议 + 首次 delegate 生成 orchestration-protocol.md
   → agent-runtime-exec 读取协议,实际调度(delegate/collect/merge/monitor)
   → 产出 agent-exec-state.json(执行状态) + agent-exec-report.json(执行报告)
 ```
+
+**消息存储说明**:本 skill 使用独立的 `agent-exec-state.json` 存储执行状态,不读写
+agent-orchestrator 的 `agent-messages.json`。两者消息格式兼容(msg_id/from/to/type/payload
+等协议字段一致),但存储独立,跨 skill 的消息流转需宿主桥接(本 skill 通过 delegate 命令的
+`--tasks` 参数接收委派,而非直接读取 `agent-messages.json`)。
+
+**编排归属**:本 skill 属于 Agent 体系层,独立于业务流水线
+(`game-forge-master` / `product-pipeline-master` / `build-working-system`),未被业务总纲直接调度。
+设计意图为 Agent 体系层独立运行(由 agent-orchestrator 委托或宿主直接调用),业务流水线不直接消费其执行能力。
 
 ## 三、核心职责与执行模式
 

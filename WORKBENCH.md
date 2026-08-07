@@ -146,6 +146,17 @@ skill-usage-tracker 记录调用数据(耗时/失败率)
 
 **元技能层接入方式**:新建 Agent 体系层 skill 时,先调 `agent-builder` 确定架构定位和模式选择,再用 `skill-creator` 创建文件骨架。`agent-builder` 提供"怎么设计",`skill-creator` 提供"怎么写"。
 
+## skill 调度归类
+
+工作台的编排总纲(`product-pipeline-master` / `game-forge-master` / `build-working-system`)在调度 skill 时,以下 skill **不在被动调度清单**内,按独立使用或被消费的方式接入:
+
+| Skill | 归类 | 不被动调度的原因 |
+|-------|------|-----------------|
+| `debug-fix` | 反应式调试工具,独立使用 | 由用户在遇到 Bug 时主动调用,非流水线阶段产物;不参与编排总纲的线性/并行调度链 |
+| `prompt-registry` | Model 层基础设施,被消费而非被调度 | 集中管理 prompt 模板,由各 skill 读取引用;本身不产出业务文件,不被编排总纲作为阶段调用 |
+| `task-planner` | 通用规划工具,产物被主动读取 | 产出 `task-tree.json`,由 `agent-orchestrator` / `workflow-runtime` 主动读取其上游产物转为执行计划;非被动调度对象,而是规划上游 |
+| `diff-reviewer` | 独立深度变更审查工具,guardrail 内置脚本的补充 | guardrail 内置 `diff_review.py` 脚本已覆盖基础变更审查;本 skill 在编排总纲中由人工或编排层按需调用做深度补充审查,不作为流水线阶段被自动调度 |
+
 ## Checkpoint 机制
 
 每完成一个 todo 任务后，自动提交本地 git checkpoint：

@@ -5,3 +5,6 @@ retry:
   max: 1
   backoff: fixed
   interval: 10
+outputs:
+  - path: db-ops-report.json
+    type: file
