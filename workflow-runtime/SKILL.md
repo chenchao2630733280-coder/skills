@@ -340,6 +340,8 @@ run_workflow.py 执行 step 前:
   6. 若 overrides 文件不存在或解析失败,标 WARNING 并回退到本地值
 ```
 
+**默认 overrides 查找路径**:`~/.trae-cn/tuner-overrides/runtime-overrides.yaml`(不依赖每个 skill 单独声明 external_overrides)。adaptive-tuner suggest 子命令默认输出到该路径。
+
 ### 13.4 与 skill-runtime 的关系
 
 skill-runtime 的 runtime.yaml 新增了 `external_overrides` 可选字段(Phase 4):

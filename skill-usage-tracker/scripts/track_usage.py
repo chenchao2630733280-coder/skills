@@ -154,6 +154,8 @@ def cmd_record(args):
     ok = _append_record(record)
     if ok:
         print(f"PASS  记录已写入:{call_id}  skill={args.skill}  status={record['status']}")
+        # 机器可读行(供 workflow-runtime 解析,V4-001 修复)
+        print(f"CALL_ID:{call_id}")
     else:
         print(f"WARN  记录写入失败(已忽略,不阻塞)")
     return 0  # 始终返回 0(纯记录不阻塞)

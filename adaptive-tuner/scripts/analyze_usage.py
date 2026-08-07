@@ -257,7 +257,11 @@ def cmd_suggest(args):
         "skipped": skipped,
     }
 
-    out_dir = Path(args.output) if args.output else Path.cwd()
+    if args.output:
+        out_dir = Path(args.output)
+    else:
+        # 默认输出到 workflow-runtime 的默认 overrides 查找路径
+        out_dir = Path.home() / ".trae-cn" / "tuner-overrides"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     suggestions_file = out_dir / "tuning-suggestions.json"
@@ -496,7 +500,7 @@ def build_parser():
 
     p_suggest = sub.add_parser("suggest", help="生成调优建议")
     p_suggest.add_argument("--stats", default=None, help="usage-stats.json 路径")
-    p_suggest.add_argument("--output", default=None, help="输出目录(默认当前目录)")
+    p_suggest.add_argument("--output", default=None, help="输出目录(默认 ~/.trae-cn/tuner-overrides/)")
     p_suggest.set_defaults(func=cmd_suggest)
 
     p_apply = sub.add_parser("apply", help="应用覆盖(需用户确认)")

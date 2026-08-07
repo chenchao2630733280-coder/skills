@@ -94,8 +94,10 @@ confidence = min(sample_count / 30, 1.0) × (1 - variance_penalty)
 
 | 项 | 说明 |
 |---|---|
-| 输入 | `--stats`(可选)、`--output`(可选，默认当前目录) |
+| 输入 | `--stats`(可选)、`--output`(可选，默认 `~/.trae-cn/tuner-overrides/`) |
 | 输出 | `tuning-suggestions.json`(机读建议清单) + `runtime-overrides.yaml`(可应用覆盖) |
+
+suggest 子命令默认输出到 `~/.trae-cn/tuner-overrides/runtime-overrides.yaml`（与 workflow-runtime 的默认查找路径一致）。
 
 ### 3. apply —— 应用覆盖（需用户确认）
 

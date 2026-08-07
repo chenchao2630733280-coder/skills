@@ -191,10 +191,16 @@ def merge_external_overrides(local_runtime, overrides_path, skill_name):
     # 支持 list 格式(adaptive-tuner 产出)和 dict 格式(旧式)
     skill_overrides = None
     if isinstance(overrides_field, list):
-        for item in overrides_field:
-            if isinstance(item, dict) and item.get("skill") == skill_name:
-                skill_overrides = item
-                break
+        for idx, item in enumerate(overrides_field):
+            if isinstance(item, dict):
+                if "skill" not in item:
+                    warnings.append("overrides 列表第 %d 项缺少 skill 字段,已跳过" % idx)
+                    continue
+                if item.get("skill") == skill_name:
+                    skill_overrides = item
+                    break
+            else:
+                warnings.append("overrides 列表第 %d 项非 object,已跳过" % idx)
     elif isinstance(overrides_field, dict):
         skill_overrides = overrides_field.get(skill_name)
     else:
@@ -349,7 +355,11 @@ def _track_usage_before(skill_name, pipeline_name):
     if rc != 0:
         sys.stdout.write("  ⚠ usage-tracker 记录失败(已忽略): %s\n" % stderr.strip())
         return None
-    # 从 stdout 解析 call_id:"PASS  记录已写入:call-20260807-001  skill=..."
+    # 从 stdout 解析 call_id(V4-001: 优先解析机器可读行,回退到字符串解析)
+    for line in stdout.splitlines():
+        if line.startswith("CALL_ID:"):
+            return line[len("CALL_ID:"):].strip()
+    # 回退:解析 "PASS  记录已写入:call-20260807-001  skill=..." 格式
     for line in stdout.splitlines():
         if "记录已写入:" in line:
             parts = line.split("记录已写入:")
@@ -533,8 +543,8 @@ def execute_workflow(workflow, step_index, report, dry_run=False,
                              simulate_failure=simulate_failure)
 
 
-def _execute_skill_step(step, report, workflow_dir, pipeline_name, simulate_failure):
-    """执行单个 skill step,返回 "done" 或 "fail"。
+def _execute_skill_step(step, report, workflow_dir, pipeline_name, simulate_failure, retries=0):
+    """执行单个 skill step,返回 "done" 或 "failed"。
 
     接入点(对应 SKILL.md 声明):
     - 执行前:failure-casebook auto-query 查询历史失败案例(D5-004)
@@ -544,7 +554,9 @@ def _execute_skill_step(step, report, workflow_dir, pipeline_name, simulate_fail
 
     实际 skill 调用由宿主/AI 完成,本函数模拟执行结果:
     - 默认成功(status="done")
-    - 若 step.id 在 simulate_failure 集合中,模拟失败(status="fail")
+    - 若 step.id 在 simulate_failure 集合中,模拟失败(status="failed")
+
+    retries: 该 step 的累计回退次数(写入 step record,V3-004 修复)
     """
     sid = step.get("id")
     title = step.get("title", sid)
@@ -577,9 +589,10 @@ def _execute_skill_step(step, report, workflow_dir, pipeline_name, simulate_fail
     # 4. 模拟执行(实际调用由宿主完成,脚本记录轨迹+调用闭环接入)
     start_ts = time.time()
     is_failure = sid in simulate_failure
-    status = "fail" if is_failure else "done"
+    status = "failed" if is_failure else "done"
 
-    append_step_record(report, sid, status=status, outputs=step.get("outputs", []))
+    append_step_record(report, sid, status=status,
+                       outputs=step.get("outputs", []), retries=retries)
     if runtime_ref:
         report["steps"][-1]["runtime"] = {"timeout": timeout, "retry": retry}
     save_report(report)
@@ -671,19 +684,39 @@ def execute_from_step(workflow, step_index, report, start_id, dry_run=False,
         # parallel_with 汇聚点处理(D4-010)
         # 遇到 parallel_with 时,先执行同组伙伴,再执行当前 step,然后走共同 next
         parallel_ref = step.get("parallel_with")
-        if parallel_ref and parallel_ref in step_index and parallel_ref not in parallel_handled:
-            partner_step = step_index[parallel_ref]
-            sys.stdout.write("\n[并行调度] %s 与 %s 并行执行\n" % (sid, parallel_ref))
-            _execute_skill_step(partner_step, report, workflow_dir,
-                                pipeline_name, simulate_failure)
-            parallel_handled.add(parallel_ref)
+        if parallel_ref and parallel_ref not in parallel_handled:
+            if parallel_ref not in step_index:
+                # V2-003: 悬空引用输出 WARNING
+                sys.stdout.write("  ⚠ parallel_with 引用的 step 不存在: %s\n" % parallel_ref)
+            else:
+                partner_step = step_index[parallel_ref]
+                sys.stdout.write("\n[并行调度] %s 与 %s 并行执行\n" % (sid, parallel_ref))
+                partner_retries = retry_counts.get(parallel_ref, 0)
+                partner_result = _execute_skill_step(
+                    partner_step, report, workflow_dir,
+                    pipeline_name, simulate_failure, retries=partner_retries)
+                parallel_handled.add(parallel_ref)
+                # V2-004: 并行伙伴失败时按伙伴自身 on_fail 处理
+                if partner_result == "failed":
+                    partner_on_fail = partner_step.get("on_fail", {})
+                    partner_action = partner_on_fail.get("action", "abort")
+                    sys.stdout.write("  ⚠ 并行伙伴 %s 失败,on_fail=%s\n" % (parallel_ref, partner_action))
+                    if partner_action == "abort":
+                        report["status"] = "aborted"
+                        report["finished_at"] = _now_iso()
+                        save_report(report)
+                        return "aborted", 1
+                    # back_to/skip 伙伴失败不阻断当前 step 执行(当前 step 的 on_fail 会处理)
+                    # 但记录 WARNING 供观测
 
         # 执行当前 skill step
+        current_retries = retry_counts.get(sid, 0)
         result = _execute_skill_step(step, report, workflow_dir,
-                                     pipeline_name, simulate_failure)
+                                     pipeline_name, simulate_failure,
+                                     retries=current_retries)
 
         # on_fail 处理(D4-009/D4-011)
-        if result == "fail":
+        if result == "failed":
             on_fail = step.get("on_fail", {})
             action = on_fail.get("action", "abort")
 
