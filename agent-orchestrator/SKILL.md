@@ -112,13 +112,14 @@ python scripts/orchestrate.py collect --correlation-id T1 [--timeout 300]
 
 ```
 python scripts/orchestrate.py merge --correlation-id T1 \
-  [--strategy priority|voting|human] [--priority-order "sub-1,sub-2"]
+  [--strategy priority|voting|human|latest] [--priority-order "sub-1,sub-2"]
 ```
 
 - 聚合 correlation_id 关联的全部 result 消息
 - `priority`(默认):按 `--priority-order` 取首个非空结果
 - `voting`:相同结果摘要占比 >50% 取胜,否则转人工
 - `human`:不自动合并,标记待人工裁决
+- `latest`:取最后写入的 result(适用于幂等写入,最后写入者胜出)
 
 ### 3.2 message_bus.py — 消息总线
 
@@ -167,7 +168,7 @@ python scripts/message_bus.py history [--from master-agent] [--to sub-agent-1] \
 |------|---------|
 | `references/agent-protocol.md` | (1) 用户问"Agent 消息格式怎么写";(2) 设计握手/确认/超时机制时;(3) `orchestrate.py delegate` 生成协议文档时对照 |
 | `references/delegation-patterns.md` | (1) 用户问"怎么委派多 Agent";(2) 选择扇出/扇入/管道/协商模式时;(3) 设计并行/串行编排时 |
-| `references/conflict-resolution.md` | (1) 多 Agent 结果冲突时;(2) 选择 priority/voting/human 策略时;(3) `orchestrate.py merge` 配置策略时 |
+| `references/conflict-resolution.md` | (1) 多 Agent 结果冲突时;(2) 选择 priority/voting/human/latest 策略时;(3) `orchestrate.py merge` 配置策略时 |
 
 三份 references 均为**懒加载**:仅在需要时读取,不强制调用方一次性全读。
 
@@ -180,7 +181,7 @@ python scripts/message_bus.py history [--from master-agent] [--to sub-agent-1] \
 2. **与 workflow-runtime 区别**:workflow-runtime 编排"skill 调用"(粒度=单个 skill),
    agent-orchestrator 编排"Agent 协同"(粒度=Agent,一个 Agent 可包含多 skill)。
 3. **委派有超时**:默认 300s,超时转人工裁决(`merge --strategy human`)。
-4. **结果冲突默认按优先级**:可配置投票(`voting`)或人工裁决(`human`)。
+4. **结果冲突默认按优先级**:可配置投票(`voting`)、人工裁决(`human`)或最后写入者胜出(`latest`)。
 5. **消息日志保留 30 天**:超过保留期的消息在下次写入时自动裁剪。
 6. **失败不阻塞**:操作失败返回 error 字段并 exit 1,不抛异常阻断调用方(与 tool-git-ops / skill-runtime 一致)。
 7. **消息日志不删除**:receive 拉取后只标记 delivered,不删除消息,便于历史追溯。
@@ -230,7 +231,7 @@ task-planner 产出 task-tree.json
   1. 本 skill 用 `orchestrate.py delegate` 生成委派消息(写 `agent-messages.json`)
   2. 调 `agent-runtime-exec delegate` 把委派转为实际子 Agent 调用,子 Agent 执行后回写 result
   3. 调 `agent-runtime-exec collect` 收集执行结果
-  4. 调 `agent-runtime-exec merge` 合并结果(复用本 skill 定义的 priority/voting/human 策略)
+  4. 调 `agent-runtime-exec merge` 合并结果(复用本 skill 定义的 priority/voting/human/latest 策略)
   5. 必要时调 `agent-runtime-exec monitor` 监控多 Agent 执行状态
 - 失败回退:agent-runtime-exec 执行失败不阻塞本 skill,错误回填 error 字段;调用方可选择
   回退到本 skill 的 `merge --strategy human` 转人工裁决
@@ -307,14 +308,14 @@ task-planner 产出 task-tree.json
 - [ ] `python scripts/message_bus.py send --help` / `receive --help` / `history --help` 子命令 help 正常。
 - [ ] delegate 能生成 msg_id 并写入 `agent-messages.json`,首次委派时生成 `orchestration-protocol.md`。
 - [ ] collect 能按 correlation_id 筛选 result 消息,超时时输出 WARN。
-- [ ] merge 三种策略(priority/voting/human)均能正确处理冲突。
+- [ ] merge 四种策略(priority/voting/human/latest)均能正确处理冲突。
 - [ ] send 能追加消息到 `agent-messages.json`,payload 为非法 JSON 时 exit 1。
 - [ ] receive 能按 to/correlation_id/type 过滤,默认标记 delivered,`--peek` 不标记。
 - [ ] history 能按多维过滤查询,`--since` 时间过滤生效。
 - [ ] 消息日志超 30 天的消息在下次写入时自动裁剪。
 - [ ] `references/agent-protocol.md` 含消息格式表 + 握手流程 + 确认/超时机制。
 - [ ] `references/delegation-patterns.md` 含扇出/扇入/管道/协商四类委派模式。
-- [ ] `references/conflict-resolution.md` 含优先级/投票/人工裁决三种策略。
+- [ ] `references/conflict-resolution.md` 含优先级/投票/人工裁决/最后写入者胜出四种策略。
 - [ ] `agents/openai.yaml` 含 interface(display_name/short_description/default_prompt)。
 - [ ] SKILL.md 行数 ≤500,frontmatter 含 name + description。
 - [ ] 所有文件 UTF-8 编码,文档与代码注释为中文。

@@ -49,7 +49,7 @@ description: "Prepares a verified application for reproducible local and product
 - 明确迁移执行者、执行顺序、超时和失败策略。
 - 提供备份、恢复和破坏性迁移审批步骤。
 - 应用与 Schema 变更需要兼容滚动发布或明确停机窗口。
-- **调用 `tool-db-ops` skill 执行迁移**：生产环境迁移通过 `tool-db-ops migrate --confirm` 执行（生产环境只读规则自动生效，写操作需 `--confirm`）；迁移失败时调用 `tool-db-ops rollback` 回滚到指定版本；验证阶段可用 `tool-db-ops query` 只读查询验证数据正确性。产出 `db-ops-report.json` 纳入交付证据。
+- **调用 `tool-db-ops` skill 执行迁移**：生产环境迁移通过 `tool-db-ops migrate --migration-dir <从 architecture.json 的 commands.migrationDir 或项目 migrations/ 解析> --confirm` 执行（生产环境只读规则自动生效，写操作需 `--confirm`）；迁移失败时调用 `tool-db-ops rollback --migration-dir <同上> --target <回滚版本> --confirm` 回滚；验证阶段可用 `tool-db-ops query --sql <验证 SQL> --params <JSON 数组>` 只读查询验证数据正确性。产出 `db-ops-report.json` 纳入交付证据。
 
 ### 4. CI/CD
 
@@ -62,7 +62,7 @@ description: "Prepares a verified application for reproducible local and product
 
 不同时生成多套互相冲突的 CI 平台配置。
 
-**调用 `tool-ci-ops` skill**：生成 CI 配置后，通过 `tool-ci-ops trigger --confirm` 触发构建（需用户确认，属变更类操作）；通过 `tool-ci-ops status` 轮询构建状态；构建完成后通过 `tool-ci-ops report` 读取测试结果。若 `status` 返回 `degraded` 或 `failed`，不硬性中断，提示用户手动介入。产出 `ci-ops-report.json` 纳入交付证据。
+**调用 `tool-ci-ops` skill**：生成 CI 配置后，通过 `tool-ci-ops trigger --platform <从 .github/workflows 等 CI 配置识别> --repo <从 Git remote 或 architecture.json modules[].repo 解析> --branch <当前分支> --confirm` 触发构建（需用户确认，属变更类操作）；通过 `tool-ci-ops status --platform <同上> --repo <同上> [--run-id <runId>]` 轮询构建状态；构建完成后通过 `tool-ci-ops report --platform <同上> --repo <同上> --run-id <runId>` 读取测试结果。若 `status` 返回 `degraded` 或 `failed`，不硬性中断，提示用户手动介入。产出 `ci-ops-report.json` 纳入交付证据。
 
 ### 5. 运维能力
 
@@ -70,7 +70,7 @@ description: "Prepares a verified application for reproducible local and product
 - 结构化日志、请求关联 ID、错误监控和关键业务指标。
 - 数据备份、保留期、恢复演练和灾难恢复目标。
 - 回滚版本、数据库兼容和应急联系人占位。
-- **调用 `tool-monitor-ops` skill 验证监控接入**：部署后通过 `tool-monitor-ops logs` 查询服务日志确认启动正常；通过 `tool-monitor-ops metrics` 查询 CPU/内存/QPS/错误率指标验证监控埋点生效；通过 `tool-monitor-ops trace` 查询链路确认分布式追踪接入。若平台不可用降级为提示手动验证，不阻塞部署流程。产出 `monitor-ops-report.json` 纳入运维验证证据。
+- **调用 `tool-monitor-ops` skill 验证监控接入**：部署后通过 `tool-monitor-ops logs --service <从 architecture.json modules[].name 取已部署 P0 模块> [--keyword <关键词>] [--limit 100] [--time-range 1h]` 查询服务日志确认启动正常；通过 `tool-monitor-ops metrics --service <同上> --metric cpu [--time-range 1h]` 查询 CPU/内存/QPS/错误率指标验证监控埋点生效；通过 `tool-monitor-ops trace --service <同上> [--trace-id <id>] [--limit 10]` 查询链路确认分布式追踪接入。若平台不可用降级为提示手动验证，不阻塞部署流程。产出 `monitor-ops-report.json` 纳入运维验证证据。
 
 ### 6. 交付文档
 

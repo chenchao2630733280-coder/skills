@@ -39,7 +39,7 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 ### Stage 1：实施规划
 
-执行 `plan-system-implementation` 的规则，**恢复或更新**已有架构、任务板和追溯矩阵（若 product-pipeline-master 阶段6已首次产出实施蓝图，本阶段为更新；若直接从 build-working-system 启动，本阶段为首次产出）。
+调用 `plan-system-implementation` skill，**恢复或更新**已有架构、任务板和追溯矩阵（若 product-pipeline-master 阶段6已首次产出实施蓝图，本阶段为更新；若直接从 build-working-system 启动，本阶段为首次产出）。
 
 ### Stage 2：基础可运行骨架
 
@@ -67,15 +67,15 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 ### Stage 4：系统集成
 
-按 `integrate-system` 规则替换关键 Mock、接通认证权限、文件/任务/外部服务，并运行端到端烟雾测试。
+调用 `integrate-system` skill 替换关键 Mock、接通认证权限、文件/任务/外部服务，并运行端到端烟雾测试。
 
 ### Stage 5：测试与加固
 
-按 `test-and-harden-system` 规则运行质量门禁、修复阻塞缺陷并输出证据。
+调用 `test-and-harden-system` skill 运行质量门禁、修复阻塞缺陷并输出证据。
 
 ### Stage 6：部署准备与交付
 
-按 `package-and-deploy-system` 规则生成可重复构建、容器/CI、部署文档、运维手册和发布清单。
+调用 `package-and-deploy-system` skill 生成可重复构建、容器/CI、部署文档、运维手册和发布清单。
 
 **前置门禁输入**（来自上游 Stage，必须已存在）：
 - `output/build/release-blockers.json` — 由 Stage 5 `test-and-harden-system` 产出，发布前置门禁读取

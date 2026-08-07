@@ -167,6 +167,6 @@ delegate -> 超时(300s) -> status=failed
 
 ## 六、与 failure-casebook 的协作
 
-- 委派超时或结果失败时,failure-casebook 自动记录失败码 + 修复方法
+- 委派超时或结果失败时,显式调用 `failure-casebook` record 子命令记录失败码 + 修复方法
 - 下次同名任务委派前,注入预防提示(类似 skill-runtime §八 协作)
 - 失败码格式:`AGENT_TIMEOUT_<correlation_id>` / `AGENT_CONFLICT_<correlation_id>`
