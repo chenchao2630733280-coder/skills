@@ -201,10 +201,12 @@ def validate_workflow(data):
 # compile-from-master:从编排总纲 SKILL.md 编译
 # --------------------------------------------------------------------------- #
 def _extract_section(text, section_name):
-    """从 SKILL.md 文本中提取指定执行顺序章节的内容。
+    """从 SKILL.md 文本中提取指定章节的内容。
 
-    section_name 可为章节号(如 "七"/"八"或 "§七"/"§八")或标题片段(如 "执行顺序")。
+    section_name 可为章节号(如 "七"/"八"或 "§七"/"§八")或标题片段(如 "执行顺序"/"编排阶段")。
     自动去除 § 前缀后匹配。
+    优先匹配含"执行顺序"的标题(如 game-forge-master/product-pipeline-master);
+    若未找到,回退到匹配任何含 normalized 的二级标题(如 build-working-system 的"编排阶段")。
     返回该章节正文(到下一个 ## 二级标题为止),未找到返回 None。
     """
     # 规范化：去除 § 前缀
@@ -214,10 +216,16 @@ def _extract_section(text, section_name):
 
     lines = text.splitlines()
     start = None
+    # 第一轮：优先匹配含"执行顺序"的标题
     for i, line in enumerate(lines):
-        # 匹配 "## 七、执行顺序" 或 "## 八、执行顺序"
         if re.match(r"^##\s+", line) and ("执行顺序" in line):
             if normalized in line or normalized == "执行顺序":
+                start = i
+                break
+    # 第二轮回退：匹配任何含 normalized 的二级标题
+    if start is None:
+        for i, line in enumerate(lines):
+            if re.match(r"^##\s+", line) and normalized in line:
                 start = i
                 break
     if start is None:
@@ -226,7 +234,7 @@ def _extract_section(text, section_name):
     end = len(lines)
     for j in range(start + 1, len(lines)):
         # 遇到下一个二级标题则结束
-        if re.match(r"^##\s+", lines[j]) and "执行顺序" not in lines[j]:
+        if re.match(r"^##\s+", lines[j]):
             end = j
             break
     return "\n".join(lines[start:end])

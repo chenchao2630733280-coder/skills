@@ -77,6 +77,19 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 按 `package-and-deploy-system` 规则生成可重复构建、容器/CI、部署文档、运维手册和发布清单。
 
+**前置门禁输入**（来自上游 Stage，必须已存在）：
+- `output/build/release-blockers.json` — 由 Stage 5 `test-and-harden-system` 产出，发布前置门禁读取
+- `output/build/test-report.md` — 由 Stage 5 `test-and-harden-system` 产出，发布前置门禁读取
+- `output/build/architecture.json` — 由 Stage 1 `plan-system-implementation` 产出，含 existingStack/targetStack/modules/dataStores/commands 等技术决策
+- `output/build/traceability.json` — 由 Stage 1 产出，交付文档需引用
+
+**tool-* 调用参数来源**（package-and-deploy-system 调用三个 tool-* skill 时，参数来源约定）：
+- `tool-db-ops migrate --migration-dir`：migration 目录由 Stage 3 `implement-data-layer` 产出，路径从 `architecture.json` 的 `commands.migrationDir` 或项目既有 `migrations/` 目录解析
+- `tool-ci-ops trigger --platform --repo`：platform 从项目既有 CI 配置（`.github/workflows/` / `.gitlab-ci.yml` / `Jenkinsfile`）自动识别；repo 从 Git remote 或 `architecture.json` 的 `modules[].repo` 解析
+- `tool-monitor-ops logs/metrics/trace --service`：service 名从 `architecture.json` 的 `modules[].name` 解析，取已部署的 P0 模块
+
+**guardrail 前置检查**：Stage 6 涉及数据库迁移（tool-db-ops）和 CI 触发（tool-ci-ops trigger）等高风险变更操作，调用 package-and-deploy-system 前必须先过 `guardrail` 前置检查（检查 `output/` 路径是否在敏感清单，确认 `--confirm` 参数已显式传入）。
+
 ## 自动决策规则
 
 - 存在成熟代码库：沿用技术栈和目录。
@@ -102,18 +115,26 @@ description: "Orchestrates the complete conversion of existing PRD, page specifi
 
 ```text
 output/build/
-├── implementation-plan.md
-├── task-board.json
-├── traceability.json
-├── database-implementation-report.md
-├── backend-implementation-report.md
-├── frontend-implementation-report.md
-├── integration-report.md
-├── test-report.md
-├── release-blockers.json
-├── release-manifest.json
-└── handoff-checklist.md
+├── architecture.json                 # Stage 1 plan-system-implementation 产出
+├── implementation-plan.md            # Stage 1
+├── task-board.json                   # Stage 1
+├── traceability.json                 # Stage 1
+├── database-implementation-report.md # Stage 3 implement-data-layer 产出
+├── backend-implementation-report.md  # Stage 3 implement-backend 产出
+├── frontend-implementation-report.md # Stage 3 implement-frontend 产出
+├── integration-report.md             # Stage 4 integrate-system 产出
+├── test-report.md                    # Stage 5 test-and-harden-system 产出
+├── release-blockers.json             # Stage 5 产出（package-and-deploy-system 读取）
+├── release-manifest.json             # Stage 6 package-and-deploy-system 产出
+├── deployment-report.md              # Stage 6 产出
+├── operations-runbook.md            # Stage 6 产出
+├── handoff-checklist.md              # Stage 6 产出
+├── db-ops-report.json                # Stage 6 tool-db-ops 产出（按需）
+├── ci-ops-report.json                # Stage 6 tool-ci-ops 产出（按需）
+└── monitor-ops-report.json           # Stage 6 tool-monitor-ops 产出（按需）
 ```
+
+后三个文件为按需产出：仅当 Stage 6 实际调用了对应 tool-* skill 时才生成。
 
 最终回复必须说明：实际完成范围、启动命令、验证命令、通过情况、未完成项和下一阻塞，不得仅说“系统已生成”。
 
