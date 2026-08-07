@@ -142,7 +142,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 * **网络/缓存/账号**：网络失败重试机制？数据本地缓存策略？VIP vs 普通用户视图差异？
 
-### 📌 标注案例参考：
+### 标注案例参考：
 
 > **预订须知模块**
 >
