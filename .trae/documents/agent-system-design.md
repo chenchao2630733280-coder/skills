@@ -66,7 +66,7 @@ c:\Users\26307\.agents\skills\
 
 **重要结论**：
 
-- 这个工作区是 **24 个 Skill 的集合**，不是 Agent 集合
+- 这个工作区是 **61 个 Skill 的集合**，不是 Agent 集合
 - 这里的 `agent-orchestrator` / `agent-runtime-exec` / `agent-builder` 都是**关于 Agent 的 Skill**，不是 Agent 本身
 - 真正的 Agent 是**宿主**（Trae 这个 AI 助手本身）——它调用这里的 Skill 来完成任务
 
@@ -113,7 +113,7 @@ c:\Users\26307\.agents\skills\
                             │ 调度具体 skill
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  能力层（24 个 Skill）                       │
+│                  能力层（61 个 Skill）                       │
 │                                                             │
 │   ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐       │
 │   │ 业务生成 │ │ 工具调用 │ │ 安全护栏  │ │ 记忆系统  │       │
@@ -265,7 +265,64 @@ c:\Users\26307\.agents\skills\
 - 只做工程实现：从 step 8 开始
 - 只做部署：直接调 package-and-deploy-system 或 web-static-deploy
 
-### 2.3 关键架构原则
+### 2.3 第二条流水线：AI 游戏生成（game-forge）
+
+工作台不仅有产研流水线，还有**AI 游戏生成流水线**（game-forge），覆盖从选题到可运行游戏的完整链路。
+
+```
+用户："帮我做一个游戏"
+  │
+  ▼
+[1] game-forge-master（编排总纲）
+    → 决策：引擎选择（Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity）
+    → 裁剪：按游戏类型决定哪些阶段跳过
+  │
+  ▼
+[2] game-topic-brainstorm → game-blueprint → game-spec
+    → 选题脑暴 → 一页纸蓝图 → 详细 PRD + TECH_DESIGN
+  │
+  ▼
+[3] ⏸ 人工确认
+  │
+  ▼
+[4] game-art-spec → game-asset-forge
+    → 美术规范 + 资源清单 → AI 生图 + 图集打包 + 音频占位
+  │
+  ▼
+[5] ⏸ 人工确认
+  │
+  ▼
+[6] game-code-forge
+    → 按 5 引擎之一生成完整可运行工程代码
+  │
+  ▼
+[7] game-integrate（质量门 Gate 4 实跑预检）
+    → npm 构建或 godot --headless --export-release 或 unity -batchmode
+  │
+  ▼
+[8] ⏸ 人工确认
+  │
+  ▼
+[9] game-polish（可选）→ 完成
+```
+
+**五引擎覆盖**：
+
+| 引擎 | 适用场景 | 代码生成 | 构建命令 | 产物路径 |
+|------|---------|---------|---------|---------|
+| Phaser 3 | 2D Web 游戏 | TypeScript + Vite | `npm run build` | dist/ |
+| Pixi.js | 2D Web 游戏（高性能渲染） | TypeScript + Vite | `npm run build` | dist/ |
+| 纯 Canvas | 轻量 2D Web 游戏 | TypeScript + Vite | `npm run build` | dist/ |
+| Godot 4 | 2D/3D 桌面游戏 | GDScript 4.x | `godot --headless --export-release` | export/ |
+| Unity | 3D 游戏 / 跨平台 | C# | `unity -batchmode -executeMethod` | Build/ |
+
+**关键设计**：
+- game-forge-master 统一编排，按游戏类型裁剪阶段
+- game-quality-gate 在 4 个关键节点介入做契约校验与实跑预检
+- 与产研流水线共享 Agent 体系层（workflow-runtime / skill-runtime / guardrail 等）
+- 另有 short-drama-game-adapt skill 支持将短剧/影视 IP 改编为游戏机制
+
+### 2.4 关键架构原则
 
 **原则 1：决策与执行分离**
 - 编排总纲做决策（做什么、什么顺序）
@@ -531,6 +588,8 @@ skill 重试+降级都失败
 | 11 | Guardrail | 安全层 | 前置拦截，diff 审查 | guardrail / diff-reviewer |
 | 12 | Human Feedback | 人机协同层 | 人工确认点，checkpoint 回退 | 编排总纲 + session-snapshot |
 
+> 注：另有 Engineering（工程层）3 个 skill（code-review / debug-fix / refactor）作为产研流水线的可选步骤，独立于 12 维度但被 build-working-system 编排。
+
 ### 5.3 每个维度用比喻讲透
 
 **1. Model（模型层）= 菜谱库**
@@ -611,7 +670,11 @@ Phase 1          Phase 2          Phase 3          Phase 4
 │      │        │      │         │      │         │      │
 └──────┘        └──────┘         └──────┘         └──────┘
 +3 扩展          +3 扩展          +2 扩展          +3 扩展
+
+平行扩展:产研流水线(23 skill) + 游戏流水线(11 skill,五引擎) + AI短剧(2 skill)
 ```
+
+> 注：以上 Phase 1-4 的 skill 计数仅统计 Agent 体系层（25 个）。产研业务层（23 个）、游戏流水线（11 个）、AI 短剧（2 个）作为平行业务扩展，独立于 Agent 体系层的 4 阶段演进。
 
 ### 6.2 每个阶段解决了什么问题
 
@@ -718,12 +781,13 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 ## 第八章 附录
 
-### 8.1 产研工作台相关 skill 完整清单
+### 8.1 Skill 完整清单（61 个）
 
-**产研业务生成层**（业务 skill，按产研工作流全阶段组织）
+**产研业务生成层**（23 个，按产研工作流全阶段组织）
 
 | 产研阶段 | skill | 作用 |
 |---------|-------|------|
+| 项目初始化 | rd-init | 产研项目脚手架初始化 |
 | 需求澄清 | brainstorm-product-feature | 早期功能想法的澄清、可行性评估、隐藏假设检查 |
 | 系统规划 | generate-system-prd | 生成企业级 PRD（页面规格/权限/状态机/非功能需求） |
 | PRD 质量门禁 | prd-quality-checker | 审核 PRD 的目标/用户/范围/规则/验收等 15+ 维度，产出门禁报告 |
@@ -747,7 +811,30 @@ Phase 1          Phase 2          Phase 3          Phase 4
 | 标书方案 | bid-functional-solution | 标书功能建设方案生成（由 PRD/截图生成 DOCX） |
 | 操作手册 | screenshot-operation-manual | 由截图/录屏生成操作手册（DOCX/PDF/Markdown/HTML） |
 
-**Agent 体系层 24 个**（12 维度，支撑所有业务 skill 运行）
+**AI 游戏生成流水线**（11 个，game-forge，支持五引擎）
+
+| 游戏阶段 | skill | 作用 |
+|---------|-------|------|
+| 选题脑暴 | game-topic-brainstorm | 从0到1结构化脑暴游戏选题 |
+| 游戏蓝图 | game-blueprint | 一页纸定义类型/平台/引擎/玩法/范围 |
+| 游戏 PRD | game-spec | 详细 PRD + TECH_DESIGN（玩法/数值/UI/关卡/状态机） |
+| 美术规范 | game-art-spec | 美术规范 + ASSET_MANIFEST.json 资源清单 |
+| 美术资源 | game-asset-forge | AI 生图 + 图集打包 + 音频占位 |
+| 代码生成 | game-code-forge | 五引擎代码生成（Phaser/Pixi/Canvas/Godot/Unity） |
+| 集成构建 | game-integrate | npm/godot/unity 构建 + 实跑预检 |
+| 效果打磨 | game-polish | 可选，视觉/手感/反馈打磨 |
+| 质量门禁 | game-quality-gate | 4 节点契约校验 + 实跑预检 |
+| 全流程编排 | game-forge-master | 游戏生成总纲（引擎选择决策树+阶段裁剪） |
+| IP 改编 | short-drama-game-adapt | 短剧/影视 IP 改编为游戏机制 |
+
+**AI 短剧**（2 个）
+
+| skill | 作用 |
+|-------|------|
+| ai-short-drama-topic-planner | 短剧选题生成与优化 |
+| ai-short-drama-project-development | 短剧项目开发 |
+
+**Agent 体系层**（25 个，12 维度，支撑所有业务 skill 运行）
 
 | 维度 | skill |
 |------|-------|
@@ -758,10 +845,11 @@ Phase 1          Phase 2          Phase 3          Phase 4
 | Memory | project-knowledge-base / failure-casebook / session-snapshot |
 | Context | codebase-rag |
 | Workflow | workflow-runtime |
-| Agent Runtime | skill-runtime / agent-runtime-exec |
+| Agent Runtime | skill-runtime / agent-runtime-exec / agent-orchestrator |
 | Evaluation | skill-auditor |
 | Data | skill-usage-tracker / adaptive-tuner |
 | Guardrail | guardrail / diff-reviewer |
+| Engineering | code-review / debug-fix / refactor |
 | Human Feedback | （融入编排总纲 + session-snapshot） |
 
 ### 8.2 术语表
@@ -786,8 +874,8 @@ Phase 1          Phase 2          Phase 3          Phase 4
 |------|------|
 | WORKBENCH.md | 工作台总览，含 Phase 1-4 + changelog |
 | README.md | 完整技能清单 + 分类导航 |
-| _shared/validate.ps1 | 14 项防回归校验脚本 |
-| _shared/design-tokens.json | 全局 UI 设计 token（单点真理源） |
+| _shared/validate.ps1 | 15 项防回归校验脚本 |
+| _shared/references/schemas/design-tokens.default.json | 全局 UI 设计 token v1.3（单点真理源） |
 | .trae/documents/agent-system-upgrade-plan.md | 4 阶段升级详细计划 |
 | agent-builder/references/agent-architecture-framework.md | 12 维度架构详解 |
 | agent-builder/references/skill-creation-patterns.md | 7 大设计模式详解 |
@@ -799,7 +887,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 
 这套系统的核心理念：
 
-1. **Skill 是能力底座，不是 Agent** —— 22 个产研业务 skill + 24 个 Agent 体系 skill = 46 个能力单元，覆盖从需求到部署的完整产研链路，任何宿主都能调用
+1. **Skill 是能力底座，不是 Agent** —— 23 个产研业务 skill + 11 个游戏流水线 skill + 2 个 AI 短剧 skill + 25 个 Agent 体系 skill = 61 个能力单元，覆盖产研、游戏、短剧三条业务线，任何宿主都能调用
 2. **人机协同是最优模式** —— AI 做执行，人做决策，不是全自动才好
 3. **12 维度缺一不可** —— 每个维度解决一类问题，少了就会卡住
 4. **失败是常态，系统为失败而设计** —— 重试、降级、回退、不阻塞
