@@ -1,12 +1,10 @@
 {
   "name": "rd-init",
-  "description": "根据初步需求从 GitLab 拉取最新 AI Product R&D 模板，并初始化一个新的产研项目；仅用于新项目初始化，不用于生成 PRD、页面明细、API、数据库、前端代码或测试。",
+  "description": "产研项目脚手架初始化。根据初步需求创建标准目录结构、project-brief.json 和 project.yaml，为 product-pipeline-master 流水线提供起始输入。仅用于新项目初始化，不生成 PRD、原型、代码或测试。",
   "entry": "SKILL.md",
   "script": "scripts/rd-init.py",
-  "default_template_git_url": "https://gitlab.chinacici.com/chenchao/ai-product-rd.git",
   "requires": [
     "python>=3.10",
-    "pyyaml",
-    "git"
+    "pyyaml"
   ]
 }

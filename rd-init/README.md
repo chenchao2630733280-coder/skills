@@ -1,11 +1,11 @@
 # rd-init
 
-description: 根据初步需求从 GitLab 拉取最新 AI Product R&D 模板，并初始化一个新的产研项目；仅用于新项目初始化，不用于生成 PRD、页面明细、API、数据库、前端代码或测试。
+产研项目脚手架初始化。根据初步需求创建标准目录结构、project-brief.json 和 project.yaml，为 product-pipeline-master 流水线提供起始输入。
 
 ## 使用
 
 ```text
-请调用 rd-init Skill 初始化项目。
+请调用 rd-init 初始化项目。
 初步需求如下：需求内容
 ```
 
@@ -17,8 +17,13 @@ python .agents/skills/rd-init/scripts/rd-init.py \
   --brief "项目名称：xxx；核心功能：xxx"
 ```
 
-默认模板仓库：
+## 产出
 
-```text
-https://gitlab.chinacici.com/chenchao/ai-product-rd.git
-```
+- `docs/project-brief.json` — 结构化需求简报，供 brainstorm-product-feature 消费
+- `project.yaml` — 项目配置 + 流水线上下文
+- `docs/FEATURE_BRAINSTORM.md` — 需求原文
+- 标准目录结构：`output/spec/` `output/prototype/` `output/site/{pc,mobile,assets}/` `output/build/`
+
+## 下一步
+
+初始化完成后，调用 `product-pipeline-master` 启动产研流水线，从 `brainstorm-product-feature`（需求澄清）开始。
