@@ -100,8 +100,12 @@ def _validate_retry(retry, errors, path="retry"):
         errors.append(f"{path}.interval:期望正整数,实际 {retry['interval']!r}")
 
 
-def _validate_inputs(inputs, errors, path="inputs"):
-    """校验 inputs 数组。"""
+def _validate_inputs(inputs, errors, path="inputs", skill_dir=None):
+    """校验 inputs 数组。
+
+    skill_dir 用于解析 inputs[].schema 引用的文件路径（相对 skill 根目录）。
+    runtime-schema.md §三要求:schema 若声明,必须指向真实存在的 .json 文件。
+    """
     if not isinstance(inputs, list):
         errors.append(f"{path}:期望 array,实际 {type(inputs).__name__}")
         return
@@ -113,10 +117,14 @@ def _validate_inputs(inputs, errors, path="inputs"):
         # name 必填
         if "name" not in item or not _is_nonempty_string(item["name"]):
             errors.append(f"{item_path}.name:必填且为非空字符串")
-        # schema 可选,string 或 null
-        if "schema" in item and item["schema"] is not None \
-                and not isinstance(item["schema"], str):
-            errors.append(f"{item_path}.schema:期望 string 或 null,实际 {type(item['schema']).__name__}")
+        # schema 可选,string 或 null;若为 string 且 skill_dir 已知,校验路径存在性
+        if "schema" in item and item["schema"] is not None:
+            if not isinstance(item["schema"], str):
+                errors.append(f"{item_path}.schema:期望 string 或 null,实际 {type(item['schema']).__name__}")
+            elif skill_dir is not None:
+                schema_path = skill_dir / item["schema"]
+                if not schema_path.exists():
+                    errors.append(f"{item_path}.schema:引用文件不存在: {item['schema']} (解析路径: {schema_path})")
         # required 可选,boolean
         if "required" in item and not _is_bool(item["required"]):
             errors.append(f"{item_path}.required:期望 boolean,实际 {type(item['required']).__name__}")
@@ -192,7 +200,7 @@ def validate_runtime_data(data, errors, skill_dir=None):
 
     # inputs
     if "inputs" in data:
-        _validate_inputs(data["inputs"], errors)
+        _validate_inputs(data["inputs"], errors, skill_dir=skill_dir)
 
     # outputs
     if "outputs" in data:
