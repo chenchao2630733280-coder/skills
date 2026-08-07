@@ -696,7 +696,7 @@ def execute_from_step(workflow, step_index, report, start_id, dry_run=False,
                     partner_step, report, workflow_dir,
                     pipeline_name, simulate_failure, retries=partner_retries)
                 parallel_handled.add(parallel_ref)
-                # V2-004: 并行伙伴失败时按伙伴自身 on_fail 处理
+                # V2-004/E-001: 并行伙伴失败时按伙伴自身 on_fail 处理
                 if partner_result == "failed":
                     partner_on_fail = partner_step.get("on_fail", {})
                     partner_action = partner_on_fail.get("action", "abort")
@@ -706,8 +706,28 @@ def execute_from_step(workflow, step_index, report, start_id, dry_run=False,
                         report["finished_at"] = _now_iso()
                         save_report(report)
                         return "aborted", 1
-                    # back_to/skip 伙伴失败不阻断当前 step 执行(当前 step 的 on_fail 会处理)
-                    # 但记录 WARNING 供观测
+                    elif partner_action == "back_to":
+                        # E-001: 伙伴 back_to 应跳过当前 step,回退到 partner 的 target
+                        partner_target = partner_on_fail.get("target", parallel_ref)
+                        partner_max_retries = partner_on_fail.get("max_retries", 3)
+                        retry_counts[partner_target] = retry_counts.get(partner_target, 0) + 1
+                        if retry_counts[partner_target] > partner_max_retries:
+                            sys.stdout.write("  ⚠ 伙伴回退超限(%d > %d),升级为 abort\n" % (
+                                retry_counts[partner_target], partner_max_retries))
+                            report["status"] = "aborted"
+                            report["finished_at"] = _now_iso()
+                            save_report(report)
+                            return "aborted", 1
+                        else:
+                            # 清空 parallel_handled,允许回退后重新执行并行组
+                            parallel_handled.clear()
+                            sys.stdout.write("  ⤴ 伙伴回退到 %s (第 %d 次,上限 %d),跳过当前 step\n" % (
+                                partner_target, retry_counts[partner_target], partner_max_retries))
+                            current_id = partner_target
+                            # 跳过当前 step 的执行,直接回退到 partner_target
+                            continue
+                    # skip: 伙伴失败但跳过,不阻断当前 step 执行
+                    sys.stdout.write("  ℹ 伙伴 on_fail=skip,继续执行当前 step\n")
 
         # 执行当前 skill step
         current_retries = retry_counts.get(sid, 0)

@@ -171,7 +171,7 @@ PRD 产出 `PXX / BR-XXX / VR-XXX(V/S/C/E) / PERM-XXX / SM-XXX / TXX`；原型�
 
 ## _shared 共享参考文件
 
-`_shared/references/` 是多个 Skill 共用文件（PC 管理端规范 `pc_admin_ui_spec.md`、移动端通用 UI 规范 `ui-design-standards.md`、9 个 JSON 结构示例）的**唯一事实来源**，规则见 `_shared/README.md`。各 Skill 内只保留本阶段特有文件。
+`_shared/references/` 是多个 Skill 共用文件（PC 管理端规范 `pc_admin_ui_spec.md`、移动端通用 UI 规范 `ui-design-standards.md`、18 个 JSON 结构示例）的**唯一事实来源**，规则见 `_shared/README.md`。各 Skill 内只保留本阶段特有文件。
 
 **防回归校验**：修改任何共享文件或 Skill 引用后，运行：
 
@@ -207,7 +207,7 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - **总纲路由拆分**：`generate-html-pages` 重构为轻量路由器（232行，原693行），PC 规范下沉至 `generate-html-pc-admin`，移动端规范下沉至 `generate-html-mobile`；端专属 references 迁入对应子skill，`interaction-patterns.md` 作为双端通用资源留总纲由子skill跨目录引用
 
 ### 2026-07-24 第三轮：_shared 单点维护改造 + 防回归
-- 新增 `_shared/references/`（9 个共享 schema + 共享 UI 规范 + README），删除四个 skill 内 32 份重复拷贝
+- 新增 `_shared/references/`（18 个共享 schema + 共享 UI 规范 + README），删除四个 skill 内 32 份重复拷贝
 - 四个 SKILL.md 引用路径切换为 `../_shared/`，并区分"本阶段特有"与"共享"
 - html-pages Token 块接入 _shared 同步注释；`--page-bg` 与壳层样式文件兼容性修复
 - 新增 `_shared/validate.ps1` 防回归校验脚本与本 `WORKBENCH.md` 总索引

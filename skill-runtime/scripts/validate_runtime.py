@@ -337,14 +337,21 @@ def scan_all_skills(workspace_dir):
 # ---------- 报告产出 ----------
 
 def write_report(report, cwd=None):
-    """把报告 dict 写入当前工作目录的 runtime-contract-report.json。"""
-    out_dir = Path(cwd) if cwd else Path.cwd()
-    out_path = out_dir / REPORT_FILENAME
-    out_path.write_text(
-        json.dumps(report, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    return out_path
+    """把报告 dict 写入当前工作目录的 runtime-contract-report.json。
+
+    写入失败(如沙箱限制)时静默跳过,不阻塞校验流程。
+    """
+    try:
+        out_dir = Path(cwd) if cwd else Path.cwd()
+        out_path = out_dir / REPORT_FILENAME
+        out_path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return out_path
+    except (PermissionError, OSError):
+        # 沙箱限制或权限不足时静默跳过
+        return None
 
 
 def build_report(command, skills):

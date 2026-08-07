@@ -9,15 +9,24 @@ _shared/references/
 ├── ui-design-standards.md          # 通用 UI 设计规范（移动端默认档案）
 ├── pc_admin_ui_spec.md             # PC 管理端权威设计规范（vue-admin-plus / Element Plus）
 └── schemas/
-    ├── design-tokens.default.json  # 默认设计 Token（v1.3）
-    ├── pages.example.json          # 页面注册表（原型富化后完整结构）
-    ├── annotations.example.json    # 页面标注结构（SXX，generate-prototype 产出）
-    ├── actions.example.json        # 页面动作结构
-    ├── navigation.example.json     # 导航结构
-    ├── overlays.example.json       # 弹层结构
-    ├── components.example.json     # 复用组件结构
-    ├── pipeline-context.example.json # 流水线上下文（来源与置信度标记）
-    └── html-build-report.example.json # HTML 构建报告结构
+    ├── acceptance-matrix.example.json  # 验收矩阵结构（plan-system-implementation 产出）
+    ├── actions.example.json            # 页面动作结构
+    ├── annotations.example.json        # 页面标注结构（SXX，generate-prototype 产出）
+    ├── architecture.example.json       # 架构契约结构（plan-system-implementation 产出）
+    ├── business-rules.example.json     # 业务规则结构（generate-system-prd 产出）
+    ├── components.example.json         # 复用组件结构
+    ├── data-model.example.json         # 数据模型结构（generate-system-prd 产出）
+    ├── design-tokens.default.json      # 默认设计 Token（v1.3）
+    ├── html-build-report.example.json  # HTML 构建报告结构
+    ├── navigation.example.json         # 导航结构
+    ├── overlays.example.json           # 弹层结构
+    ├── pages.example.json              # 页面注册表（原型富化后完整结构）
+    ├── permissions.example.json        # 权限结构（generate-system-prd 产出）
+    ├── pipeline-context.example.json   # 流水线上下文（来源与置信度标记）
+    ├── release-manifest.example.json   # 发布清单结构（plan-system-implementation 产出）
+    ├── state-machines.example.json     # 状态机结构（generate-system-prd 产出）
+    ├── task-board.example.json         # 任务板结构（plan-system-implementation 产出）
+    └── traceability.example.json       # 追溯表结构（plan-system-implementation 产出）
 ```
 
 ## 使用规则
@@ -37,4 +46,4 @@ _shared/references/
 
 ## 历史背景
 
-此前 9 个 schema 示例与 `ui-design-standards.md` 在 3~4 个 Skill 中各存一份拷贝，曾发生 design-tokens v1.0/v1.1/v1.3 三版本并存、边框色与页面背景色不一致等实际漂移。2026-07 统一收敛至本目录。
+此前 18 个 schema 示例与 `ui-design-standards.md` 在 3~4 个 Skill 中各存一份拷贝，曾发生 design-tokens v1.0/v1.1/v1.3 三版本并存、边框色与页面背景色不一致等实际漂移。2026-07 统一收敛至本目录。

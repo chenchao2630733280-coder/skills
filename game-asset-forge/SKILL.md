@@ -22,6 +22,8 @@ description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执
 - `assets/atlases/{atlas_id}.png` + `.json`
 - `assets/audio/*.wav` / `*.mp3`
 - `docs/ASSET_ISSUES.md`(失败清单,如有)
+- `docs/ASSET_MANIFEST.json`(回写 actualFormat/actualPath/converted/conversionNote 字段)
+- `docs/ASSET_MANIFEST.prev.json`(增量更新时的备份,供 game-quality-gate 追溯)
 
 ---
 
@@ -163,6 +165,15 @@ function placeholder(name: string, size: [number, number], color: string)
 ---
 
 ## 四、图集打包规则
+
+**图集格式按引擎分化**(生成前先按 PRD/TECH_DESIGN 引擎字段选择格式,不要无脑用 phaser-json-array):
+- Phaser 3:phaser-json-array(TexturePacker/spritesheet-js `--format=phaser-json-array`)
+- Pixi.js:spritesheet hash 格式(`--format=json-hash`)
+- 纯 Canvas:通常不用图集(散图即可),或自定义 JSON
+- Godot 4:跳过图集打包,使用散图(Godot 用 AtlasTexture 在引擎内处理)
+- Unity:跳过图集打包,使用散图(Unity 用 Sprite Atlas 在引擎内处理)
+
+> Godot 4 / Unity 跳过图集打包时,§四.1~§四.4 的 TexturePacker/spritesheet-js 步骤整体跳过,资源以散图形式留在 `assets/role/{role}/` 等目录,由引擎侧(game-code-forge 的 Godot/Unity references)在工程内自行组织。
 
 ### 1. 优先 TexturePacker CLI
 ```bash

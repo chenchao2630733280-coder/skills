@@ -231,6 +231,8 @@ this.load.atlas(atlas.id, atlas.output, atlas.dataOutput);
 this.load.atlas('skin0', 'assets/atlases/skin0.png', 'assets/atlases/skin0.json');
 ```
 
+**ASSET_MANIFEST.json 读取规则**:读取 manifest 时,`actualFormat`/`actualPath` 优先于 `format`/`path`(由 game-asset-forge 回写实际产出格式和路径)。若 `actualFormat` 存在且与 `format` 不同(如 format=png-32 但 actualFormat=jpg),按 actualFormat 走散图降级,不用 atlas 加载。
+
 ### 3. UI 节点树直接翻译
 PRD 的节点树必须 1:1 翻译为代码:
 ```

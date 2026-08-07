@@ -12,6 +12,42 @@
       ]
     }
   ],
+  "dataStores": {
+    "primary": {
+      "type": "postgresql",
+      "host": "localhost",
+      "port": 5432,
+      "name": "app_db"
+    }
+  },
+  "auth": {
+    "mode": "jwt",
+    "rbac": {
+      "enabled": true,
+      "roles": [
+        "admin",
+        "user"
+      ]
+    }
+  },
+  "integrations": [
+    {
+      "name": "redis",
+      "type": "cache",
+      "config": {
+        "host": "localhost",
+        "port": 6379
+      }
+    }
+  ],
+  "environments": {
+    "dev": {
+      "baseUrl": "http://localhost:3000"
+    },
+    "prod": {
+      "baseUrl": "https://app.example.com"
+    }
+  },
   "commands": {
     "install": "",
     "dev": "",

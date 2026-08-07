@@ -27,6 +27,8 @@ description: "Converts approved page specifications and HTML prototypes into a p
 - `./output/spec/pages.json`、`annotations.json`、`design-tokens.json`、`permissions.json`
 - `./output/site/pc/`、`./output/site/mobile/` 或其他原型
 - `./output/build/architecture.json` 和后端 API 契约
+- `./output/build/task-board.json`（需读取以追加任务状态）
+- `./output/build/traceability.json`（需读取以追加 PXX/BR-XXX 映射）
 - 当前项目已有前端框架、组件库、路由、状态管理和测试配置
 - 可选：若项目有 frontend-design skill 的视觉设计指导产出，优先遵循其设计规范。
 

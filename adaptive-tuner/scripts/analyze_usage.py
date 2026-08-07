@@ -262,7 +262,14 @@ def cmd_suggest(args):
     else:
         # 默认输出到 workflow-runtime 的默认 overrides 查找路径
         out_dir = Path.home() / ".trae-cn" / "tuner-overrides"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    except (PermissionError, OSError):
+        # E-005: 默认路径不可写时 fallback 到当前目录
+        out_dir = Path.cwd() / "tuner-overrides"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        print("WARN  默认路径 ~/.trae-cn/tuner-overrides/ 不可写,fallback 到 %s" % out_dir)
+        print("      提示:使用 --output <可写目录> 指定输出路径")
 
     suggestions_file = out_dir / "tuning-suggestions.json"
     suggestions_file.write_text(json.dumps(output, ensure_ascii=False, indent=2),

@@ -14,11 +14,11 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 - **视觉要求**：不强制任何特定 CSS 框架、图标库或固定配色。视觉 Token 遵循 `../_shared/references/ui-design-standards.md` 与项目 `output/spec/design-tokens.json`（存在时优先）；图标使用内联 SVG，禁止混用 Emoji 与多套图标库；默认不依赖外部 CDN。
 - **核心功能**：采用**三栏布局**，集成页面导航、Iframe 预览和动态产品标注功能。
 
-## Usage
+## 一、定位与触发条件
 
 当 `output/site/` 下已存在由 `generate-html-pages` 生成的原型页面，需要生成或更新统一评审门户时使用本 Skill。重复执行时应增量更新 `projectMap` 与标注数据，不改变门户的交互结构。
 
-## Inputs
+## 二、输入
 
 * `{系统名称}-产品设计方案-V{版本号}.md`（由 `generate-system-prd` 生成，用于读取系统名称、模块结构、页面清单、路由、数据模型与业务规则）
 * `{系统名称}-页面原型文档.md`（由 `generate-prototype` 生成，用于读取页面布局、字段、交互、校验、弹窗与页面流转规格）
@@ -28,7 +28,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 > 不依赖固定的旧文件名；应以用户实际提供的文件名和现有目录结构为准。`build-report.json` 存在时优先消费其 `outputs` 字段构建 `projectMap`，缺失时回退到目录扫描。
 
-## 参考文件（references）使用指引
+## 三、参考文件使用指引
 
 | 文件 | 何时读取 |
 |------|---------|
@@ -39,7 +39,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 | `../_shared/references/schemas/html-build-report.example.json` | 需要解析 `generate-html-pages` 产出的 `build-report.json` 时参考 |
 | `../_shared/references/schemas/` 下其他共享示例 | 需要与上游工件（pages/actions/navigation 等）对齐字段时按需参考 |
 
-## 标注契约（与 annotation-standards.md 对齐）
+## 四、标注契约
 
 1. **所有权**：`annotations.json` 由 `generate-prototype` 创建和维护；本 Skill **只读取和展示，不写回标注**。
 2. **标注映射**：`annotations.json` 中每个 SXX 标注记录所属 `pageId`（PXX），本 Skill 按 `pageId` 分组并与 `output/site/` 下 `PXX-*.html` 文件匹配。`generate-html-pages` 不绑定 `data-spec-id`/`data-page-id`，DOM 级定位通过 `annotations.json` 中可选的 `selector` 字段在 iframe 内查询（缺失时仅页面级跳转）。缺少标注时门户降级运行，**不得伪造 SXX**。
@@ -51,7 +51,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
    - `file://`、跨域或不受信任的 HTML：关闭角标 DOM 定位并明确说明，必要时使用严格 sandbox 隔离预览。
 5. **安全**：标注文案、文件路径和 Markdown 必须转义或白名单清洗；不使用未清洗的 `innerHTML` 注入业务内容；不在标注中展示真实敏感数据、密钥或访问令牌。
 
-## 布局要求 (Layout Specifications)
+## 五、布局要求
 
 实现全屏三栏无缝布局（具体尺寸与色值以项目 Token 为准，以下为默认建议）：
 
@@ -80,7 +80,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ---
 
-## steps
+## 六、生成流程
 
 ### 1. 动态目录结构构建 (Dynamic Directory Construction)
 
@@ -110,7 +110,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ---
 
-## 📝 标注撰写规范 (Annotation Detailed Standards)
+## 七、标注撰写规范
 
 撰写标注内容时，按以下**四个语义维度**组织，只填写适用维度，避免开发与测试遗漏：
 
@@ -153,7 +153,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ---
 
-## 标注渲染结构 (Output Schema)
+## 八、标注渲染结构
 
 每个标注逻辑点渲染为语义化 HTML 结构，包含：序号角标、模块名标题，以及按 `展示 / 交互 / 数据 / 异常` 分行的内容区。具体要求：
 
@@ -163,7 +163,7 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ---
 
-## 🚀 行动指令 (Action)
+## 九、行动指令
 
 当收到执行该 Skill 的命令时：
 

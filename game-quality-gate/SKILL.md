@@ -254,7 +254,9 @@ game-polish (可选)
 >
 > | 引擎 | references 文件 | L3 检查项 |
 > |---|---|---|
-> | Phaser 3 / Pixi.js / 纯 Canvas | `references/engine-checks-{phaser/pixi}.md` §L3 | 3.15 `npm run typecheck` |
+> | Phaser 3 | `references/engine-checks-phaser.md` §L3 | 3.15 `npm run typecheck` |
+> | Pixi.js | `references/engine-checks-pixi.md` §L3 | 3.15 `npm run typecheck` |
+> | 纯 Canvas | 回退到 `references/engine-checks-phaser.md` §L3(Web 引擎通用 typecheck) | 3.15 `npm run typecheck` |
 > | Godot 4 | `references/engine-checks-godot.md` §L3 | 3.16 `godot --headless --check-only --script scripts/main.gd` |
 > | Unity | `references/engine-checks-unity.md` §L3 | 3.17 Unity 编译检查(沙箱无 Unity 时 SKIPPED,延后 Gate 4) |
 >
