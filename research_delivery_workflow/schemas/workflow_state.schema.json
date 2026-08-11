@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Research Delivery Workflow State",
+  "type": "object",
+  "required": [
+    "evidence",
+    "open_questions",
+    "requirements"
+  ],
+  "properties": {
+    "context": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "classification",
+          "statement",
+          "raw_text"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "pattern": "^SRC-[0-9]{3,}$"
+          },
+          "topic": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_actor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "classification": {
+            "enum": [
+              "FACT",
+              "ISSUE",
+              "NEED",
+              "OPEN",
+              "RISK",
+              "CONSTRAINT"
+            ]
+          },
+          "statement": {
+            "type": "string"
+          },
+          "raw_text": {
+            "type": "string"
+          },
+          "notes": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "question",
+          "source_refs",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^Q-[0-9]{3,}$"
+          },
+          "question": {
+            "type": "string"
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "impact": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "origin",
+          "source_refs",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^REQ-[0-9]{3,}$"
+          },
+          "module": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "origin": {
+            "enum": [
+              "confirmed_need",
+              "necessary_from_fact",
+              "product_suggestion",
+              "pending_confirmation"
+            ]
+          },
+          "priority": {
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "待产品确认"
+            ]
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "technical_items": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": true
+}

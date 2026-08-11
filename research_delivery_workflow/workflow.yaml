@@ -1,0 +1,109 @@
+version: "2.2"
+name: research-delivery-workflow
+language: zh-CN
+
+entrypoint: SKILL.md
+
+stages:
+  - id: stage_1
+    name: evidence_normalization
+    file: stages/01_evidence_normalization.md
+    input:
+      - research_notes
+    output:
+      - normalized_evidence
+      - workflow_state
+    gate:
+      - source_preserved
+      - abcd_classified
+
+  - id: stage_2
+    name: current_business_research_analysis
+    file: stages/02_business_analysis.md
+    input:
+      - normalized_evidence
+      - research_notes
+    output:
+      - business_research_report
+      - open_questions
+    template: templates/01_current_business_research_analysis.md
+    gate:
+      - ten_chapters_complete
+      - no_prd
+      - no_technical_solution
+      - interface_items_source_backed
+
+  - id: stage_3
+    name: product_requirements_and_prd
+    file: stages/03_product_requirements_prd.md
+    input:
+      - business_research_report
+      - normalized_evidence
+    output:
+      - requirement_pool
+      - prd_draft
+    templates:
+      - templates/02_requirement_pool.csv
+      - templates/03_prd_draft.md
+    gate:
+      - every_requirement_traceable
+      - open_not_promoted_to_confirmed
+      - product_capability_architecture_complete
+      - architecture_nodes_traceable
+      - candidate_scope_visually_distinct
+      - product_architecture_not_technical_architecture
+      - terminal_strategy_source_backed
+      - product_navigation_and_page_structure_complete
+      - page_groups_traceable_to_requirements
+      - role_visibility_and_core_flows_complete
+      - single_multi_terminal_constraint_respected
+      - candidate_pages_not_default_visible
+      - user_and_management_terminal_boundaries_preserved
+      - terminal_conflicts_visible
+
+  - id: stage_4
+    name: technical_handoff
+    file: stages/04_technical_handoff.md
+    input:
+      - requirement_pool
+      - prd_draft
+    output:
+      - technical_handoff
+    template: templates/04_technical_handoff.md
+    gate:
+      - every_technical_item_maps_to_requirement
+      - no_unfounded_technology_choice
+
+  - id: stage_5
+    name: delivery_planning
+    file: stages/05_delivery_planning.md
+    input:
+      - requirement_pool
+      - technical_handoff
+      - open_questions
+      - risks
+    output:
+      - delivery_plan
+      - open_question_register
+      - risk_register
+    templates:
+      - templates/05_delivery_plan.md
+      - templates/06_open_questions.csv
+      - templates/07_risk_register.csv
+    gate:
+      - blocking_open_items_visible
+      - no_invented_schedule
+
+quality_gate:
+  file: gates/quality_gate.md
+  always_run_after_requested_stages: true
+
+hard_constraints:
+  - domain_neutral
+  - do_not_invent_facts
+  - preserve_source_traceability
+  - classify_as_fact_issue_need_open
+  - do_not_promote_open_to_confirmed_requirement
+  - do_not_preseed_business_modules
+  - do_not_preseed_technology_stack
+  - respect_stage_boundaries
