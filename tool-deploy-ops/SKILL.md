@@ -179,3 +179,9 @@ python scripts/deploy_ops.py rollback --platform vercel --target my-app --confir
 - [ ] 健康检查失败时仅 WARNING,未抛阻断异常。
 - [ ] 降级路径下,手动命令已完整输出(可复制即跑)。
 - [ ] 报告 `timestamp` 带时区,`error` 字段在正常时为 `null`。
+
+## references 使用指引
+
+| 文件 | 用途 |
+|------|------|
+| `references/deploy-platforms.md` | 部署平台差异说明(GitHub Pages / Vercel / Netlify / CloudBase / COS 的命令与配置) |

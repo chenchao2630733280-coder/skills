@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "scanned_at": "2026-08-07T14:31:07",
+  "scanned_at": "2026-08-10T14:42:42",
   "skills_dir": "C:\\Users\\26307\\.agents\\skills",
   "total_skills": 61,
   "categories": {
@@ -120,7 +120,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -498,7 +500,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -526,7 +530,7 @@
     {
       "name": "product-pipeline-master",
       "dir": "product-pipeline-master",
-      "description": "产品工作台的总编排调度中枢。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。",
+      "description": "产品工作台的总编排调度中枢（非自动执行器）。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。必须每阶段暂停等用户确认，禁止自动连续执行。",
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,

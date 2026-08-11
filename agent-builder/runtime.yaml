@@ -1,0 +1,28 @@
+# runtime.yaml — agent-builder
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 新建 skill 的领域与目标
+    type: text
+    required: true
+    description: 用户要新建的 Agent 体系层 skill 所属维度（如 Tool/Memory/Data 等）及核心目标
+  - name: 现有 skill 集合上下文
+    type: text
+    required: false
+    description: 当前工作台已有 skill 清单，用于判断维度覆盖度和新 skill 的定位
+outputs:
+  - path: 架构定位建议（维度归属 + 互补/上下游/替代关系 + 设计模式选择）
+    type: inline
+  - path: 创建流程指引（6 步流程 + 契约对齐 + 质量自评）
+    type: inline
+degrade:
+  - trigger: 用户需求模糊，无法确定维度归属
+    action: 列出 12 维度框架供用户选择，不擅自归类
+    target: 架构定位建议
+  - trigger: 现有 skill 集合上下文缺失
+    action: 基于通用经验给出建议，标注"未结合现有 skill 集合验证"
+    target: 架构定位建议

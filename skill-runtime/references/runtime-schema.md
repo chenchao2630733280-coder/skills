@@ -114,7 +114,7 @@ runtime.yaml 是单个 YAML 文件,位于 skill 根目录(如 `game-asset-forge/
         "required": ["path", "type"],
         "properties": {
           "path": { "type": "string", "minLength": 1 },
-          "type": { "type": "string", "enum": ["file", "directory"] },
+          "type": { "type": "string", "enum": ["file", "directory", "inline"] },
           "optional": { "type": "boolean" }
         }
       }

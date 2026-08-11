@@ -121,7 +121,7 @@ description: "代码审查 skill。接收 PR 或 diff,检查代码质量/安全/
 - 修复建议详表(对每条问题给出具体修复方案,含代码片段示例)
 - 通过项摘要(明确指出哪些维度 / 文件未发现问题,避免"沉默通过")
 
-模板见 `references/review-report-template.md`。
+模板见 `references/review-report-template.md`，审查清单见 `references/review-checklist.md`。
 
 ### 2. `code-review-report.json`(机读)
 ```json

@@ -113,3 +113,9 @@ python scripts/ci_ops.py report --platform github-actions --repo owner/repo --ru
 - [ ] 报告中 **不含** 任何 token / 密钥明文。
 - [ ] 仅使用 Python 标准库,无外部依赖。
 - [ ] 平台取值限定 `github-actions | gitlab-ci | jenkins`,非法值被拒绝。
+
+## references 使用指引
+
+| 文件 | 用途 |
+|------|------|
+| `references/ci-platforms.md` | CI 平台差异说明(GitHub Actions / GitLab CI / Jenkins 的命令映射与配置识别) |

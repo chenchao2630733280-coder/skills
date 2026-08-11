@@ -126,3 +126,9 @@ python scripts/git_ops.py log --repo . --limit 10
 - [ ] 非 git 仓库时返回 `error` 且不抛异常。
 - [ ] 所有报告写入当前目录 `git-ops-report.json`,字段齐全。
 - [ ] 所有文件 UTF-8 编码,代码注释为中文。
+
+## references 使用指引
+
+| 文件 | 用途 |
+|------|------|
+| `references/git-ops-contract.md` | 输入/输出契约与安全规则,供编排总纲与各阶段 skill 对齐 |

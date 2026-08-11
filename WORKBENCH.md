@@ -24,8 +24,10 @@ generate-html-pages          第3/4阶段：HTML原型路由器（判断端类�
   └─ generate-html-mobile         移动端HTML原型（任务型：综合入口/详情/交易等）
         ↓
 generate-portal              第5阶段：三栏演示门户（output/site/index.html，独占）
-        ↓ 原型评审通过
-plan-system-implementation   实施规划（可选）：可执行的工程实施蓝图
+        ↓ 原型评审通过，进入生产阶段（交接给 build-working-system）
+plan-system-implementation   实施规划（可选）：可执行的工程实施蓝图（首次产出）
+        ↓ 控制权交接
+build-working-system         生产阶段编排器：恢复/更新蓝图 → 骨架 → implement-* → 集成 → 测试 → 部署
 
 【旁线：文档交付物】（可并行，不依赖主线顺序）
 bid-functional-solution      标书功能建设方案（Word）

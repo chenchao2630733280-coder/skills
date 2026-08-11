@@ -182,39 +182,22 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 ## 五、通用模板索引
 
-所有下游 skill 都引用一套**通用模板工程**,作为生成产物的基准骨架。模板路径随 skill 集合分发:
+各下游 skill 自带 `references/` 目录,维护本阶段所需的模板和规范文件,**无统一 game-template 工程**。各 skill 的 references 清单:
 
-```
-.trae/skills/game-template/   (随 skill 分发的模板参考)
-├── phaser/                    # Phaser 默认模板
-├── pixi/                      # Pixi 模板
-├── canvas/                    # 纯 Canvas 模板
-├── godot/                    # Godot 4 模板
-│   ├── project.godot.tpl     # 工程配置
-│   ├── Main.tscn.tpl         # 主场景
-│   ├── BootScene.tscn.tpl    # 启动场景
-│   ├── main.gd.tpl           # 主脚本
-│   └── export_presets.cfg.tpl # 导出预设
-├── unity/                    # Unity 模板
-│   ├── ProjectVersion.txt.tpl # Unity 版本标识
-│   ├── UnityMain.cs.tpl      # 主入口脚本
-│   ├── BootScene.cs.tpl      # 启动场景脚本
-│   ├── CharacterController.cs.tpl # 角色控制
-│   ├── GameManager.cs.tpl    # 全局状态
-│   ├── SceneBuilder.cs.tpl   # 场景程序化构建(Editor)
-│   ├── BuildScript.cs.tpl    # 构建入口(Editor)
-│   ├── {ProjectName}.asmdef.tpl # 程序集定义
-│   └── manifest.json.tpl     # 包依赖
-└── shared/                    # 五引擎共享文档模板
-    ├── GAME_BLUEPRINT.md.tpl
-    ├── PRD.md.tpl
-    ├── TECH_DESIGN.md.tpl
-    ├── ART_SPEC.md.tpl
-    ├── ASSET_MANIFEST.schema.json
-    └── AUDIO_SPEC.md.tpl
-```
+| skill | references 内容 |
+|-------|----------------|
+| game-blueprint | 7 个 design-principles-*.md(设计原则) |
+| game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
+| game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |
+| game-asset-forge | format-conversion-guide.md + card-bg-spec.md |
+| game-code-forge | 5 个 engine-*-template.md(五引擎模板) + 6 个 pitfall 文件 + web-config.md |
+| game-integrate | build-report-template.md |
+| game-polish | asset-fix-recipes.md + overlay-spec.md |
+| game-quality-gate | 4 个 engine-checks-*.md(五引擎质量检查) |
 
-下游 skill 调用模板时,**先按引擎选目录,再按阶段选文件**。
+**跨 skill 引用**:game-topic-brainstorm 引用 `../game-blueprint/references/` 下的设计原则;两总纲引用 `../workflow-runtime/references/execution-semantics.md`。
+
+下游 skill 生成产物时,按引擎和阶段读取自身 references 目录中的模板文件。
 
 ---
 

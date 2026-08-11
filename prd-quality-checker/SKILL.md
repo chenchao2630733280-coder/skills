@@ -5,11 +5,17 @@ description: 使用产品配置层与执行引擎层审核通用 PRD、需求说
 
 # PRD Quality Checker
 
-## 定位声明
+## 定位
 
 本 skill 是**修改类审查 skill**（非只读）：在 Improve 模式下会修改 PRD 文档以完善缺陷；在 Audit 模式下只读不写。与 guardrail/code-review/diff-reviewer/skill-auditor 等只读审查 skill 不同，本 skill 具有 PRD 修改能力。
 
 目标：在下游工作开始前，基于可定位的文档证据发现会造成范围误解、规则冲突、无法验收或返工的产品问题，并给出可复核的质量门禁结论。
+
+- 从产品目标和业务规则出发，不替代技术方案评审。
+- 默认评审已有 PRD；如果只有想法或零散材料，先完成需求澄清，再执行本技能。
+- 不依赖固定文件名、章节模板或行业。可读取 Markdown、纯文本、办公文档提取文本或当前项目中的需求材料。
+- 与实现型 PRD 检查分开：本技能负责架构前的产品质量门禁；页面、路由、UI Token 和具体实现覆盖由项目自己的实现评审流程负责。
+- 产品质量门禁与 AI 开发准备度分开。不得用 AI Ready 分数替代 `READY / CONDITIONAL / NOT_READY`。
 
 ## 双层架构
 
@@ -39,14 +45,6 @@ description: 使用产品配置层与执行引擎层审核通用 PRD、需求说
 - 在报告中记录规则版本。
 
 具体协议见 [references/execution-contract.md](references/execution-contract.md) 和 [references/structured-output.md](references/structured-output.md)。
-
-## 定位
-
-- 从产品目标和业务规则出发，不替代技术方案评审。
-- 默认评审已有 PRD；如果只有想法或零散材料，先完成需求澄清，再执行本技能。
-- 不依赖固定文件名、章节模板或行业。可读取 Markdown、纯文本、办公文档提取文本或当前项目中的需求材料。
-- 与实现型 PRD 检查分开：本技能负责架构前的产品质量门禁；页面、路由、UI Token 和具体实现覆盖由项目自己的实现评审流程负责。
-- 产品质量门禁与 AI 开发准备度分开。不得用 AI Ready 分数替代 `READY / CONDITIONAL / NOT_READY`。
 
 ## 输入
 

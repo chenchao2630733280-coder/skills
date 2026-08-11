@@ -1,6 +1,6 @@
 # _shared/references — 工作台共享参考文件（唯一事实来源）
 
-本目录存放产品工作台多个 Skill 共用的参考文件，是这些文件的**唯一事实来源（Single Source of Truth）**，用于替代过去每个 Skill 各存一份拷贝导致的版本漂移问题。
+本目录存放 AI Agent Skills 工作台多个 Skill 共用的参考文件，是这些文件的**唯一事实来源（Single Source of Truth）**，用于替代过去每个 Skill 各存一份拷贝导致的版本漂移问题。
 
 ## 目录内容
 
@@ -8,6 +8,7 @@
 _shared/references/
 ├── ui-design-standards.md          # 通用 UI 设计规范（移动端默认档案）
 ├── pc_admin_ui_spec.md             # PC 管理端权威设计规范（vue-admin-plus / Element Plus）
+├── engineering-constraints.md      # 工程通用约束（10 条，plan-system-implementation / build-working-system 共用）
 └── schemas/
     ├── acceptance-matrix.example.json  # 验收矩阵结构（plan-system-implementation 产出）
     ├── actions.example.json            # 页面动作结构

@@ -40,7 +40,7 @@ REPORT_FILENAME = "runtime-contract-report.json"
 
 # 已知字段类型(用于 schema 校验)
 BACKOFF_ENUM = ("fixed", "exponential")
-OUTPUT_TYPE_ENUM = ("file", "directory")
+OUTPUT_TYPE_ENUM = ("file", "directory", "inline")
 
 
 # ---------- 工具函数 ----------

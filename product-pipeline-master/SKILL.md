@@ -1,9 +1,11 @@
 ---
 name: "product-pipeline-master"
-description: "产品工作台的总编排调度中枢。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。"
+description: "AI Agent Skills 工作台的产品交付总编排调度中枢（非自动执行器）。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。必须每阶段暂停等用户确认，禁止自动连续执行。"
 ---
 
-# Product Pipeline Master — 产品工作台总编排
+# Product Pipeline Master — 产品交付总编排
+
+> **⚠ 强制约束**：本 skill 是**调度中枢，非自动执行器**。每完成一个阶段必须用 AskUserQuestion 暂停等用户确认，**禁止自动连续执行下一阶段**，即使用户说过"全流程跑完"或"按流水线走完"。详见 §八 执行顺序和 §九.1 人工确认机制。
 
 本 skill 是产品交付流水线的**调度中枢**，本身不直接产出业务文件，职责是：
 1. 接收用户需求，判定走哪条交付路径（主线/旁线/混合）
@@ -27,6 +29,12 @@ description: "产品工作台的总编排调度中枢。当用户要'端到端�
 - 用户只要单一阶段产物（直接调对应 skill，如"写 PRD"→ `generate-system-prd`）
 - 用户只是咨询产品怎么做（用对话回答即可）
 - 用户要修改已有产物的某一处（直接用 Edit/Write）
+
+**执行红线**：
+- 调用本 skill 后，**必须按 §八 阶段顺序逐个执行**，每阶段完成后用 AskUserQuestion 暂停确认
+- **禁止一次性拆解全部任务后自动连续执行**，即使需求已完全明确
+- **禁止跳过确认点**，即使用户说"全流程跑完"/"按流水线走完"/"自动执行"
+- "串联下游"= 按顺序逐个调度 + 每阶段暂停确认，**不等于自动批量执行**
 
 ---
 
@@ -58,8 +66,10 @@ generate-portal            → output/site/index.html (三栏演示门户,独占
 ⏸ 人工确认点 4 (AskUserQuestion: 进入实施规划(可选) / 流水线完成 / 回退修复门户)
        ↓
 ⏸ 人工确认点 5 (可选 Tool,AskUserQuestion: 提交 Git / 部署平台 / 跳过;Tool 前过 guardrail 前置检查)
-       ↓ 原型评审通过
-plan-system-implementation → 实施蓝图 + 任务板 + 追溯表
+       ↓ 原型评审通过，进入生产阶段（交接给 build-working-system）
+plan-system-implementation → 实施蓝图 + 任务板 + 追溯表（首次产出）
+       ↓ 控制权交接
+build-working-system → 生产阶段（恢复/更新蓝图 → 骨架 → implement-* → 集成 → 测试 → 部署）
 
 【旁线:文档交付物】(可并行,不依赖主线顺序)
 bid-functional-solution      → 标书功能建设方案 .docx
@@ -70,8 +80,9 @@ screenshot-operation-manual  → 操作手册 .docx
 ```
 
 **阶段性质**：
-- 阶段 0-5（脑暴→PRD→原型→HTML→门户）：**主线路径**，产出可演示原型
-- 实施规划：**可选**，评审通过后才走
+- 阶段 0-5（脑暴→PRD→原型→HTML→门户）：**主线路径**，产出可演示原型，是 product-pipeline-master 的核心职责
+- 阶段 6（plan-system-implementation）：**可选过渡**，首次产出实施蓝图后，**控制权交接给 build-working-system** 进入生产阶段；product-pipeline-master 到此结束
+- 生产阶段（build-working-system）：**超出本流水线范围**，由 build-working-system 接管，负责恢复蓝图→骨架→implement-*→集成→测试→部署
 - 旁线文档：**可并行**，任何阶段都能触发，不依赖主线顺序
 - **人工确认点 1~4：强制暂停**，每阶段质量门禁 PASS 后用 AskUserQuestion 确认，不允许自动进入下一阶段(见 §九.1)
 
@@ -259,7 +270,9 @@ generate-html-pages 产出:
      - 选"跳过" → 进入阶段 6(若尚未进入)或结束
    - Tool 操作前过 `guardrail` 前置检查(检查 output/ 路径是否在敏感清单)
 6. （可选）原型评审通过后，调用 `plan-system-implementation`，**首次产出**实施蓝图（architecture.json / task-board.json / traceability.json）
-   - **与 build-working-system 的边界**：本阶段（product-pipeline-master 阶段6）是 plan-system-implementation 的**首次产出**方；后续进入 `build-working-system` 时，其 Stage 1 会**恢复或更新**已有蓝图（不重复首次产出），然后才进入 Stage 3 按 P0 垂直切片按名调用 `implement-data-layer` / `implement-backend` / `implement-frontend`。两个编排器不重复执行同一份蓝图的首次产出。
+   - **本阶段是 product-pipeline-master 的终点**：产出蓝图后，product-pipeline-master 流水线结束，**控制权交接给 `build-working-system`** 进入生产阶段
+   - **与 build-working-system 的边界**：本阶段（product-pipeline-master 阶段6）是 plan-system-implementation 的**首次产出**方；后续进入 `build-working-system` 时，其 Stage 1 会**恢复或更新**已有蓝图（不重复首次产出），然后进入 Stage 2 骨架 → Stage 3 按 P0 垂直切片按名调用 `implement-data-layer` / `implement-backend` / `implement-frontend` → 集成 → 测试 → 部署。两个编排器不重复执行同一份蓝图的首次产出。
+   - **交接动作**：向用户简报"原型交付完成 + 实施蓝图已就绪"，AskUserQuestion 询问"进入生产阶段（build-working-system）/ 暂停在蓝图阶段 / 终止"。选"进入生产阶段"则提示用户调用 `build-working-system`
 
 ### 旁线流程（可与主线任意阶段并行）
 
