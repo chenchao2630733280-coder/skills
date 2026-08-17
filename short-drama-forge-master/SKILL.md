@@ -266,6 +266,7 @@ TTS:火山引擎
 | 镜头占位图 | `shots/{ep}/shot_{XX}.png` | short-drama-video-forge(降级时) |
 | 配音 | `audio/{ep}/line_{XX}.mp3` | short-drama-audio-forge |
 | 音乐/BGM | `audio/bgm_{name}.mp3` | short-drama-audio-forge |
+| 音频规格 | `docs/AUDIO_SPEC.md` | short-drama-audio-forge(音色映射/情感标签/语速/BGM 匹配标注;short-drama-edit 可选读取) |
 | 字幕 | `subtitles/{ep}.srt` | short-drama-audio-forge |
 | 成片 | `episodes/EP{XX}.mp4` | short-drama-edit |
 | 验收报告 | `docs/BUILD_REPORT.md` | short-drama-edit |
