@@ -166,12 +166,13 @@ TTS:火山引擎
 | short-drama-topic-brainstorm | 观看动力变量库、趋势雷达信号分层、选题多样性引擎 |
 | short-drama-blueprint | 立项模板、短剧类型判定细则、工具链选型表 |
 | short-drama-spec | 故事发动机模板、人物卡模板、秘密系统模板、情绪曲线规则 |
-| short-drama-script | 竖屏剧本格式规范、单集钩子/卡点规则、对白规则 |
+| short-drama-script | 竖屏剧本格式规范、单集钩子/卡点规则、对白规则、单集剧本模板 |
 | short-drama-storyboard | 镜头语言(景别/运镜/时长)、视觉 prompt 引擎(文生图/图生视频) |
 | short-drama-video-forge | 工具调用配方、角色一致性控制、失败降级配方(图文短剧) |
 | short-drama-audio-forge | TTS 情感脚本规则、音乐情绪匹配、字幕断句规范 |
 | short-drama-edit | ffmpeg 合成模板、成片验收清单 |
 | short-drama-quality-gate | Gate 0~4 检查项、报告模板 |
+| **本 skill(templates/project/)** | **短剧项目模板骨架**:复制即得固定路径项目结构(蓝图/规格/大纲/分镜/视觉/音频/门报告/验收/剧本示例/manifest 示例),见 §十 模板模式 |
 
 **跨 skill 引用**:阶段 2 之后所有 skill 需读取上游固定路径产物(见 §八),质量门读取对应报告与产物。
 
@@ -306,3 +307,45 @@ TTS:火山引擎
 - 确认点 7(可选 Tool)默认不强制出现,仅在用户明确要"提交/发布"时触发
 
 **workflow-runtime 兼容**:workflow-runtime 模式下,确认点 1~7 对应 workflow.yaml 中的 pause 节点,选项与本文一致。
+
+---
+
+## 十、短剧模板模式(快速起步)
+
+当用户说"创建短剧模板/短剧模式/从模板开始做短剧/套用模板"时,本总纲先进入**模板模式**:用 `templates/project/` 项目模板骨架初始化项目,再按正常流水线推进。模板骨架不是独立 skill,是总纲自带的可复制项目结构。
+
+### 10.1 模板路径
+
+```
+short-drama-forge-master/templates/project/
+├── README.md                          # 模板说明 + 使用步骤
+├── docs/
+│   ├── SHORT_DRAMA_BLUEPRINT.template.md   # 阶段1 蓝图模板(11 章)
+│   ├── STORY_SPEC.template.md              # 阶段2 故事规格模板
+│   ├── EPISODE_OUTLINE.template.md         # 阶段2 分集大纲模板
+│   ├── STORYBOARD.template.md              # 阶段4 分镜模板(12 字段镜头表)
+│   ├── VISUAL_SPEC.template.md             # 阶段4 视觉规范模板(五节)
+│   ├── AUDIO_SPEC.template.md              # 阶段6 音频规格模板
+│   ├── GATE_0_REPORT.template.md           # 质量门报告模板(0~4 通用)
+│   ├── BUILD_REPORT.template.md            # 阶段7 成片验收报告模板
+│   └── scripts/EP01.example.md             # 单集剧本示例(阶段3 参考)
+├── production/manifest.example.json   # 阶段5 生产清单示例(中枢契约格式)
+├── shots/                             # 阶段5 镜头产物(空,gitkeep)
+├── audio/                             # 阶段6 配音/BGM(空,gitkeep)
+├── subtitles/                         # 阶段6 字幕(空,gitkeep)
+└── episodes/                          # 阶段7 成片(空,gitkeep)
+```
+
+### 10.2 初始化步骤
+
+1. **复制骨架**:把 `templates/project/` 整个目录复制为项目根目录(如 `{项目名}/`),保留目录结构
+2. **改写 README**:项目 README 替换为剧名/一句话简介
+3. **填蓝图**:按 `docs/SHORT_DRAMA_BLUEPRINT.template.md` 填写并改名 `docs/SHORT_DRAMA_BLUEPRINT.md`(去 `.template` 后缀)
+4. **进入流水线**:从阶段 1 开始按 §七 顺序推进;已存在的模板文件在对应阶段被覆盖为正式产物,空目录由阶段 skill 写入
+
+### 10.3 模板模式规则
+
+- **命名契约**:模板文件必须去掉 `.template` 后缀后使用,恢复为 §八 固定路径文件名;`EP01.example.md` 仅作格式参考,正式剧本按 `docs/scripts/EP{01..NN}.md` 新建
+- **模板不阻塞流水线**:即使用户没有从模板起步,各阶段 skill 照常按自己的模板/格式产出(模板模式只是加速起步,不是必经之路)
+- **模板骨架与各阶段 skill 自带 templates/ 的关系**:`project/` 提供"项目级"成套骨架;各阶段 skill 的 `references/`/`templates/` 提供"单阶段"细则模板,二者互补,内容不重复
+- **模板模式本身不设质量门**:初始化只复制+改名,不产出业务内容,Gate 0 从蓝图填写完成后介入

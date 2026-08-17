@@ -1,0 +1,54 @@
+{
+  "project": {
+    "name": "{剧名}",
+    "total_episodes": 60,
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920",
+    "style": "{风格关键词，与 VISUAL_SPEC 一致}"
+  },
+  "toolchain": {
+    "image": "{即梦 / Midjourney / SD / Flux}",
+    "video": "{可灵 / 即梦 / Runway / Pika / Sora / 海螺}",
+    "tts": "{火山引擎 / Edge TTS / CosyVoice / Azure}",
+    "music": "{Suno / Udio / 平台曲库}"
+  },
+  "characters": [
+    {
+      "id": "hero",
+      "name": "{角色名}",
+      "ref_image": "{参考图路径，如 assets/ref/hero.png}",
+      "seed": 12345,
+      "style_keywords": "{风格关键词}"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene_01",
+      "name": "{场景名}",
+      "description": "{环境/氛围/光线}"
+    }
+  ],
+  "episodes": [
+    {
+      "ep": "EP01",
+      "shots": [
+        {
+          "id": "EP01-S01",
+          "script_file": "docs/scripts/EP01.md",
+          "image_prompt": "{文生图 prompt：主体+动作+环境+光线+风格+9:16}",
+          "video_prompt": "{图生视频 prompt：画面主体+运动+镜头运动+时长}",
+          "duration_s": 4,
+          "shot_scale": "近景",
+          "camera": "固定",
+          "characters": ["hero"],
+          "scene": "scene_01",
+          "sfx": "{音效}",
+          "subtitle": "{对白/字幕文本}",
+          "status": "pending",
+          "degrade_type": null,
+          "output_path": "shots/EP01/shot_01.mp4"
+        }
+      ]
+    }
+  ]
+}
