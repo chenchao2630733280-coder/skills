@@ -1,0 +1,43 @@
+# runtime.yaml — short-drama-video-forge
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 3600
+retry:
+  max: 3
+  backoff: exponential
+  interval: 10
+inputs:
+  - name: 分镜脚本（docs/STORYBOARD.md）
+    type: file
+    required: true
+    description: 阶段 4 short-drama-storyboard 产出，取每镜头 prompt/时长/景别/运镜/角色/场景
+  - name: 视觉规范（docs/VISUAL_SPEC.md）
+    type: file
+    required: true
+    description: 取角色参考图路径/seed/风格关键词/场景设定
+  - name: 立项蓝图（docs/SHORT_DRAMA_BLUEPRINT.md）
+    type: file
+    required: false
+    description: 取工具链选型（文生图/图生视频工具名）
+outputs:
+  - path: production/manifest.json
+    type: file
+    description: 机读生产清单，阶段 7 剪辑与 Gate 4 只读此文件
+  - path: shots/{ep}/shot_{XX}.mp4
+    type: file
+    description: 镜头视频，1080x1920 / 3-10 秒
+  - path: shots/{ep}/shot_{XX}.png
+    type: file
+    description: 视频生成失败时降级为静态图
+  - path: docs/ASSET_ISSUES.md
+    type: file
+    description: 失败/降级记录，有降级时必写
+degrade:
+  - trigger: 单镜头生成失败（文生图或图生视频报错/超时/质检不合格）
+    action: 重试 ≤3 次（指数退避）；仍失败：图生视频失败→降级静态图+缩放/平移模拟运镜（degradeType=static-image）；文生图失败→纯色+文字占位图标注"待人工出图"（degradeType=placeholder）
+    target: 单镜头
+  - trigger: 批量生成超时（总耗时超过 timeout 或单批卡死）
+    action: 分批执行（每批一集），批间暂停 ≥30s，manifest.status 实时标记进度；超时镜头标 failed+原因后继续下一批，不整体重跑
+    target: 批量任务
+  - trigger: 工具 API 不可用（限额/鉴权/接口错误）
+    action: 切换备选工具（按总纲 §3.2 顺序：可灵→即梦/Runway/Pika/海螺/Sora；即梦→Midjourney/SD/Flux）；全部不可用→整剧降级图文短剧模式（project.mode=image-text-drama），写入 ASSET_ISSUES.md
+    target: 工具链

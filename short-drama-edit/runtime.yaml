@@ -1,0 +1,44 @@
+# runtime.yaml — short-drama-edit
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1800
+retry:
+  max: 2
+  backoff: fixed
+  interval: 10
+inputs:
+  - name: production/manifest.json
+    type: file
+    required: true
+    description: 生产清单（每集镜头顺序/时长/类型，short-drama-video-forge 产出）
+  - name: shots/{ep}/shot_{XX}.mp4
+    type: directory
+    required: true
+    description: 镜头素材（或降级静态图 shot_{XX}.png）
+  - name: audio/{ep}/line_{XX}.mp3
+    type: directory
+    required: true
+    description: 配音/BGM/音效（short-drama-audio-forge 产出）
+  - name: subtitles/{ep}.srt
+    type: directory
+    required: true
+    description: 每集字幕
+outputs:
+  - path: episodes/EP{XX}.mp4
+    type: file
+    description: 每集成片（1080x1920，H.264 4-8Mbps，30fps，AAC）
+  - path: docs/BUILD_REPORT.md
+    type: file
+    description: 合成与 Gate 5 验收报告（每集时长/文件大小/检查项 PASS/FAIL + 失败清单）
+degrade:
+  - trigger: 单集合成失败（重试 ≤2 次后仍失败）
+    action: 输出失败清单+原因，不阻塞其他集
+    target: episodes/EP{XX}.mp4
+  - trigger: 缺镜头文件
+    action: 占位黑场 + 字幕"待补拍"标记，写入报告
+    target: shots/{ep}/shot_{XX}.mp4
+  - trigger: 字幕烧录失败
+    action: 输出独立 subtitles/{ep}.srt 并标注"未烧录，发布前需人工烧录"
+    target: subtitles/{ep}.srt
+  - trigger: 音频轨缺失（配音/BGM 缺失）
+    action: 保留画面+字幕，标注"音频待补"，不阻塞
+    target: episodes/EP{XX}.mp4

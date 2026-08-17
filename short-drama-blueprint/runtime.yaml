@@ -1,0 +1,30 @@
+# runtime.yaml — short-drama-blueprint
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 用户需求或已确认选题
+    type: text
+    required: true
+    description: 用户一句话需求，或 docs/TOPIC_PROPOSAL.md 的推荐方案（阶段 0 产物）
+  - name: 参考素材
+    type: text
+    required: false
+    description: 参考短剧名/已有素材/制作类型偏好/预算
+outputs:
+  - path: docs/SHORT_DRAMA_BLUEPRINT.md
+    type: file
+    description: 一页纸立项蓝图（11 章），作为规格/剧本/分镜总纲，路径与总纲 §八 一致
+degrade:
+  - trigger: 用户需求矛盾（制作类型与素材冲突、范围自相矛盾、约束互斥）
+    action: 用 AskUserQuestion 澄清关键点后再生成，最多 2 轮；仍矛盾则输出冲突清单交人工决策
+    target: 需求澄清
+  - trigger: 制作类型不可行（如选真人实拍但无实拍素材）
+    action: 降级为图文短剧或全 AI 生成方案，蓝图"5. 制作类型"标注"降级自：{原类型}，原因：{...}"
+    target: 制作类型（第 5 章）
+  - trigger: 工具链不可用（默认推荐工具接口不可用）
+    action: 按 toolchain-selection.md §三 切换备选工具并在蓝图标注；全部不可用则随制作类型一起降级
+    target: 工具链选型（第 8 章）

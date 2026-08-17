@@ -1,0 +1,30 @@
+# runtime.yaml — short-drama-script
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1800
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/STORY_SPEC.md
+    type: file
+    required: true
+    description: 故事规格（short-drama-spec 产出，含发动机/核心规则/人物系统/秘密系统/阶段/情绪曲线/评分）
+  - name: docs/EPISODE_OUTLINE.md
+    type: file
+    required: true
+    description: 分集大纲（short-drama-spec 产出，每集目标/开场钩子/主角行动/对手反制/核心冲突/新增信息/关系变化/本集结果/结尾卡点）
+outputs:
+  - path: docs/scripts/EP{01..NN}.md
+    type: file
+    description: 正式剧本，每集一文件，NN 由大纲集数决定，两位数编号；与总纲 §八 一致
+degrade:
+  - trigger: 某集质量不达标（该集自检未通过或用户反馈）
+    action: 仅重写该集，最多 2 轮；仍不通过则标注"待人工修订"后继续，不阻塞全集
+    target: docs/scripts/EP*.md
+  - trigger: 全集产出超时或单集超长
+    action: 分批产出，每批 5-10 集，批间标记进度（如 1-10/60 已完成）；超长集压缩台词量或拆分场次
+    target: docs/scripts/EP*.md
+  - trigger: 剧本卡点与大纲冲突（结尾卡点与 EPISODE_OUTLINE 该集设计不一致）
+    action: 回读大纲对应条目修正剧本并标注改动原因，禁止擅自改大纲
+    target: docs/scripts/EP*.md

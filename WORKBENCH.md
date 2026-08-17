@@ -75,6 +75,36 @@ ai-short-drama-project-development    短剧项目开发（13 步流程：选题
 
 两个短剧 skill 均已接入 `runtime.yaml`（topic-planner timeout=600s / project-development timeout=900s）并含"失败回退与降级"章节（L1-L3 分层回退）。
 
+### 四、AI 短剧制作流水线（short-drama-*）
+
+```text
+【总编排】
+short-drama-forge-master      调度中枢：类型判定（全 AI 生成/图文短剧/数字人/实拍辅助）+ 工具链决策 + 阶段裁剪 + 失败回退
+        ↓
+short-drama-topic-brainstorm  阶段0（可选）：选题脑暴（观看动力/趋势/多样性/评分）
+        ↓
+short-drama-blueprint         阶段1：一页纸短剧立项蓝图（类型/形式/卖点/工具链/复杂度）
+        ↓
+short-drama-spec              阶段2：故事规格（发动机/规则/人物/秘密/阶段/情绪曲线）+ 分集大纲
+        ↓
+short-drama-script            阶段3：竖屏正式剧本（每集一文件，1-3 分钟/集，强卡点）
+        ↓
+short-drama-storyboard        阶段4：分镜脚本 + 视觉规范（每镜头文生图/图生视频 prompt）
+        ↓
+┌────────────────────┐  ┌────────────────────┐
+│ short-drama-video- │  │ short-drama-audio- │  (可并行)
+│   forge            │  │   forge            │
+│ 阶段5：manifest+    │  │ 阶段6：配音/BGM/   │
+│ 逐镜头 AI 视频      │  │ 字幕              │
+└────────────────────┘  └────────────────────┘
+        ↓
+short-drama-edit              阶段7：剪辑合成成片（ffmpeg 拼接/混音/字幕烧录，内含 Gate 5 成片实跑门）
+```
+
+**质量门**：`short-drama-quality-gate` 在 5 个关键节点（立项后/规格后/剧本后/分镜后/生产后）介入做 Gate 0~4 契约校验与实跑预检，FAIL 硬阻断并回原阶段修复；只读业务产物、只写 `docs/GATE_{0..4}_REPORT.md`。
+
+**固定产物契约**：全流水线按 `short-drama-forge-master/SKILL.md` §八 的产物路径总表读写（`docs/` 文档链 → `production/manifest.json` → `shots/` → `audio/`+`subtitles/` → `episodes/EP{XX}.mp4`），每阶段 Gate PASS 后强制人工确认点，不允许自动连续执行。10 个 skill 均已接入 `runtime.yaml`。
+
 ## Skill 清单（产品交付流水线）
 
 > 游戏流水线 skill 清单详见 `game-forge-master/SKILL.md`；短剧 skill 清单详见各 skill 的 SKILL.md；Agent 体系层 skill 清单见下文"Agent 体系层"章节。
@@ -328,3 +358,10 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 
 ### 2026-08-07 build-report.json device 字段写法统一
 - `generate-html-mobile` 和 `generate-html-pc-admin` 的 device 字段写法统一为 `device: "mobile"` / `device: "pc"`(原 mobile 用冒号、pc 用等号,下游解析需兼容两种)
+
+### 2026-08-10 新增 AI 短剧制作流水线（short-drama-* 10 个 skill）
+- 新增总纲 `short-drama-forge-master`:类型判定（全 AI 生成/图文短剧/数字人/实拍辅助）+ 工具链决策树（可灵/即梦/Runway/Pika/Sora/海螺、Midjourney/SD/Flux、火山/CosyVoice/Edge TTS、Suno、FFmpeg）+ 阶段裁剪 + 固定产物路径表 + 失败回退（硬阻断/软降级）+ 强制人工确认点
+- 新增 8 个阶段 skill:topic-brainstorm(0,可选) / blueprint(1) / spec(2) / script(3) / storyboard(4) / video-forge(5) / audio-forge(6) / edit(7,内含 Gate 5 成片实跑门)
+- 新增跨阶段质量门 `short-drama-quality-gate`:Gate 0~4 契约校验 + 实跑预检,FAIL 硬阻断回原阶段,只写 `docs/GATE_{0..4}_REPORT.md`
+- 设计要点:镜像 game-forge 套件结构(固定路径契约/裁剪/质量门/确认点/失败降级);产出"文档 + 可执行生产工程"(manifest.json + ffmpeg 脚本),视频生成失败降级静态图/图文短剧
+- 全部 10 个新 skill 均接入 `runtime.yaml`(runtime.yaml 声明总数 26 → 36)

@@ -1,0 +1,30 @@
+# runtime.yaml — short-drama-topic-brainstorm
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 用户初始想法
+    type: text
+    required: true
+    description: 用户的模糊想法或一句话短剧需求（如"想做部爽剧"）
+  - name: 约束条件
+    type: text
+    required: false
+    description: 题材偏好/受众/集数/预算/变现目标/平台等可选约束
+outputs:
+  - path: docs/TOPIC_PROPOSAL.md
+    type: file
+    description: 选题方案（12 个候选 + Top 3-5 + 1 个推荐），供 short-drama-blueprint 消费，路径与总纲 §八 一致
+degrade:
+  - trigger: 趋势数据获取失败（WebSearch 不可用或无有效结果）
+    action: 跳过趋势环节不阻断流程，提案头部标注"趋势未验证（跳过）"，题材机会维度按中性分计
+    target: Step 3 趋势雷达
+  - trigger: 全部候选被用户否定
+    action: 收集用户反馈调整候选重生成，最多 2 轮；仍不满意则暂停，输出候选清单与差异分析交人工决策
+    target: Step 4-6
+  - trigger: 自检未通过（质量检查清单任一硬性项不满足）
+    action: 定位不达标项局部重做（重生成/补配额/重评分），最多 2 轮；仍不通过则标注"待人工修订"并说明缺口
+    target: Step 4/5/6

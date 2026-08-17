@@ -1,0 +1,33 @@
+# runtime.yaml — short-drama-storyboard
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1200
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 正式剧本（docs/scripts/EP{01..NN}.md）
+    type: file
+    required: true
+    description: 阶段 3 short-drama-script 产出，每集一文件，竖屏剧本格式
+  - name: 立项蓝图（docs/SHORT_DRAMA_BLUEPRINT.md）
+    type: file
+    required: false
+    description: 取制作类型/工具链选型/画幅，判定是否图文短剧裁剪
+outputs:
+  - path: docs/STORYBOARD.md
+    type: file
+    description: 分镜脚本，每镜头含文生图/图生视频 prompt
+  - path: docs/VISUAL_SPEC.md
+    type: file
+    description: 视觉规范：角色卡/场景设定/风格基线/字幕样式/画幅安全区
+degrade:
+  - trigger: 剧本过长为镜头数爆炸（单集超过 25 镜头）
+    action: 合并冗余镜头（同场景连续同景别合并、删动作细节只留主事件），优先保卡点镜头与情绪特写，压缩回 10-25 镜头
+    target: 单集分镜
+  - trigger: 文生图/图生视频 prompt 生成失败（要素缺失或模型返回空）
+    action: 用 references/visual-prompt-engine.md 基础模板重生成，最多 2 轮；仍失败则标记该镜头 prompt 为"待人工补全"并继续
+    target: 镜头 prompt
+  - trigger: 镜头时长与对白时长不匹配（字幕读不完或留白过长）
+    action: 调整镜头时长至对白可读完（3-10 秒内）；对白过长则拆分对白到连续两个镜头
+    target: 镜头时长/对白

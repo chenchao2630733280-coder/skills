@@ -24,9 +24,11 @@
 - `ruanzhu-doc-generator`：由产品截图生成中文软著产品说明书 DOCX（区分 PC 后台与移动端）。
 - `screenshot-operation-manual`：由截图/录屏生成 PC 后台与移动端操作手册（DOCX/PDF/MD/HTML）。
 
-### 4. 短剧策划（ai-short-drama-*）
-- `ai-short-drama-topic-planner`：AI 短剧高概念选题策划，生成/筛选/评估/发散差异化选题并叠加趋势雷达。
-- `ai-short-drama-project-development`：选题确认后的项目开发总监，将选题转化为可拍摄的项目开发方案。
+### 4. 短剧策划与制作流水线（ai-short-drama-* / short-drama-*）
+- 策划侧（ai-short-drama-*）：`ai-short-drama-topic-planner`（AI 短剧高概念选题策划）+ `ai-short-drama-project-development`（选题确认后的项目开发总监）。
+- 制作侧（short-drama-*）：由一句话需求端到端产出短剧成片（或可执行生产工程），覆盖选题→立项→故事规格→正式剧本→分镜→AI 视频生成→配音/字幕→剪辑合成，全程质量门 + 人工确认点。
+  `short-drama-forge-master`(调度) → `short-drama-topic-brainstorm`(可选) → `short-drama-blueprint` → `short-drama-spec` → `short-drama-script` → `short-drama-storyboard` → (`short-drama-video-forge` ∥ `short-drama-audio-forge`) → `short-drama-edit`
+  质量门：`short-drama-quality-gate`（Gate 0~4 硬阻断）。流水线详情与产物路径表见 `short-drama-forge-master/SKILL.md`。
 
 ### 5. 工作台元 skill
 - `rd-init`：工作台加载器。扫描 skills 目录全部 skill，生成 `.workbench-index.json` 索引和完整性报告（frontmatter 规范/references 路径/runtime.yaml 声明），让 AI 快速掌握工作台全貌。不生成业务产物。
@@ -84,6 +86,16 @@
 | rd-init | 工作台加载器：扫描 skills 目录全部 skill，生成索引和完整性报告 | skills 目录路径 | `.workbench-index.json`(索引) + 对话报告(分类统计/警告清单) |
 | ruanzhu-doc-generator | 由产品截图生成中文软著产品说明书 DOCX(区分 PC 后台与移动端) | 截图文件夹 + 可选 PRD/README/产品事实 | `(管理后台)产品说明书.docx`/`(移动端)产品说明书.docx`(混合时两份) |
 | screenshot-operation-manual | 由截图/录屏生成 PC 后台与移动端操作手册(DOCX/PDF/MD/HTML) | 截图/录屏/截图文件夹、平台分类 | manual_spec.json + 操作手册.docx(封面、目录、模块说明、步骤、FAQ) |
+| short-drama-audio-forge | AI 短剧流水线阶段6：配音/音乐/字幕生成(与 video-forge 并行) | `docs/scripts/EP*.md`、`docs/STORYBOARD.md` | `audio/{ep}/line_{XX}.mp3`、`audio/bgm_{name}.mp3`、`subtitles/{ep}.srt` |
+| short-drama-blueprint | AI 短剧流水线阶段1：一页纸短剧立项蓝图(类型/工具链/复杂度/裁剪) | 已确认选题或 `docs/TOPIC_PROPOSAL.md` | `docs/SHORT_DRAMA_BLUEPRINT.md` |
+| short-drama-edit | AI 短剧流水线阶段7：剪辑合成成片(内含 Gate 5 成片实跑门) | `production/manifest.json`、`shots/`、`audio/`、`subtitles/` | `episodes/EP{XX}.mp4`、`docs/BUILD_REPORT.md` |
+| short-drama-forge-master | AI 短剧制作总纲调度中枢(类型判定/工具链决策/阶段裁剪/串联下游)，本身不产出文件 | 用户一句话短剧需求 | 调度下游各阶段产物(固定路径)，本 skill 不直接产出业务文件 |
+| short-drama-quality-gate | AI 短剧流水线跨阶段质量门(Gate 0~4 契约校验+实跑预检，FAIL 硬阻断) | 蓝图/规格/剧本/分镜/生产产物 | `docs/GATE_{0..4}_REPORT.md`(只读业务产物) |
+| short-drama-script | AI 短剧流水线阶段3：竖屏正式剧本(每集一文件，1-3 分钟/集，强卡点) | `docs/STORY_SPEC.md`、`docs/EPISODE_OUTLINE.md` | `docs/scripts/EP{01..NN}.md` |
+| short-drama-spec | AI 短剧流水线阶段2：故事规格(发动机/规则/人物/秘密/阶段/情绪曲线)+分集大纲 | `docs/SHORT_DRAMA_BLUEPRINT.md` | `docs/STORY_SPEC.md`、`docs/EPISODE_OUTLINE.md` |
+| short-drama-storyboard | AI 短剧流水线阶段4：分镜脚本+视觉规范(每镜头文生图/图生视频 prompt) | `docs/scripts/EP*.md` | `docs/STORYBOARD.md`、`docs/VISUAL_SPEC.md` |
+| short-drama-topic-brainstorm | AI 短剧流水线阶段0(可选)：选题脑暴(观看动力/趋势/多样性/评分) | 模糊想法/一句话需求 | `docs/TOPIC_PROPOSAL.md` |
+| short-drama-video-forge | AI 短剧流水线阶段5：机读生产清单+逐镜头 AI 视频生成(失败降级静态图) | `docs/STORYBOARD.md`、`docs/VISUAL_SPEC.md` | `production/manifest.json`、`shots/{ep}/shot_{XX}.mp4`(.png 降级) |
 | skill-runtime | Agent Runtime 层(定义 runtime.yaml 契约:timeout/retry/inputs/outputs/degrade) | skill 目录 | runtime-contract-report.json(校验结果) |
 | test-and-harden-system | 运行并提升单元/集成/端到端/安全/性能等检查，修复阻塞缺陷并出验收报告 | 已实现系统、PRD、各层报告、测试配置 | acceptance-matrix.json、test-report.md、security-review.md、performance-smoke.md、release-blockers.json |
 | code-review | 代码审查(4 维度:正确性/安全性/性能/可维护性,只读不写) | git diff / PR 链接 | code-review-report.md + code-review-report.json |
@@ -346,9 +358,21 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [ruanzhu-doc-generator](./ruanzhu-doc-generator/SKILL.md)
 - [screenshot-operation-manual](./screenshot-operation-manual/SKILL.md)
 
-**短剧策划**
+**短剧策划（ai-short-drama-*）**
 - [ai-short-drama-topic-planner](./ai-short-drama-topic-planner/SKILL.md)
 - [ai-short-drama-project-development](./ai-short-drama-project-development/SKILL.md)
+
+**AI 短剧制作流水线（short-drama-*）**
+- [short-drama-forge-master](./short-drama-forge-master/SKILL.md)（总纲：类型判定/工具链决策/裁剪/路径表/回退/确认点）
+- [short-drama-topic-brainstorm](./short-drama-topic-brainstorm/SKILL.md)（阶段 0，可选）
+- [short-drama-blueprint](./short-drama-blueprint/SKILL.md)（阶段 1）
+- [short-drama-spec](./short-drama-spec/SKILL.md)（阶段 2）
+- [short-drama-script](./short-drama-script/SKILL.md)（阶段 3）
+- [short-drama-storyboard](./short-drama-storyboard/SKILL.md)（阶段 4）
+- [short-drama-video-forge](./short-drama-video-forge/SKILL.md)（阶段 5）
+- [short-drama-audio-forge](./short-drama-audio-forge/SKILL.md)（阶段 6）
+- [short-drama-edit](./short-drama-edit/SKILL.md)（阶段 7）
+- [short-drama-quality-gate](./short-drama-quality-gate/SKILL.md)（跨阶段质量门）
 
 **其他 / 垂直**
 - [frontend-design](./frontend-design/SKILL.md)

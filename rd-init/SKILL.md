@@ -54,7 +54,7 @@ python .agents/skills/rd-init/scripts/rd-init.py --skills-dir .agents/skills
 | 工作台元 skill | 工作台加载/索引/校验自身（rd-init） | 1 |
 | 产研业务层 | 产研流水线全阶段（需求→PRD→原型→HTML→门户→实现→部署） | 22 |
 | 游戏流水线 | game-forge 五引擎游戏生成（选题→蓝图→PRD→美术→代码→集成→打磨） | 11 |
-| AI 短剧 | 短剧选题与项目开发 | 2 |
+| AI 短剧 | 短剧策划（选题/项目开发）+ 短剧制作流水线（short-drama-*：蓝图→规格→剧本→分镜→视频/音频→剪辑） | 12 |
 | Agent 体系层 | 12 维度支撑层（Tool/Planning/Memory/Context/Workflow/Runtime/Evaluation/Data/Guardrail/Engineering） | 25 |
 
 > skill 数为声明值，实际以扫描结果为准。

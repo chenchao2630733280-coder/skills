@@ -38,7 +38,13 @@ GAME_PIPELINE_SKILLS = {
 }
 
 DRAMA_SKILLS = {
+    # 短剧策划（ai-short-drama-*）
     "ai-short-drama-topic-planner", "ai-short-drama-project-development",
+    # 短剧制作流水线（short-drama-*）
+    "short-drama-forge-master", "short-drama-topic-brainstorm", "short-drama-blueprint",
+    "short-drama-spec", "short-drama-script", "short-drama-storyboard",
+    "short-drama-video-forge", "short-drama-audio-forge", "short-drama-edit",
+    "short-drama-quality-gate",
 }
 
 # 工作台元 skill：加载/索引/校验工作台自身，不属于任何业务流水线

@@ -1,17 +1,18 @@
 {
   "schemaVersion": "1.0",
-  "scanned_at": "2026-08-10T14:42:42",
+  "scanned_at": "2026-08-17T09:38:16",
   "skills_dir": "C:\\Users\\26307\\.agents\\skills",
-  "total_skills": 61,
+  "total_skills": 79,
   "categories": {
     "agent-system": 25,
-    "drama": 2,
+    "drama": 12,
+    "unknown": 8,
     "product": 22,
     "game": 11,
     "workbench": 1
   },
-  "runtime_yaml_count": 26,
-  "warning_count": 0,
+  "runtime_yaml_count": 36,
+  "warning_count": 1,
   "critical_count": 0,
   "skills": [
     {
@@ -33,7 +34,7 @@
       "description": "创建 AI Agent 体系层 skill 的元技能。提供 12 维度架构框架、标准创建流程、7 大设计模式和结构模板。当要新建 Agent 体系层 skill、设计 Agent 架构、或沉淀 Agent 建设经验时调用。",
       "category": "agent-system",
       "agent_dimension": "Skill",
-      "has_runtime_yaml": false,
+      "has_runtime_yaml": true,
       "references": [
         "references/agent-architecture-framework.md",
         "references/skill-creation-patterns.md",
@@ -90,6 +91,21 @@
       "warnings": []
     },
     {
+      "name": "banner-design",
+      "dir": "banner-design",
+      "description": "Design banners for social media, ads, website heroes, creative assets, and print. Multiple art direction options with AI-generated visuals. Actions: design, create, generate banner. Platforms: Facebook, Twitter/X, LinkedIn, YouTube, Instagram, Google Display, website hero, print. Styles: minimalist, gradient, bold typography, photo-based, illustrated, geometric, retro, glassmorphism, 3D, neon, duotone, editorial, collage. Uses ui-ux-pro-max, frontend-design, ai-artist, ai-multimodal skills.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/banner-sizes-and-styles.md",
+        "references/nano-banana-pro-examples.md"
+      ],
+      "warnings": [
+        "references 路径不存在: references/nano-banana-pro-examples.md"
+      ]
+    },
+    {
       "name": "bid-functional-solution",
       "dir": "bid-functional-solution",
       "description": "Create or revise bid/tender functional construction方案 documents from PRDs, requirement specifications, screenshot folders, prototype image sets, flowcharts, or existing DOCX files. Use when you need to turn a requirements document or a folder of screenshots into a 标书功能建设方案 module, reorganize content by 图片、功能说明、功能描述, infer functions from UI images, polish requirement language into bid-ready capability statements, remove out-of-scope functions, or generate/update a professional Word deliverable.",
@@ -114,6 +130,28 @@
       "warnings": []
     },
     {
+      "name": "brand",
+      "dir": "brand",
+      "description": "Brand voice, visual identity, messaging frameworks, asset management, brand consistency. Activate for branded content, tone of voice, marketing assets, brand compliance, style guides.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/approval-checklist.md",
+        "references/asset-organization.md",
+        "references/brand-guideline-template.md",
+        "references/color-palette-management.md",
+        "references/consistency-checklist.md",
+        "references/logo-usage-rules.md",
+        "references/messaging-framework.md",
+        "references/typography-specifications.md",
+        "references/update.md",
+        "references/visual-identity.md",
+        "references/voice-framework.md"
+      ],
+      "warnings": []
+    },
+    {
       "name": "build-working-system",
       "dir": "build-working-system",
       "description": "Orchestrates the complete conversion of existing PRD, page specifications, and prototypes into a runnable, tested, and deployable system. Use when the user asks to generate, build, implement, or finish the whole system rather than one technical layer.",
@@ -133,6 +171,7 @@
       "agent_dimension": "Engineering",
       "has_runtime_yaml": true,
       "references": [
+        "references/review-checklist.md",
         "references/review-report-template.md"
       ],
       "warnings": []
@@ -160,6 +199,53 @@
       "references": [
         "references/debug-patterns.md",
         "references/debug-workflow.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "design",
+      "dir": "design",
+      "description": "Comprehensive design skill: brand identity, design tokens, UI styling, logo generation (55 styles, Gemini AI), corporate identity program (50 deliverables, CIP mockups), HTML presentations (Chart.js), banner design (22 styles, social/ads/web/print), icon design (15 styles, SVG, Gemini 3.1 Pro), social photos (HTML→screenshot, multi-platform). Actions: design logo, create CIP, generate mockups, build slides, design banner, generate icon, create social photos, social media images, brand identity, design system. Platforms: Facebook, Twitter, LinkedIn, YouTube, Instagram, Pinterest, TikTok, Threads, Google Ads.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/banner-sizes-and-styles.md",
+        "references/cip-deliverable-guide.md",
+        "references/cip-design.md",
+        "references/cip-prompt-engineering.md",
+        "references/cip-style-guide.md",
+        "references/design-routing.md",
+        "references/icon-design.md",
+        "references/logo-color-psychology.md",
+        "references/logo-design.md",
+        "references/logo-prompt-engineering.md",
+        "references/logo-style-guide.md",
+        "references/slides-copywriting-formulas.md",
+        "references/slides-create.md",
+        "references/slides-html-template.md",
+        "references/slides-layout-patterns.md",
+        "references/slides-strategies.md",
+        "references/slides.md",
+        "references/social-photos-design.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "design-system",
+      "dir": "design-system",
+      "description": "Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/component-specs.md",
+        "references/component-tokens.md",
+        "references/primitive-tokens.md",
+        "references/semantic-tokens.md",
+        "references/states-and-variants.md",
+        "references/tailwind-integration.md",
+        "references/token-architecture.md"
       ],
       "warnings": []
     },
@@ -450,7 +536,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -460,7 +548,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -470,7 +560,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -480,7 +572,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -490,7 +584,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -530,7 +626,7 @@
     {
       "name": "product-pipeline-master",
       "dir": "product-pipeline-master",
-      "description": "产品工作台的总编排调度中枢（非自动执行器）。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。必须每阶段暂停等用户确认，禁止自动连续执行。",
+      "description": "AI Agent Skills 工作台的产品交付总编排调度中枢（非自动执行器）。当用户要'端到端生成产品原型''从需求到可演示原型''按流水线生成产品交付物'时调用。负责判定端类型、裁剪阶段、串联下游 skill 的执行顺序、提供失败回退策略，本身不直接产出文件。必须每阶段暂停等用户确认，禁止自动连续执行。",
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
@@ -602,6 +698,20 @@
       "warnings": []
     },
     {
+      "name": "research-delivery-workflow",
+      "dir": "research_delivery_workflow",
+      "description": "A general workflow skill that converts raw business research/interview/survey notes into an as-is business analysis report, product requirement pool and PRD draft with traceable product capability architecture, terminal-aware navigation and page structure, technical handoff/assessment input, and delivery plan. It preserves source traceability, separates facts from needs and open questions, and prevents unconfirmed information from being promoted into confirmed requirements.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/information_classification.md",
+        "references/routing.md",
+        "references/traceability.md"
+      ],
+      "warnings": []
+    },
+    {
       "name": "ruanzhu-doc-generator",
       "dir": "ruanzhu-doc-generator",
       "description": "Generate Chinese software copyright application documentation DOCX files from product screenshots for PC management backends and mobile apps/miniprograms. Use when asked to create, draft, or package 软著文档, 产品说明书, 操作说明书, 软件著作权材料, or screenshot-based documentation, especially when screenshots may contain both PC后台 and 移动端 and must be split into separate DOCX deliverables.",
@@ -640,6 +750,55 @@
       "warnings": []
     },
     {
+      "name": "short-drama-audio-forge",
+      "dir": "short-drama-audio-forge",
+      "description": "AI short-drama pipeline stage 6 (audio; runs in parallel with video-forge). Reads the script docs/scripts/EP*.md and the storyboard docs/STORYBOARD.md, produces voice-over audio/{ep}/line_{XX}.mp3, BGM audio/bgm_{name}.mp3, and subtitles subtitles/{ep}.srt. Use when scheduled by short-drama-forge-master for this stage, or when the user asks to generate dubbing / BGM / sound effects / subtitles for a short drama.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/music-matching.md",
+        "references/subtitle-rules.md",
+        "references/tts-emotion.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-blueprint",
+      "dir": "short-drama-blueprint",
+      "description": "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity, stage trimming, and estimated artifact scale. Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/production-type-decision.md",
+        "references/toolchain-selection.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-edit",
+      "dir": "short-drama-edit",
+      "description": "AI short-drama pipeline stage 7 (final edit, contains the Gate 5 runnable gate). Reads production/manifest.json + shots/ + audio/ + subtitles/, assembles each episode into episodes/EP{XX}.mp4, and writes docs/BUILD_REPORT.md including the Gate 5 acceptance results. Use when scheduled by short-drama-forge-master for this stage, or when the user asks to edit / assemble / mux the final episodes of a short drama.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/ffmpeg-recipes.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-forge-master",
+      "dir": "short-drama-forge-master",
+      "description": "AI 短剧制作流水线总纲（调度中枢）。接收用户一句话短剧需求，判定短剧类型与制作路径（全 AI 生成 / 图文短剧 / 真人实拍辅助 / 口播短剧），选择工具链、裁剪阶段、串联下游 8 个阶段 skill 与跨阶段质量门，提供失败回退策略与人工确认点。当用户要'用 AI 制作/生成一部短剧'、'端到端产出短剧成片'、'按流水线制作短剧'、'从选题到成片'时调用。",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
+      "warnings": []
+    },
+    {
       "name": "short-drama-game-adapt",
       "dir": "short-drama-game-adapt",
       "description": "把已有短剧/热门IP/社会热梗的'设定与爽点'转化为可玩游戏机制的方法论。当用户想'把某个短剧/影视/小说/社会热点改成游戏'、做 IP 改编游戏化、或为大众向小游戏找题材切入点时调用。涵盖:提取设定做机制(不搬剧情)的 6 角度转化框架、大众记忆点优先原则、广告双价值(IAA)模型、不可逆操作+付费安全阀门模式。本 skill 是'已有题材→机制'的改编方法论,区别于 game-topic-brainstorm 的从0脑暴。",
@@ -649,6 +808,88 @@
       "references": [
         "references/design-principles-narrative-adaptation.md",
         "references/event-card-production.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-quality-gate",
+      "dir": "short-drama-quality-gate",
+      "description": "Cross-stage quality gate for the AI short-drama production pipeline. Intervenes at 5 checkpoints (Gate 0 post-blueprint, Gate 1 post-spec, Gate 2 post-script, Gate 3 post-storyboard, Gate 4 post-production) to run contract validation and runtime pre-checks; on FAIL it hard-blocks the pipeline and returns fix suggestions. Read-only on business artifacts (writes gate reports only). Call when short-drama-forge-master dispatches a Gate 0~4 checkpoint, or when the user asks to validate / gate-check / inspect the short-drama production artifacts.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/gate-checks.md",
+        "references/report-template.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-script",
+      "dir": "short-drama-script",
+      "description": "Stage 3 of the AI short-drama production pipeline. Reads docs/STORY_SPEC.md and docs/EPISODE_OUTLINE.md and writes the formal vertical-screen episode scripts, one file per episode at docs/scripts/EP{01..NN}.md (1-3 min per episode, strong opening hook within 5 seconds, hard cliffhanger ending). Use when invoked by short-drama-forge-master after Gate 1, or when the user asks to write the formal scripts / 正式剧本 for a short drama.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/card-point-rules.md",
+        "references/dialogue-rules.md",
+        "references/script-format.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-spec",
+      "dir": "short-drama-spec",
+      "description": "Stage 2 of the AI short-drama production pipeline. Reads docs/SHORT_DRAMA_BLUEPRINT.md and expands the approved topic into a complete story spec (docs/STORY_SPEC.md: story engine, core rules, characters, secrets, story stages, emotion curve, scoring) plus a per-episode outline (docs/EPISODE_OUTLINE.md) that anchors the formal script stage. Use when invoked by short-drama-forge-master after Gate 0, or when the user asks to generate the story spec / episode outline for a short drama.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/character-system.md",
+        "references/secrets-system.md",
+        "references/story-engine.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-storyboard",
+      "dir": "short-drama-storyboard",
+      "description": "Stage 4 of the AI short-drama production pipeline. Reads docs/scripts/EP{01..NN}.md and converts the script into an executable storyboard (docs/STORYBOARD.md) with per-shot text-to-image and image-to-video prompts, plus a visual specification (docs/VISUAL_SPEC.md) covering characters, scenes, style baseline, subtitles, and safe areas. Use when scheduled by short-drama-forge-master after Gate 2, or when the user asks to turn a short-drama script into storyboards and visual specs.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/shot-language.md",
+        "references/visual-prompt-engine.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-topic-brainstorm",
+      "dir": "short-drama-topic-brainstorm",
+      "description": "Generate, diversify, evaluate, and rank AI short-drama topics (pipeline stage 0, optional). Use when the user has a vague one-line drama idea or asks to brainstorm short-drama topics, find directions, or get topic proposals. Outputs docs/TOPIC_PROPOSAL.md for short-drama-blueprint to consume.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/diversity-engine.md",
+        "references/trend-radar.md",
+        "references/viewing-motivation.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "short-drama-video-forge",
+      "dir": "short-drama-video-forge",
+      "description": "Stage 5 of the AI short-drama production pipeline. Reads docs/STORYBOARD.md and docs/VISUAL_SPEC.md, builds the machine-readable production manifest (production/manifest.json), then generates per-shot videos shots/{ep}/shot_{XX}.mp4 (static .png with simulated camera motion on failure). Use when scheduled by short-drama-forge-master after Gate 3, or when the user asks to generate short-drama shots/videos from a storyboard.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/character-consistency.md",
+        "references/failover-recipes.md",
+        "references/tool-recipes.md"
       ],
       "warnings": []
     },
@@ -698,6 +939,22 @@
       "warnings": []
     },
     {
+      "name": "slides",
+      "dir": "slides",
+      "description": "Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/copywriting-formulas.md",
+        "references/create.md",
+        "references/html-template.md",
+        "references/layout-patterns.md",
+        "references/slide-strategies.md"
+      ],
+      "warnings": []
+    },
+    {
       "name": "task-planner",
       "dir": "task-planner",
       "description": "通用任务规划器 skill。把复杂需求拆解为子任务树+依赖关系+优先级,产出 task-tree.json。当编排总纲外有复杂需求需规划、或用户要'拆解任务/规划执行步骤'时调用。区别于编排总纲的'流水线阶段裁剪',本 skill 面向任意任务的通用规划。",
@@ -718,7 +975,9 @@
       "category": "product",
       "agent_dimension": "",
       "has_runtime_yaml": false,
-      "references": [],
+      "references": [
+        "references/engineering-constraints.md"
+      ],
       "warnings": []
     },
     {
@@ -728,7 +987,9 @@
       "category": "agent-system",
       "agent_dimension": "Tool",
       "has_runtime_yaml": true,
-      "references": [],
+      "references": [
+        "references/ci-platforms.md"
+      ],
       "warnings": []
     },
     {
@@ -750,7 +1011,9 @@
       "category": "agent-system",
       "agent_dimension": "Tool",
       "has_runtime_yaml": true,
-      "references": [],
+      "references": [
+        "references/deploy-platforms.md"
+      ],
       "warnings": []
     },
     {
@@ -760,7 +1023,9 @@
       "category": "agent-system",
       "agent_dimension": "Tool",
       "has_runtime_yaml": true,
-      "references": [],
+      "references": [
+        "references/git-ops-contract.md"
+      ],
       "warnings": []
     },
     {
@@ -772,6 +1037,37 @@
       "has_runtime_yaml": true,
       "references": [
         "references/monitor-platforms.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "ui-styling",
+      "dir": "ui-styling",
+      "description": "Create beautiful, accessible user interfaces with shadcn/ui components (built on Radix UI + Tailwind), Tailwind CSS utility-first styling, and canvas-based visual designs. Use when building user interfaces, implementing design systems, creating responsive layouts, adding accessible components (dialogs, dropdowns, forms, tables), customizing themes and colors, implementing dark mode, generating visual designs and posters, or establishing consistent styling patterns across applications.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/canvas-design-system.md",
+        "references/shadcn-accessibility.md",
+        "references/shadcn-components.md",
+        "references/shadcn-theming.md",
+        "references/tailwind-customization.md",
+        "references/tailwind-responsive.md",
+        "references/tailwind-utilities.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "dir": "ui-ux-pro-max",
+      "description": "UI/UX design intelligence for web and mobile. Searchable local database with 84 styles, 192 color palettes, 74 font pairings, 192 product types, 98 UX guidelines, 104 icon entries, 16 GSAP motion presets, and 25 chart types across 22 stacks (React, Next.js, Vue, Nuxt, Svelte, Astro, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui, Jetpack Compose, Angular, Laravel, JavaFX, WPF, WinUI, Avalonia, Uno Platform, UWP, Three.js, and HTML/CSS). Use when designing, building, or reviewing UI: pages, components, color schemes, typography, layout, accessibility, animation, or data visualization.",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/pro-rules.md",
+        "references/quick-reference.md"
       ],
       "warnings": []
     },
@@ -804,5 +1100,10 @@
       "warnings": []
     }
   ],
-  "warnings": []
+  "warnings": [
+    {
+      "skill": "banner-design",
+      "warning": "references 路径不存在: references/nano-banana-pro-examples.md"
+    }
+  ]
 }

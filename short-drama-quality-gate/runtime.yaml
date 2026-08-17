@@ -1,0 +1,30 @@
+# runtime.yaml — short-drama-quality-gate
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: Gate 编号
+    type: text
+    required: true
+    description: 本次要执行的检查点编号 0~4；每次只执行一个 Gate，不越级检查
+  - name: 上游产物路径清单
+    type: text
+    required: true
+    description: 按总纲 §八 固定路径读取当前 Gate 的输入产物（如 Gate 1 需 SHORT_DRAMA_BLUEPRINT.md / STORY_SPEC.md / EPISODE_OUTLINE.md）
+outputs:
+  - path: docs/GATE_{0..4}_REPORT.md
+    type: file
+    description: 门禁报告（结论 PASS/FAIL + 检查项明细表 + FAIL 修复指引），与总纲 §八 路径表一致
+degrade:
+  - trigger: 上游产物缺失（当前 Gate 输入文件/目录不存在）
+    action: 阻断本次 Gate，输出缺失文件清单，建议回退到对应阶段 skill 补齐后重跑
+    target: 上游产物
+  - trigger: 检查项数据不足（字段缺失/内容为空/文件无法读取）
+    action: 该检查项标注"无法校验"，建议补齐对应数据后重跑本 Gate，不猜测结论
+    target: 检查项
+  - trigger: 报告生成失败（docs/GATE_*.md 写盘失败）
+    action: 降级输出纯文本结论（PASS/FAIL + 缺失项清单），标注报告未落盘
+    target: 报告

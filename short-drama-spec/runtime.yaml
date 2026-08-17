@@ -1,0 +1,29 @@
+# runtime.yaml — short-drama-spec
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1800
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/SHORT_DRAMA_BLUEPRINT.md
+    type: file
+    required: true
+    description: 立项蓝图（short-drama-blueprint 产出，含高概念/类型/集数/工具链/阶段裁剪建议）
+outputs:
+  - path: docs/STORY_SPEC.md
+    type: file
+    description: 故事规格（发动机/核心规则/人物系统/秘密系统/整剧阶段/情绪曲线/评分），与总纲 §八 一致
+  - path: docs/EPISODE_OUTLINE.md
+    type: file
+    description: 分集大纲（每集目标/开场钩子/主角行动/对手反制/核心冲突/新增信息/关系变化/本集结果/结尾卡点），集数与蓝图一致
+degrade:
+  - trigger: 选题复核不通过（核心冲突不成立或观看动力不足）
+    action: 阻断分集推进，输出复核问题清单，建议回退阶段 0/1（short-drama-topic-brainstorm / short-drama-blueprint）重做，不强行推进
+    target: docs/STORY_SPEC.md
+  - trigger: 分集大纲集数与目标不匹配（阶段划分无法支撑蓝图集数）
+    action: 重新调整故事阶段划分与卡点分布，最多 2 轮；仍不匹配则标注集数缺口交人工裁剪，禁止注水凑数
+    target: docs/EPISODE_OUTLINE.md
+  - trigger: 单步生成质量不达标（该步自检未通过或用户反馈）
+    action: 该步重做最多 2 轮；仍不通过则保留当前版本并标注"待人工修订"后继续下一步
+    target: 当前步骤

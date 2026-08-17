@@ -1,0 +1,51 @@
+# runtime.yaml — short-drama-audio-forge
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/scripts/EP{01..NN}.md
+    type: file
+    required: true
+    description: 正式剧本（对白行来源，short-drama-script 产出）
+  - name: docs/STORYBOARD.md
+    type: file
+    required: true
+    description: 分镜脚本（镜头号/时长/音效音乐提示，short-drama-storyboard 产出）
+  - name: docs/VISUAL_SPEC.md
+    type: file
+    required: true
+    description: 角色视觉设定（年龄/性别/气质，音色映射依据）
+outputs:
+  - path: audio/{ep}/line_{XX}.mp3
+    type: file
+    description: 每集每镜头配音（XX=镜头号，与 STORYBOARD 一致）
+  - path: audio/bgm_{name}.mp3
+    type: file
+    description: BGM 曲目（name=情绪场景名）
+  - path: subtitles/{ep}.srt
+    type: file
+    description: 每集字幕
+  - path: docs/AUDIO_SPEC.md
+    type: file
+    optional: true
+    description: 音频规格（音色映射/情感标签/语速/BGM 匹配标注）
+  - path: docs/ASSET_ISSUES.md
+    type: file
+    optional: true
+    description: 失败清单（追加，不覆盖）
+degrade:
+  - trigger: TTS 生成失败
+    action: 静音占位（1s 静音 mp3）+ 字幕保留并标记"配音待补"；或切换备选 TTS 重试 ≤2 次
+    target: audio/{ep}/line_{XX}.mp3
+  - trigger: 音乐生成失败
+    action: 平台免费曲库 BGM 占位 + 标记
+    target: audio/bgm_*.mp3
+  - trigger: 字幕时间轴缺失
+    action: 按台词平均语速（约 4 字/秒）估算时间轴并标注"估算时间轴"
+    target: subtitles/{ep}.srt
+  - trigger: 分镜缺镜头对应台词
+    action: 旁白式配音降级或跳过，记入 docs/ASSET_ISSUES.md，不阻塞
+    target: audio/{ep}/line_{XX}.mp3
