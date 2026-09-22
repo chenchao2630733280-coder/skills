@@ -180,6 +180,7 @@ output/site/
 - 全局面包屑放在固定顶栏，不在 `.admin-main` 内重复一套面包屑。
 - `.brand-area`、`.admin-sidebar` 必须共享 `--sidebar-width`，折叠时同步变化。
 - `.admin-workspace` 左边距必须跟随 `--sidebar-width`；禁止使用多个互不一致的硬编码宽度。
+- `.admin-workspace` 必须具备 `padding-top: var(--header-height)`。原因：`.workspace-tabs` 是 `position: sticky; top: var(--header-height)`，若父容器不为固定顶栏留出 padding，页签栏粘住时会被下推到顶栏之下，而它在文本流中仍只占 0~50px —— 于是 `.admin-main`（首元素通常是筛选卡）从 y≈50 开始排版，顶部约 60px 被「固定顶栏 + 粘住的页签栏」压住，表现为**查询筛选区被遮挡**。这是最容易复现、也最容易被误判为「筛选卡样式问题」的布局缺陷。
 - 工作区页签栏属于全局壳层，每个 PC 业务页都应存在；登录页除外。
 - 登录页保持全屏居中卡片布局，不使用主框架。
 
@@ -267,6 +268,8 @@ output/site/
 ### 5.2 PC 相关 HTML 编码规范（搬入自原 §9.2）
 
 1. 文件编码：UTF-8（含BOM）
+11. **BOM 易失，写回后必须复核**：部分文件写入工具（含 Agent 的 Edit/Write）会静默丢弃 BOM。凡改动过 HTML/CSS/JS，交付前应校验首字节为 `EF BB BF` 并补回；换行统一 LF，禁止 CRLF 混入。`common.css` / `sidebar.js` 这类共享文件同样要求 BOM。
+12. **`contentHash` 算法**：`sha256( 去掉 BOM 后按 UTF-8 解码得到的文本再按 UTF-8 编码 )`，即与原始文件字节无关。推论：补/去 BOM 不改变哈希，但**换行符变化会改变哈希**；重算哈希时不要直接对原始字节做 sha256。
 2. 语言：`<html lang="zh-CN">`
 3. 缩进：2空格
 4. 金额格式：`¥1,234,567.89`，PC端使用 `.amount`
@@ -292,6 +295,85 @@ output/site/
 11. **交互可用性**：文件/图片上传可触发文件选择并显示预览或回填文件名；详情/编辑弹窗可打开并填充数据；删除等危险操作有二次确认（详见 §六 交互实现模式）
 12. **图标体系统一**：全项目只使用一套图标体系，优先内联 SVG；禁止混用 Emoji、FontAwesome、Ant Design Icons 等多套图标库；菜单、消息、用户、折叠等图标均使用内联 SVG
 13. **viewport 一致**：PC 端使用 `width=device-width, initial-scale=1, viewport-fit=cover`
+
+### 5.4 增量改造与批量补丁的校验流水线（V1.x 迭代必用）
+
+项目进入 V1.x 迭代后，改动应以**块替换**推进，不要整文件重写；每批改造后跑同一套校验，避免「修订说明写了、正文没落」的自伤。
+
+**1. 块替换 + 断言**
+
+- 每个待替换片段先断言 `text.count(old) == 1`，命中数不符即记为 MISS、跳过该项，最后输出 MISS 清单人工复核。禁止用正则模糊匹配改结构（会误伤同类行），正则只用于**校验**阶段计数。
+- 同一片段多处出现时，用相邻唯一字段扩上下文保证唯一（如手机号、时间戳、role 值、`data-*` 属性）。
+- **`region` 整体替换与片段的细粒度 `rep()` 不可作用于同一片段**：先按「起止锚点」整体替换了某函数体，再对其内部字符串做替换 → 前者已改写、后者永远 0 命中，产生**假 MISS**。划定改造区时二选一：要么整块 region 替换，要么逐片段 rep，不要混用。
+- `rep_region(text, start, end, new_body)` 的实现要点：`start`/`end` 必须是该片段**首尾**的唯一锚点，且 `new_body` **自身要包含** `end` 文本（因为实现是 `text[:i] + new_body + text[j+len(end):]`），否则锚点被吃掉、后续替换连带失效。
+
+**2. 内联脚本语法校验**
+
+- 逐条 `node --check` 需贴临时文件且慢；改为**单个 Node 进程**内用 `vm.Script` 编译全部页面内联脚本。抽取正则：`/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g`，失败时输出 `文件#序号 + 错误信息`。
+
+**3. 纯数据模块可脱离浏览器断言**
+
+- 抽到 `pc/<domain>.js` 的无 DOM 依赖模块，可在 Node 中用 `vm.runInContext(src, { window: {} })` 加载，直接对派生逻辑做真值断言（路径推导、防环、上限拦截、完整性统计）。这是无浏览器环境下最有效的验证手段。
+- 断言要核对**语义方向**：形如 `canBeParentOf(parentId, selfId)` 的命名容易把期望值写反；断言失败先复核参数语义，再改实现。
+- **区分「定义」与「导出」**：`var DeptTree = {…}` + `window.DeptTree = DeptTree;` 是 **定义 1 次 + 导出 1 次**，用 `\bDeptTree\s*=` 计数会得到 2 而误报「重复定义」。断言应写作 `(?:var|let|const)\s+DeptTree\s*=` 计数 == 1 且 `window\.DeptTree\s*=\s*DeptTree` 计数 == 1。
+
+**4. 表格列数自洽须剔除 `<script>` 段**
+
+- 行由 JS 模板串注入的表格（`tbody` 为空、行由 `rowHtml()` 拼接）不能只数静态 `<tr>`；须同时断言 `rowHtml` 中单元格片段数 == 表头 `<th>` 数。
+
+**5. 改页面后的同步清单**
+
+| 工件 | 需同步字段 |
+|------|-----------|
+| `output/spec/pages.json` | `pages` 新增条目；`navigation.<端>.modules[].pageIds` 与菜单顺序一致；`openVerifications` 编号；决策记录中已过期口径 |
+| `output/site/build-report.json` | `site.<端>.pages` 页数；`site.pc.shared` 共享文件清单；`outputs` 条目；`checks[].detail` 中**硬编码的计数**（「N 个 HTML」「N 段内联 script」） |
+| `output/site/pc/sidebar.js` | 菜单二级项（顺序需与 pages.json 的 `pageIds` 一致） |
+| 方案 / 改造文档 | 执行批次状态表；存量缺陷清单（新发现即登记编号） |
+
+**6. 开放验证编号以最新 PRD 为准**
+
+- spec 工件与最新一版 PRD 出现 `PV-xx` 同号不同义时，**以 PRD 为准**：把 spec 中的旧项顺延为新号，并同步所有引用该号的 `checks` / `openIssues` 文案。
+
+**7. 共享脚本单一真源**
+
+- 跨页共用的业务数据或组件（如部门树）抽到 `pc/<domain>.js`，与 `common.css` / `sidebar.js` 同层级；由 owner 页与消费页共同引入，且**必须在 `sidebar.js` 之前**引入（共享模块在运行期调用 `sidebar.js` 挂载的 `showToast` / `svgIcon` / `escapeHtml`）。
+- 数据只定义一次，消费页不得硬编码副本；新增共享文件后同步 `build-report.json` 的 `site.pc.shared`。
+
+**8. 字段命名分层是本项目既定约定（断言口径必须跟着分层走）**
+
+| 层 | 命名风格 | 示例 |
+|---|---|---|
+| PRD / `pages.json` / PRD 数据表 | `snake_case` | `match_dim` / `dept_scope` / `submitter_ids` |
+| 页面 JS 数据层（对象键、变量） | `camelCase` | `matchDim` / `deptScope` / `submitters` |
+| 列表行内承载（`data-*`） | `kebab-case` | `data-match-dim` / `data-dept-scope` |
+
+- **禁止拿 `snake_case` 去 grep 页面 HTML 做存在性断言**：它可能只出现在注释里（注释里写「snake_case ↔ camelCase 映射」是推荐做法），会让断言**假通过**。
+- 断言应指向该层真实承载：数据层查 `camelCase` 键或 `data-*` 属性；跨页字段可追溯性则断言**映射注释**是否存在。
+- 同一页面同时出现驼峰与蛇形时，蛇形应**只在注释**，用于标注与上游字段的对应关系。
+
+**9. 文案断言以页面实际字面为准**
+
+- spec / report / 校验脚本中的文案必须与页面**逐字一致**：常见偏差如「末级会签」vs 页面「末级**允许**会签」、「按指定人」vs 页面「按指定**提报人**」。写断言前先 `grep` 页面取真实字面，别凭记忆或凭设计稿措辞。
+
+**10. `annotations.json` 的 `selector` 是逻辑名，不是真实 DOM 类**
+
+- 该工件的 `selector`（如 `.slot-list__sold-mode`）属**规划层命名**，由 `generate-portal` 的注释层解析，通常在页面 HTML 中并不存在对应 class。**不要**把它当作「选择器失效」来修，也不要用它做回归判据。
+- 判断是否回归的正确姿势：看该批改动**是否触碰了对应页面**；未触碰页面出现同类现象即为历史既定形态。
+
+**11. 批次收口校验脚本（建议固化为 `.<batch>_verify.py`）**
+
+每批改造执行完毕后，跑一套**全站级**校验并把结果落日志（`.log_<batch>_verify.txt`）。建议 8 组：
+
+1. **编码与换行**：`output/**` 全量 `.html/.css/.js/.json/.md` 必须 UTF-8 with BOM + LF（BOM 缺失 / 出现 CRLF 即 FAIL）。
+2. **JSON 可解析**：`pages.json` / `build-report.json` / `annotations.json` / `design-tokens.json` 一律用 **`utf-8-sig`** 读（带 BOM 时 `utf-8` 会抛 `Unexpected UTF-8 BOM`）。
+3. **contentHash 一致性**：遍历 `build-report.outputs[]`，按 `sha256(去 BOM 后的 UTF-8 文本)` 重算并逐条比对，捕捉「改了页面忘了 rehash」。
+4. **跨页链接完整性**：抽取全部 `href="*.html"` / `location.href='*.html'`，校验目标文件存在。
+5. **禁用词 / 旧枚举全站复扫**：把本批要消灭的旧口径（旧枚举、旧字段名、stub 文案、占位文案）列成 `BAN` 表，按 `词 → 原因` 输出命中文件与次数；同时断言新权威枚举在目标页**命中率**（如 `T18` 五枚举 5/5）。
+6. **表格列数自洽**（剔除 `<script>` 段）；行由 JS 注入的表格需另按 §5.4-4 断言模板片段数。
+7. **共享脚本引入顺序**：共享模块页必须早于 `sidebar.js`。
+8. **单一真源**：共享数据只定义一次 + 无副本（注意 §5.4-3 的「定义 / 导出」区分）。
+
+最后再叠加两项既有校验：`vm.Script` 编译全部内联脚本（段数需与 `build-report` 的「N 段」文案一致）、纯数据模块的 `vm.runInContext` 真值断言。
 
 ---
 
