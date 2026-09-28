@@ -29,6 +29,7 @@ description: "Generates structured PRDs for enterprise management systems, nativ
 | `references/prd-stage-boundary.md` | **必读**。定义 PRD 与原型/实施阶段的职责边界、去重规则、`output/spec/pages.json` 的权威地位与校验结论（PASS/WARN/FAIL/NOT_REVIEWED），优先级高于通用设计要求 |
 | `references/brainstorming-gate.md` | 需求输入不完整、缺少脑暴结论时读取，按其中的澄清问题模板先与用户确认，再进入生成流程 |
 | `references/product-design-standards.md` | 逐章生成前读取，作为通用产品设计标准补充 |
+| `references/business-domain-patterns.md` | 识别到保险/家庭保险/宠物/医疗等垂直领域时，逐章生成前读取对应领域章节作为检查清单（领域识别与六维复杂度评估方法也在该文件） |
 | `references/schemas/` 下本阶段独有工件示例（`pages.example.json`（PRD 阶段快照）、`validation-report`、`decision-log`、`project`） | 需要向 `output/spec/` 产出对应 JSON 工件时参考结构；**仅保留 PRD 阶段独有示例**，共享工件示例已统一迁至 `../_shared/references/schemas/` |
 | `../_shared/references/schemas/` 下共享示例（`pages`（原型富化后完整结构）、`data-model`、`permissions`、`business-rules`、`state-machines`、`navigation`、`annotations`、`actions`、`overlays`、`components`、`pipeline-context`、`design-tokens.default`、`html-build-report`） | 需要共享结构或默认 Token 时参考；**唯一事实来源**，不要在本地重建拷贝 |
 | `../_shared/references/pc_admin_ui_spec.md` | **admin_web 必读**。PC 管理端权威设计规范（基于 vue-admin-plus / Element Plus），定义色彩、字号、布局尺寸、间距、圆角、阴影、组件与页面模板。第8章"页面设计规格"涉及后台端布局、筛选区、表格、表单、弹窗、卡片、状态色与文案时必须遵循，优先级高于 `_shared` 默认 Token |
@@ -136,7 +137,7 @@ MobileInputs:
 
 1. **产品名称和定位**：产品叫什么？解决什么问题？
 2. **终端类型与范围**：后台、原生 App、H5、小程序、混合应用还是多端？是完整系统还是单一功能？
-3. **核心业务域和用户任务**：涉及哪些领域？用户最常完成的任务是什么？
+3. **核心业务域和用户任务**：涉及哪些领域？用户最常完成的任务是什么？识别业务领域并按 `references/business-domain-patterns.md` §二评估六维复杂度（项目类型/信任等级/交易等级/表单复杂度/状态复杂度/本地服务），形成领域结论与复杂度评级
 4. **目标用户与使用环境**：角色、设备、地点、频率、网络环境和注意力条件。
 5. **移动端能力**（如适用）：相机、定位、通知、生物识别、文件、蓝牙等。
 6. **登录、权限和隐私**：账号体系、游客模式、业务权限、系统权限和隐私约束。
@@ -154,9 +155,10 @@ MobileInputs:
 3. 数据模型必须完整定义所有字段（含类型、约束、说明）
 4. 页面规格必须精确到每个字段、操作、状态、反馈和异常恢复；移动端不得只描述静态页面
 5. 根据 `client_type` 应用对应规则：后台强调表格和批量操作，移动端强调任务闭环、状态、手势、权限、弱网和端能力
-6. 状态机必须使用ASCII箭头绘制
-7. 所有表格使用Markdown表格格式
-8. 报表/统计体系根据业务需要灵活组织，不套用固定模板
+6. 识别出垂直领域（保险/家庭保险/宠物/医疗等）时，生成第 3/4/5/7 章前读取 `references/business-domain-patterns.md` 对应领域章节，确保领域关键状态机、角色关系与业务规则不遗漏；用户需求与领域模式冲突时以需求为准
+7. 状态机必须使用ASCII箭头绘制
+8. 所有表格使用Markdown表格格式
+9. 报表/统计体系根据业务需要灵活组织，不套用固定模板
 
 ### Step 3：交叉校验
 
@@ -172,6 +174,7 @@ MobileInputs:
 8. **状态覆盖完整性**：移动端每个核心页面均覆盖加载、空、失败、离线和权限受限状态
 9. **多端职责一致性**：`multi_end` 模式下，第2章职责矩阵与流程、页面及权限设计一致
 10. **可验收性**：核心移动任务有明确埋点和 Given/When/Then 验收标准
+11. **领域完整性校验**：识别出垂直领域时，对照 `references/business-domain-patterns.md` 对应领域的检查清单，核查关键状态机、角色关系、异常路径与敏感数据规则覆盖
 
 ---
 
@@ -234,6 +237,9 @@ MobileInputs:
 - **多套指标**：根据业务需要定义已实现/预计/预算等多套指标
 - **统计口径标注**：每个指标明确统计时间维度
 - **组织级汇总规则**：明确下级组织汇总到上级时的去重/合并规则
+
+### 6.5 垂直领域模式
+保险/家庭保险/宠物/医疗等垂直领域的实体、角色、状态机与流程检查清单，见 `references/business-domain-patterns.md`（按识别到的领域按需读取）。
 
 ---
 

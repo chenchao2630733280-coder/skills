@@ -51,6 +51,7 @@ output/site/mobile/
 
 在写 HTML 前必须完成以下判断：
 
+0. **业务形态识别与主题/密度判断**：从 PRD 产品定位和 `pages.json`/`state-machines.json` 结构特征识别业务形态，按 `references/mobile-theme-profiles.md` 确定主题气质与密度基调。主题仅作视觉兜底（用户 UI 规范 > `design-tokens.json` > 主题启发式），业务内容一律以工件为准
 1. **核心任务**：用户进入本页最主要要完成什么？
 2. **页面原型**：从综合入口首页、内容发现首页、分类检索、图文列表、沉浸详情、交易任务、个人中心、公共账户、实时信息中选择一个主原型。
 3. **导航层级**：全局频道、局部 Tab、底部主导航最多同时保留两层。
@@ -90,7 +91,7 @@ output/site/mobile/
 
 ### 3.5 移动端按页面原型生成
 
-> 9 种移动端原型 + 表单页的详细生成规则已抽离到 `references/mobile-archetype-specs.md`，按页面 archetypeId 选择对应原型并读取该文件对应章节。
+> 9 种移动端原型 + 表单页的详细生成规则已抽离到 `references/mobile-archetype-specs.md`，按页面 archetypeId 选择对应原型并读取该文件对应章节。按工件结构识别出资源可用性/排队/身份核验/记录/预约确认等业务形态时，读取 `references/mobile-business-patterns.md` 对应渲染模式叠加到原型之上。
 
 | 原型 | archetypeId | 核心结构 |
 |------|-------------|---------|
@@ -104,6 +105,7 @@ output/site/mobile/
 | 公共账户 | public-account | 机构身份→账户概览→核心办理按钮→信息卡/查询宫格 |
 | 实时信息 | realtime | 场景化头部→搜索→最近对象→实时列表→行内展开详情 |
 | 表单与办理页 | form | 返回+标题→分组单列表单→说明/附件→底部固定操作 |
+| 结果页 | result | 状态图标→结论→原因→下一步操作（Success/Processing/Failed/Cancelled 四态结构见 `references/mobile-business-patterns.md` §四） |
 
 ### 3.6 移动端状态与动效
 
@@ -111,6 +113,7 @@ output/site/mobile/
 - 列表加载更多使用局部 loading，不默认全屏遮罩。
 - 分类展开层、Drawer和底部面板使用180-240ms缓动，并支持 `prefers-reduced-motion`。
 - 根据业务实现 `normal/loading/empty/error/offline/permissionDenied/disabled/soldOut` 等适用状态。
+- `state-machines.json` 存在支付状态机与业务状态机并行时（如"支付成功+保单生成中"），两个状态必须分离展示，不得合并为一个成功态（详见 `references/mobile-business-patterns.md` §二）。
 - 成功操作使用轻提示；高风险操作使用确认对话框并说明影响。
 - 金额、数量、实时状态更新应有可感知反馈，必要时使用 `aria-live`。
 
@@ -227,6 +230,10 @@ output/site/mobile/
 10. **viewport 一致**：移动端使用 `width=device-width, initial-scale=1, viewport-fit=cover`；禁止 `maximum-scale=1` 和 `user-scalable=no`，必须允许浏览器缩放
 11. **零占位符**：所有 HTML 文件中不得出现"开发中"、"敬请期待"等占位文案（详见 5.1）
 12. **交互可用性**：文件/图片上传可触发文件选择并显示预览或回填文件名；详情/编辑弹窗可打开并填充数据；删除等危险操作有二次确认（详见 §六）
+13. **高风险信息突出**：资格核验结果、风险提示、医疗健康类关键信息不被装饰元素弱化，层级清晰可读（详见 `references/mobile-business-patterns.md` §二）
+14. **敏感数据默认脱敏**：姓名/证件号/手机号/卡号在列表、摘要、确认态默认脱敏展示；编辑态按 `permissions.json` 授权后展示明文
+15. **双状态机分离展示**：支付状态与业务状态并行时同时展示两个状态标签，禁止合并为单一成功/失败态
+16. **操作人≠对象时角色显式化**：工件存在关系角色字段时，确认/支付/结果等关键步骤展示"当前对象：姓名+角色标签"，不把角色藏在接口字段里
 
 ---
 
@@ -306,6 +313,8 @@ output/site/mobile/
 | 移动端navbar.js模板 | `references/mobile-navbar-template.md` | 函数签名规范+TAB_BAR_ITEMS数据结构（生成navbar.js时读取） |
 | 移动端页面骨架模板 | `references/mobile-page-skeleton.md` | 业务页面通用HTML结构+结构约束（生成HTML时读取） |
 | 移动端页面原型生成规则 | `references/mobile-archetype-specs.md` | 9种原型+表单页详细生成规则（按archetypeId按需读取） |
+| 移动端主题Profile与密度映射 | `references/mobile-theme-profiles.md` | 业务形态→主题气质/密度兜底启发式（§3.1 设计决策第0步读取；优先级最低，不含业务知识） |
+| 移动端业务渲染模式 | `references/mobile-business-patterns.md` | 5大通用渲染模式+跨领域展示原则+布局变体+结果页原型（按工件识别的形态按需读取；不含业务知识，业务内容以PRD/JSON工件为准） |
 | 移动端页面原型示例 | `references/schemas/mobile-page-patterns.example.json` | 记录 archetype 选择结果的数据结构 |
 | 移动端原型演示 | `references/examples/mobile-pattern-demo.html` | 检查抽象后的移动端设计语言 |
 | 交互实现模式 | `../generate-html-pages/references/interaction-patterns.md` | Toast/Modal/上传/CRUD/排序代码模板（跨端共享） |
