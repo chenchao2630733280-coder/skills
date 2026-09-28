@@ -28,7 +28,7 @@ MIME = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('srcdir', help='压缩后图片目录（如 build/webp）')
+    ap.add_argument('srcdir', help="图片目录（原图目录或压缩后的目录，如 build/webp）")
     ap.add_argument('-o', '--out', required=True, help='输出 JSON')
     ap.add_argument('--prefix', default='assets/img/', help='key 前缀')
     ap.add_argument('--from-ext', default='.jpg', help='key 扩展名')

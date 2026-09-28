@@ -108,9 +108,10 @@ def main():
         if n:
             print('%s: %d 张 %.2f MB (平均 %.0f KB)' % (name, n, b / 1048576, b / n / 1024))
     print('源图片: %d 张 -> 输出 %d 张' % (len(files), len(sizes)))
-    print('合计 %.2f MB  ->  base64 内联后约 %.2f MB' % (total / 1048576, total * 1.37 / 1048576))
+    print('合计 %.2f MB  ->  base64 内联后约 %.2f MB' % (total / 1048576, total * 1.3333 / 1048576))
     print('')
-    print('提示: base64 会膨胀约 37%%；若超标，优先用 --keep 0 砍数量而非降质量。')
+    print('提示: base64 膨胀率是 4/3（约 1.333）。')
+    print('      压缩是例外手段——先确认体积真超标；超标时优先 --keep 0 砍数量，而非降质量。')
 
 
 if __name__ == '__main__':
