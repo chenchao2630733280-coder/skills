@@ -1,6 +1,6 @@
 ---
 name: html-single-file-pack
-description: 把多文件静态站点（HTML + CSS + JS + 本地图片）打包成一个自包含单文件 HTML——CSS/JS/图片全部内联，零外部依赖，双击即开、云端上传不丢图。当出现「上传到资料库/云文档/网盘后图片全裂」「发给别人打开是空白」「需要离线单文件交付」时调用。含 img() 双源兼容改造、加载失败降级占位、自包含性核查、原图优先/体积超标才压缩的取舍规则，以及 String.replace 的 $$ 转义陷阱等必踩坑。
+description: 把多文件静态站点（HTML + CSS + JS + 本地图片）打包成一个自包含单文件 HTML——CSS/JS/图片全部内联，零外部依赖，双击即开、云端上传不丢图。当出现「上传到资料库/云文档/网盘后图片全裂」「发给别人打开是空白」「单文件里地图/图表/某一块整块空白但自包含检查全绿」「需要离线单文件交付」时调用。含 img() 双源兼容改造、加载失败降级占位、自包含性核查、原图优先/体积超标才压缩的取舍规则，以及 String.replace 的 $$ 转义陷阱、数据文件漏内联导致模块静默早退等必踩坑。
 agent_created: true
 ---
 
@@ -258,12 +258,46 @@ grep -n 'const \$\$\? *=' build/inline.js     # 看是不是变成单 $ 了
 
 静态扫描查不到，页面依旧一片裂图，你会以为打包没生效。**先确认图片路径是写在 HTML 里还是拼在 JS 里。**
 
-### 3. 惰性加载的图被误判为坏图
+### 3. 漏内联「模块加载时就被读」的数据文件 —— 自检会过，功能整块空白
+
+单个 HTML 里的 `<script>` 是**按顺序同步执行**的。如果某个模块是 IIFE，它**在加载那一刻**就会去读全局数据：
+
+```js
+// js/map.js
+(function () {
+  const MAP = window.MAP_CHINA;      // ← 执行到这里时，MAP_CHINA 必须已经存在
+  if (!MAP) return;                  // 早退，不报错、不抛异常
+  ...
+})();
+```
+
+数据文件（`data/map-china.js` / `data/gateways.js` / `data/spots1-3.js`）一旦漏进内联清单、或排到了模块后面，
+模块就**静默早退**：页面其他部分全正常，只有那一块渲染不出来（地图空白 / 图表空白 / 列表空）。
+
+**为什么难发现**：外部引用数、`assets/` 残留、图片数全部合格 —— 因为**真的没有外部依赖**，自包含性核查会一路绿到「✅ 完全自包含」。
+
+**修复**：内联顺序必须是 `数据 → 依赖数据的模块 → 主应用`，并且把顺序写进打包脚本的注释里。
+
+**防御**：给自检脚本加一条「关键数据是否真的内联进来了」的检查，别只看外部引用数：
+
+```python
+# 漏内联会让整块功能空白，但「自包含」检查仍会通过
+has_map   = 'window.MAP_CHINA' in s
+has_data  = 'window.GATEWAYS' in s and 'window.SPOTS' in s
+has_ui    = 'mapSel' in s and 'mapCallout' in s      # 页面结构里该有的锚点
+ok = (n_asset == 0 and not external and n_link == 0
+      and has_map and has_data and has_ui)           # ← 这几项和外部引用同等重要
+```
+
+同时**改完必须对交付物本身再跑一遍功能回归**，不能只跑构建源：
+`node tools/map-test.js 单文件版.html`。内联顺序、base64 体积这类问题只有在单文件里才暴露。
+
+### 4. 惰性加载的图被误判为坏图
 
 未进视口的 `<img data-src="...">` 在 Chrome 里 `complete === true && naturalWidth === 0`。
 统计/降级前**先滚动触发加载**，并过滤出真正有 `src` 的元素。否则你会误判「图片全坏了」而白折腾一轮。
 
-### 4. `[hidden]` 被 CSS 覆盖
+### 5. `[hidden]` 被 CSS 覆盖
 
 补上：
 
@@ -273,12 +307,12 @@ grep -n 'const \$\$\? *=' build/inline.js     # 看是不是变成单 $ 了
 
 打包时若把弹层样式一并内联，`display:grid/flex` 会盖掉 UA 的 `[hidden]`，导致弹层全程遮挡页面并拦截点击。
 
-### 5. Windows 上 `/tmp` 是 `C:\tmp`
+### 6. Windows 上 `/tmp` 是 `C:\tmp`
 
 `PIL.Image.save('/tmp/x.png')` → `OSError: [Errno 22] Invalid argument`（目录不存在且无权限）。
 改用 `io.BytesIO()` 或项目内 `build/` 目录。
 
-### 6. `assets/img/` 的残留计数是假警报
+### 7. `assets/img/` 的残留计数是假警报
 
 `img()` 里保留的 `'assets/img/' + f` 兜底分支会被正则扫到，但那是死代码。
 核查脚本要排除带 `${` 的模板字面量与字符串拼接，只看**静态标签属性**。
@@ -299,7 +333,7 @@ grep -n 'const \$\$\? *=' build/inline.js     # 看是不是变成单 $ 了
 
 | 脚本 | 作用 |
 | --- | --- |
-| `tools/selfcheck.py` | 核查自包含性：外部引用 / 外链 CSS / 相对路径残留 |
+| `tools/selfcheck.py` | 核查自包含性：外部引用 / 外链 CSS / 相对路径残留 + **关键全局是否真的内联进来了** |
 | `tools/shrink_images.py` | 【可选】分层压缩图片为 WebP，打印体积报告（仅在体积超标时用） |
 | `tools/pack_html.py` | 通用打包器：内联本地 CSS / JS / 静态图片 |
 | `tools/make_inline_map.py` | 生成 `{相对路径: dataURI}` 映射表，供 JS 动态路径查表 |
@@ -309,3 +343,7 @@ grep -n 'const \$\$\? *=' build/inline.js     # 看是不是变成单 $ 了
 - `travel-guide`「山海图鉴」：59 条线路 / 233 张图（34.2 MB 原图）→ 单文件版 **45.80 MB，内联 233 张 JPG 原图（不压缩）**。file:// 直开验证：加载 1.98s / 59 卡片 / 23 五星横轨 / 图片 **97/97 全部加载** / 占位块 0 / 抽屉画廊 3/3 / console error `[]` / 网络失败 `[]`。
   构建：`node tools/build-standalone.js`（`--source=orig`）→ `python tools/selfcheck.py`。
   **教训**：初版默认做了「118 张 WebP / 7.5MB」的压缩包，用户随即要求「不要压缩图片，用原图片」——白做一轮，且画质本可无损。**默认内联原图。**
+- 同上项目、次日加「景点地图」：内联清单从「CSS + JS + 图片」扩到 **9 个 JS + 302 KB 离线矢量底图 + 60 城交通数据 + 295 条景点数据**，单文件 45.80 → **46.22 MB**。
+  **教训**：`js/map.js` 是 IIFE，加载那一刻就读 `window.MAP_CHINA / SPOTS / GATEWAYS`。第一次内联时数据排在了模块后面，地图整块空白，但**自包含检查一路全绿**——因为确实没有外部依赖，只是顺序错了。
+  修法：内联顺序固定为 `数据 → 依赖数据的模块 → 主应用`，并给 `selfcheck.py` 加上 `has_map / has_data / has_ui` 三项存在性检查（见坑 #3）。
+  **通用化**：凡有「加载时就把全局数据读进闭包」的模块（地图 / 图表 / 图谱 / 看板 / 编辑器），都按这条处理；换完内联清单**必须对单文件版本身再跑一遍功能回归**，只跑构建源发现不了这类问题。
