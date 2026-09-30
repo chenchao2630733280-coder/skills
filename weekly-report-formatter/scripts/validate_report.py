@@ -43,6 +43,9 @@ ENTRY = re.compile(
     r"\s*[：:]\s*(?P<desc>.+?)\s*$"
 )
 
+# 交付时间括号内允许的前缀（用户口径：「（交付时间：2026-10-14）」或「（交付时间2026-10-14）」）
+DUE_PREFIX = re.compile(r"^(?:交付时间|上线时间|提测时间)\s*[：:]?\s*")
+
 ISO = re.compile(r"(\d{4})-(\d{1,2})-(\d{1,2})")
 CN_DATE = re.compile(r"(\d{1,2})月(\d{1,2})日")
 VAGUE_OK = re.compile(r"月(底|初|中旬|下旬)|第\s*\d+\s*周|本周|下周|本月|下月|季度|Q\d")
@@ -55,6 +58,10 @@ def check_due(due, stage, lineno, errors):
     due = (due or "").strip()
     if due == "":
         errors.append((lineno, "E3", "交付时间为空括号「（）」——无排期时应整体省略括号"))
+        return
+    due = DUE_PREFIX.sub("", due).strip()  # 去掉「交付时间」等前缀后再校验
+    if due == "":
+        errors.append((lineno, "E3", "括号内只写了「交付时间」没有具体时间，应写「（交付时间：YYYY-MM-DD）」"))
         return
     for bad in ("待定", "TBD", "未定", "暂无"):
         if bad in due and not (stage == "延期" and "原定" in due):
