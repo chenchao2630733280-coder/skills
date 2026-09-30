@@ -1,5 +1,5 @@
 ---
-name: coupon-batch-create
+name: "coupon-batch-create"
 description: 把「场次明细」Excel（剧目/演出日期/演出场地/每场票数/可用商户）批量创建为苏州卡券平台（szd-coupon.2500city.com）后台的兑换券卡券；也用于已建卡券的封面重裁、批量换封面、核验。当用户要「把 couponX 表格的卡券创建到管理后台」「批量建卡券」「补建演出票卡券」「重新裁切封面」「替换卡券封面」时使用。含封面递归匹配、智能裁切、纯 API 上传与批量提交、note 富文本补写、全量核验全流程。
 agent_created: true
 ---

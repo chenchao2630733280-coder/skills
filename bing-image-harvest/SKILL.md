@@ -1,5 +1,5 @@
 ---
-name: bing-image-harvest
+name: "bing-image-harvest"
 description: 为网站/原型/图鉴类项目批量采集真实配图（无需 API Key、无需外网直连），并做质量筛检与人工抽查。当任务需要「给 N 个条目各配几张真实图片」「抓取配图并本地化」「配图有水印/防盗链/跑题需要替换」时调用。含必应图库检索解析、图库/水印站屏蔽、缩略图优先下载、Pillow 质检、拼版抽查、定点重采六步法。
 agent_created: true
 ---

@@ -1,5 +1,5 @@
 ---
-name: slides
+name: "slides"
 description: Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies.
 argument-hint: "[topic] [slide-count]"
 metadata:
@@ -36,5 +36,5 @@ Strategic HTML presentation design with data visualization.
 ## Routing
 
 1. Parse subcommand from `$ARGUMENTS` (first word)
-2. Load corresponding `references/{subcommand}.md`
+2. Load the matching subcommand doc listed in the Subcommands table — currently only `references/create.md`
 3. Execute with remaining arguments

@@ -1,5 +1,5 @@
 ---
-name: weekly-report-formatter
+name: "weekly-report-formatter"
 description: 按「阶段（交付时间）：进展描述」固定格式整理项目周报/日报进度。支持两类项目——单一系统按整体阶段描述、拆分子功能的按功能逐条描述。当用户要「整理周报」「写周报」「按格式整理进度」「本周项目进展汇总」「项目进度汇报」时调用。含阶段判定表、交付时间写法、进展描述规范与格式校验脚本。
 agent_created: true
 ---

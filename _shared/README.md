@@ -45,6 +45,23 @@ _shared/references/
 4. **工件所有权不变**：本目录只统一"结构示例与默认规范"的存放位置，不改变各 JSON 工件的生产者归属（如 `annotations.json` 仍由 `generate-prototype` 创建）。
 5. **单独分发某个 Skill 时**：将其 SKILL.md 中引用的本目录文件复制回该 Skill 的 `references/` 内，并把引用路径改回本地相对路径。
 
+## _shared/ 根目录（工作台级工具，非参考文件）
+
+`_shared/` 根目录存放**整个工作台共用的一次性/批量工具**（与 `references/` 的「共享参考文件」职责不同）：
+
+```text
+_shared/
+├── validate.ps1                 # 一致性防回归校验（13 项检查；退出码 0=全过 / 1=有 FAIL）
+├── fix-frontmatter-name.py      # 把 SKILL.md frontmatter 的 name 批量规范为 name: "<value>"（幂等）
+└── references/                  # 共享参考文件（唯一事实来源），见上文
+```
+
+使用规则：
+
+1. 新增工作台级工具放本目录根下，**不要**放 `references/`（那里只放被 skill 引用的参考文件）。
+2. 校验入口固定为 `validate.ps1`；**改动本工作台任何 skill 后都跑一次**，改完必须回到「全部通过」。
+3. 工具脚本若涉及批量改写文件，**必须 CRLF 安全**：先切出「行体 + 行尾终止符」，只在行体上做匹配，回写保留原终止符。本仓库 `core.autocrlf=true`，混用 `\n` 切行与 `\r` 会把 CR 塞进字段值里并静默丢换行（详见 `WORKBENCH.md` 变更记录 2026-09-30）。
+
 ## 历史背景
 
 此前 18 个 schema 示例与 `ui-design-standards.md` 在 3~4 个 Skill 中各存一份拷贝，曾发生 design-tokens v1.0/v1.1/v1.3 三版本并存、边框色与页面背景色不一致等实际漂移。2026-07 统一收敛至本目录。

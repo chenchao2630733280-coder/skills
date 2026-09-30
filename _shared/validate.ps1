@@ -106,7 +106,7 @@ foreach ($name in $readonlySkills) {
 if ($roMissing -eq 0) { Pass "全部审查类 skill 声明了'只读'约束(共 $($readonlySkills.Count) 个)" }
 
 # ---------- 7. 新 skill frontmatter 必填 name + description ----------
-$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator','adaptive-tuner','session-snapshot','agent-runtime-exec','agent-builder')
+$newSkills = @('tool-git-ops','tool-ci-ops','tool-deploy-ops','tool-db-ops','tool-monitor-ops','code-review','debug-fix','refactor','guardrail','diff-reviewer','project-knowledge-base','failure-casebook','skill-runtime','task-planner','replanner','workflow-runtime','codebase-rag','skill-usage-tracker','prompt-registry','agent-orchestrator','adaptive-tuner','session-snapshot','agent-runtime-exec','agent-builder','short-drama-asset-forge')
 $fmMissing = 0
 foreach ($name in $newSkills) {
     $md = Join-Path $ws "$name/SKILL.md"
@@ -164,6 +164,12 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 # ---------- 9. workflow.yaml 可解析性(若存在) ----------
 # workflow.yaml 是可选产物,当前可能不存在(编排总纲声明可产出,实际产出需运行编译命令)
 # 不存在则跳过(PASS);存在则调用 workflow-runtime 的 compile_workflow.py validate 校验
+# 允许清单：相对工作台根的路径（正斜杠）。这些 workflow.yaml 属于**外部导入包的自有编排格式**
+# （stages 式，非 workflow-runtime 的 steps 规范），由该包自带的 scripts/validate_skill.py 校验，
+# 这里不套用 workflow-runtime schema —— 与 §1 的 $allowList 同一思路。
+$workflowAllowList = @(
+    'research_delivery_workflow/workflow.yaml'
+)
 $workflowValidator = Join-Path $ws 'workflow-runtime\scripts\compile_workflow.py'
 $workflowYamls = Get-ChildItem -Recurse -Filter 'workflow.yaml' -Path $ws -ErrorAction SilentlyContinue |
     Where-Object { $_.FullName -notlike '*node_modules*' }
@@ -177,15 +183,22 @@ if ($workflowYamls.Count -eq 0) {
     Fail "workflow-runtime/scripts/compile_workflow.py 不存在,无法校验 workflow.yaml"
     $workflowFail++
 } else {
+    $workflowChecked = 0
     foreach ($wf in $workflowYamls) {
+        $wfRel = $wf.FullName.Replace("$ws\", '').Replace('\', '/')
+        if ($workflowAllowList -contains $wfRel) {
+            Pass "workflow.yaml 跳过(外部包自有 stages 格式,由包内 validate_skill.py 校验):$wfRel"
+            continue
+        }
+        $workflowChecked++
         $wfResult = python $workflowValidator validate --input $wf.FullName 2>&1
         if ($LASTEXITCODE -ne 0) {
-            Fail "workflow.yaml 无法解析:$($wf.FullName.Replace("$ws\", ''))"
+            Fail "workflow.yaml 无法解析:$wfRel"
             $workflowFail++
         }
     }
     if ($workflowFail -eq 0) {
-        Pass "workflow.yaml 可解析性校验通过(共 $($workflowYamls.Count) 个文件)"
+        Pass "workflow.yaml 可解析性校验通过(共 $workflowChecked 个文件,跳过 $($workflowAllowList.Count) 个外部包自有格式)"
     }
 }
 

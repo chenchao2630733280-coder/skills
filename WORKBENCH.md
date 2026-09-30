@@ -89,21 +89,46 @@ short-drama-spec              阶段2：故事规格（发动机/规则/人物/�
         ↓
 short-drama-script            阶段3：竖屏正式剧本（每集一文件，1-3 分钟/集，强卡点）
         ↓
-short-drama-storyboard        阶段4：分镜脚本 + 视觉规范（每镜头文生图/图生视频 prompt）
+short-drama-storyboard        阶段4：分镜脚本 + 视觉规范 + 资产需求清册（每镜头文生图/图生视频 prompt）
+        ↓
+short-drama-asset-forge       阶段4.5：资产定妆与基线锁定（★ 不可裁剪）
+                              ← 人工确认点 4.5 定妆确认
+                              → assets/{char,scene,prop,voice,style}/ + docs/ASSET_BASELINE.md
+                              → 回写 docs/ASSET_MANIFEST.json（status=locked + hash）
         ↓
 ┌────────────────────┐  ┌────────────────────┐
 │ short-drama-video- │  │ short-drama-audio- │  (可并行)
 │   forge            │  │   forge            │
 │ 阶段5：manifest+    │  │ 阶段6：配音/BGM/   │
-│ 逐镜头 AI 视频      │  │ 字幕              │
+│ 逐镜头 AI 视频      │  │ 字幕（取 voice 资产）│
 └────────────────────┘  └────────────────────┘
         ↓
 short-drama-edit              阶段7：剪辑合成成片（ffmpeg 拼接/混音/字幕烧录，内含 Gate 5 成片实跑门）
 ```
 
-**质量门**：`short-drama-quality-gate` 在 5 个关键节点（立项后/规格后/剧本后/分镜后/生产后）介入做 Gate 0~4 契约校验与实跑预检，FAIL 硬阻断并回原阶段修复；只读业务产物、只写 `docs/GATE_{0..4}_REPORT.md`。
+**资产层（一致性基线）**：阶段 4 声明 `docs/ASSET_MANIFEST.json`（角色/变体/场景/道具/音色/风格基线，五类，`status=declared`）→ 阶段 4.5 出定妆图并**人工确认后锁定**到 `assets/**` + `docs/ASSET_BASELINE.md`（hash/版本/变更记录/豁免签字）→ Gate 3.5 校验（文件存在 + 已锁定 + hash 一致 + 变体齐全）→ 阶段 5/6 **只消费 `locked` 资产**。资产定义是**唯一真源**，`production/manifest.json` 只准引用（复制定义会被 Gate 4.9 阻断）。
 
-**固定产物契约**：全流水线按 `short-drama-forge-master/SKILL.md` §八 的产物路径总表读写（`docs/` 文档链 → `production/manifest.json` → `shots/` → `audio/`+`subtitles/` → `episodes/EP{XX}.mp4`），每阶段 Gate PASS 后强制人工确认点，不允许自动连续执行。10 个 skill 均已接入 `runtime.yaml`。
+**质量门**：`short-drama-quality-gate` 在 **6 个关键节点**（立项后/规格后/剧本后/分镜后/**资产定妆后**/生产后）介入做 Gate 0~4 + **Gate 3.5 资产门**的契约校验与实跑预检，FAIL 硬阻断并回原阶段修复；只读业务产物、只写 `docs/GATE_{0..4}_REPORT.md` 与 `docs/GATE_3.5_REPORT.md`。**Gate 3.5 是唯一"资源类也硬阻断"的门**（资产缺陷会被全剧镜头放大），豁免须用户在 `ASSET_BASELINE.md` 签字。
+
+**固定产物契约**：全流水线按 `short-drama-forge-master/SKILL.md` §八 的产物路径总表读写（`docs/` 文档链 + `docs/ASSET_MANIFEST.json` → `assets/**` → `production/manifest.json` → `shots/` → `audio/`+`subtitles/` → `episodes/EP{XX}.mp4`），每阶段 Gate PASS 后强制人工确认点（含 **4.5 定妆确认**与 4.6），不允许自动连续执行。short-drama 侧 **10 个 skill 接入 `runtime.yaml`**（`short-drama-forge-master` 与 `short-drama-game-adapt` 为纯 SOP/方法论，无运行时契约）。
+
+### 五、个人商业机会评估（独立方法论）
+
+不属于产品交付流水线，独立使用。
+
+```text
+opportunity-screening        四层漏斗：底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议
+  ├─ references/business-logic.md           L1 商业底层逻辑（交易创造财富/省时间/价值≠成本）
+  ├─ references/screening-dimensions.md     L2 四维筛子（购买力·空位·启动投入·获客门槛）
+  ├─ references/self-fit-assessment.md      L3 可达性体检（人脉盘·获客机制·三条换法）
+  ├─ references/validation-protocol.md      L4 最小验证（带付费点的作品 + 4 周时间盒）
+  ├─ references/case-example.md             实盘案例（10 个机会的裁决 + 打分锚点标定）
+  └─ scripts/score_opportunities.py         确定性四维评分器（含「个人不可达」硬伤规则）
+```
+
+**核心判据**：「高客单 + 低获客门槛」的象限几乎不存在；获客门槛是唯一不可靠努力弥补的维度，个人的唯一杠杆是用作品替代人脉。**市场价值与个人可达性必须分开评估——前者高后者为零时，正确答案是「不做」。**
+
+**何时用**：用户问"我该做什么副业""这个机会值不值得做""没人脉能不能做""XX 是不是红海了""帮我评估这几个方向"。
 
 ## Skill 清单（产品交付流水线）
 
@@ -264,6 +289,14 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 
 ## 变更记录
 
+### 2026-09-30 新增 opportunity-screening 个人商业机会评估方法论 skill
+- 独立方法论 skill（不属于任何交付流水线）：四层漏斗 `底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议`
+- 沉淀自一次真实的副业方向评估过程：从「交易创造财富」的底层逻辑，到「客户购买力 · 竞争空位 · 启动投入 · 获客门槛」四维筛选，到「市场价值与个人可达性必须分开评估」的适配层判断
+- 核心判据：**获客门槛是唯一不可靠努力弥补的维度**；「高客单 + 低获客门槛」象限几乎不存在，个人唯一杠杆是用作品替代人脉
+- 配确定性评分脚本 `scripts/score_opportunities.py`（固定权重 + 「获客门槛=5 → 个人不可达」硬伤规则，避免情绪化打分）
+- references 含 4 篇分册（business-logic / screening-dimensions / self-fit-assessment / validation-protocol）+ 1 篇实盘案例标定（case-example，10 个机会的裁决记录）
+- WORKBENCH.md 新增「五、个人商业机会评估」章节，README.md 技能总览与完整清单同步更新
+
 ### 2026-07-30 新增 product-pipeline-master 总编排调度 skill
 - 参考 game-forge-master 的编排模式，为产品工作台创建总调度中枢
 - 含端类型判定决策树、阶段裁剪规则、产物路径总表、JSON 工件消费链、失败回退策略
@@ -365,3 +398,25 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 新增跨阶段质量门 `short-drama-quality-gate`:Gate 0~4 契约校验 + 实跑预检,FAIL 硬阻断回原阶段,只写 `docs/GATE_{0..4}_REPORT.md`
 - 设计要点:镜像 game-forge 套件结构(固定路径契约/裁剪/质量门/确认点/失败降级);产出"文档 + 可执行生产工程"(manifest.json + ffmpeg 脚本),视频生成失败降级静态图/图文短剧
 - 全部 10 个新 skill 均接入 `runtime.yaml`(runtime.yaml 声明总数 26 → 36)
+
+### 2026-09-30 短剧流水线补上「资产层」（一致性基线）
+- **问题**：流水线缺资产概念 —— `char/linwan.png` 被 STORYBOARD/manifest/VISUAL_SPEC 反复引用，但**没有任何阶段产出它**；项目骨架无 `assets/` 目录；角色形象到阶段 5 第一次出图才被"确定"，60-100 集全跑完才发现不像即全量返工（成本后置到最贵环节）
+- **新增阶段 4.5** `short-drama-asset-forge`（**不可裁剪**）：把角色（含变体）/场景/剧情道具/音色/风格基线一次性定妆并**锁定为基线**；产出 `assets/{char,scene,prop,voice,style}/**` + `docs/ASSET_BASELINE.md`（锁定表/变更记录/已知风险签字），回写 `docs/ASSET_MANIFEST.json`
+- **新增契约** `docs/ASSET_MANIFEST.json`（v1.0，资产**唯一真源**）：阶段 4 storyboard 声明（`status=declared`）→ 阶段 4.5 回写（`status=locked` + `assetVersion`/`hash`/`lockedAt`/`lockedBy`）；五类资产 schema + 状态机见 `short-drama-asset-forge/references/asset-manifest-schema.md`
+- **新增 Gate 3.5 资产门**（13 项）：清册合法/被引用资产全 locked/锁定字段无空值/定妆图存在/hash 与实体文件一致/基线表对账/变体完整性(seed 互异)/风格基线唯一/定妆图技术达标/音色齐备/降级已签字/影响面报告齐备 —— **唯一"资源类也硬阻断"的门**（资产缺陷会被全剧 800+ 镜头放大），豁免须用户在 ASSET_BASELINE.md 签字
+- **新增人工确认点 4.5（★定妆确认）与 4.6**：候选图生成 → 用户选定才 lock（每批 ≤4 角色，重出 ≤3 轮）；4.5 是"内容锁定确认"，语义区别于其它"阶段推进确认"
+- **变体机制**：同角色多 look（年龄跨度/换装伪装/战损/身份反转造型）走 `variantId`，各变体 **seed 必须互异**、`derivedFrom=default`；镜头用 `角色id(变体id)` 标记；禁止在同变体内临时改服装描述（漂移主因）
+- **资产变更流程**：unlock → 影响面分析（扫 STORYBOARD 列受影响镜头）→ `docs/ASSET_IMPACT.md` → 用户决策（全量重生成/保留+标记/回退）→ `assetVersion+1`；**禁止静默改图**
+- **单一真源收紧**：`production/manifest.json` 改为只写 `assets` 引用块（id+variant+assetVersion+hash）+ 镜头级 `charVariants`/`props`/`assetSnapshot`；新增 Gate 4.7~4.11（引用块存在/hash 一致/**禁止资产定义副本**/引用可解析/音色一致）
+- **下游改造**：video-forge 改"消费锁定资产"（资产未锁定/文件缺失/hash 不符 → 报错退出，不再逐镜头硬凑）；audio-forge 音色走 `voiceId`（不选音色）；blueprint 新增"资产数"为第 6 个复杂度维度 + 资产规模/出图张数估算 + `asset-forge` 裁剪行（Gate 0 新增 0.8/0.9）
+- **顺手修复的契约漂移**：`short-drama-edit` 的最小读取契约（原 `episode`/`shot_id`/`file`）与 `build_episodes.py`、模板 `manifest.example.json` 统一为 video-forge 实际 schema（`ep`/`id`/`outputPath`，脚本保留旧字段回退）
+- 新增 `short-drama-asset-forge`（SKILL.md + runtime.yaml + 3 references + 2 templates）；runtime.yaml 声明总数 36 → 37；同步 `README.md`（目录/清单/链接）、`WORKBENCH.md`、`short-drama-forge-master` 总纲（流程图/裁剪/回退/执行顺序/路径表/模板骨架）与项目模板骨架（`assets/` + ASSET_MANIFEST/ASSET_BASELINE 模板）
+
+### 2026-09-30 清理 _shared/validate.ps1 的 13 项既有 FAIL（回归全绿）
+- **背景**：上一轮新增 `opportunity-screening` 时跑防回归校验，新 skill 零 FAIL，但暴露出 13 项与本次改动无关的历史遗留 FAIL；本次一并清理，`validate.ps1` 从 **13 FAIL → 全部通过**（exit 0）
+- **① slides/SKILL.md 引用不存在的路径**：Routing 里写的是模板占位 `references/{subcommand}.md`，静态校验无法解析 → 改为指向 Subcommands 表中真实存在的 `references/create.md`
+- **② 前端/设计类 11 个 skill 的 frontmatter `name` 未加双引号风格**：`banner-design` / `bing-image-harvest` / `brand` / `coupon-batch-create` / `design` / `design-system` / `html-single-file-pack` / `slides` / `ui-styling` / `ui-ux-pro-max` / `weekly-report-formatter`
+- **③ workflow.yaml 无法解析**：根因不是文件坏，而是 `research_delivery_workflow` 是**外部导入包**（自带 `manifest.txt` / `SHA256SUMS.txt` / `scripts/validate_skill.py`，自带校验 19 个必需文件 PASS），它的 `workflow.yaml` 用的是**自有 stages 格式**，而 `validate.ps1` §9 会 glob 全仓 `workflow.yaml` 并一律套用 `workflow-runtime` 的 steps 规范 → 给 §9 加 `$workflowAllowList` 显式声明例外（与 §1 的 `$allowList` 同一思路），由该包自带校验器负责
+- **新增维护脚本** `_shared/fix-frontmatter-name.py`：把 frontmatter `name` 批量规范为 `name: "<value>"`，幂等、可指定 skill
+- **踩坑（重要，已写进脚本注释）**：本仓库部分 `SKILL.md` 是 **CRLF** 换行且 `core.autocrlf=true`。用 `.split('\n')` 或 `splitlines(keepends=True)` 配 `r'^name:[ \t]*(.+?)[ \t]*$'` 时，尾部 `\r` 会被 `(.+?)` 吃掉，导致两种静默损坏：CRLF 未加引号 → `name: "xxx<CR>"`（CR 被塞进引号里、悄悄丢换行）；CRLF 已加引号 → `name: ""xxx"<CR>"`（畸形）。**正确做法**：先切出「行体 + 终止符」，只在行体上取值，回写保留原终止符；批量脚本务必先核查目标文件的换行风格
+- **校验**：`validate.ps1` 全部通过（frontmatter 双引号 86/86、references 引用 108 处、workflow.yaml 1 个外部格式已声明豁免）

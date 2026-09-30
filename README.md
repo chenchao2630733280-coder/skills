@@ -26,9 +26,10 @@
 
 ### 4. 短剧策划与制作流水线（ai-short-drama-* / short-drama-*）
 - 策划侧（ai-short-drama-*）：`ai-short-drama-topic-planner`（AI 短剧高概念选题策划）+ `ai-short-drama-project-development`（选题确认后的项目开发总监）。
-- 制作侧（short-drama-*）：由一句话需求端到端产出短剧成片（或可执行生产工程），覆盖选题→立项→故事规格→正式剧本→分镜→AI 视频生成→配音/字幕→剪辑合成，全程质量门 + 人工确认点。
-  `short-drama-forge-master`(调度) → `short-drama-topic-brainstorm`(可选) → `short-drama-blueprint` → `short-drama-spec` → `short-drama-script` → `short-drama-storyboard` → (`short-drama-video-forge` ∥ `short-drama-audio-forge`) → `short-drama-edit`
-  质量门：`short-drama-quality-gate`（Gate 0~4 硬阻断）。流水线详情与产物路径表见 `short-drama-forge-master/SKILL.md`。
+- 制作侧（short-drama-*）：由一句话需求端到端产出短剧成片（或可执行生产工程），覆盖选题→立项→故事规格→正式剧本→分镜→**资产定妆**→AI 视频生成→配音/字幕→剪辑合成，全程质量门 + 人工确认点。
+  `short-drama-forge-master`(调度) → `short-drama-topic-brainstorm`(可选) → `short-drama-blueprint` → `short-drama-spec` → `short-drama-script` → `short-drama-storyboard` → **`short-drama-asset-forge`(资产定妆·不可裁剪)** → (`short-drama-video-forge` ∥ `short-drama-audio-forge`) → `short-drama-edit`
+  质量门：`short-drama-quality-gate`（Gate 0~4 + **Gate 3.5 资产门** 硬阻断）。流水线详情与产物路径表见 `short-drama-forge-master/SKILL.md`。
+  **资产层**：阶段 4 声明 `docs/ASSET_MANIFEST.json`（角色/变体/场景/道具/音色/风格基线）→ 阶段 4.5 定妆锁定到 `assets/**` + `docs/ASSET_BASELINE.md` → Gate 3.5 校验（文件存在/已锁定/hash 一致）→ 阶段 5 只消费 `locked` 资产。资产是**唯一真源**，`production/manifest.json` 只准引用。
 
 ### 5. 工作台元 skill
 - `rd-init`：工作台加载器。扫描 skills 目录全部 skill，生成 `.workbench-index.json` 索引和完整性报告（frontmatter 规范/references 路径/runtime.yaml 声明），让 AI 快速掌握工作台全貌。不生成业务产物。
@@ -37,6 +38,7 @@
 - `frontend-design`：为新建/重构 UI 提供独特、有意图的视觉设计指导（配色、排版、布局、签名元素）。
 - `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
 - `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
+- `opportunity-screening`：**个人/小团队商业机会的筛选与自身适配评估方法论**。四层漏斗（商业底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议），核心判据为「市场价值与个人可达性必须分开评估，获客门槛不可靠努力弥补」。含确定性评分脚本与实盘案例标定。
 
 ### 7. AI Agent 体系层（2026-08-06 升级）
 - **Tool 层**：`tool-git-ops` / `tool-ci-ops` / `tool-deploy-ops` / `tool-db-ops` / `tool-monitor-ops`——封装 Git/CI/部署/DB/监控操作,默认只读优先,变更类需用户确认。
@@ -79,6 +81,7 @@
 | implement-data-layer | 实现可迁移/可验证/可回滚的数据层(Schema/迁移/Repository) | architecture.json、实施计划、data-model.json、business-rules.json、现有 Schema/迁移 | 数据层代码、database-implementation-report.md、schema-snapshot.json、更新追溯表 |
 | implement-frontend | 将页面规格与静态原型实现为生产级前端(集成真实 API/类型/权限/测试) | pages.json、annotations.json、design-tokens.json、原型 HTML、架构与后端契约 | 前端源码、主题配置、API 客户端、测试、frontend-implementation-report.md、更新追溯表 |
 | integrate-system | 将前后端/数据层/认证/权限/外部服务联调成可运行端到端系统 | API 契约、各已实现层、环境配置 | integration-report.md、environment-matrix.md、contract-drift.json、更新追溯表 |
+| opportunity-screening | 个人/小团队商业机会的筛选与自身适配评估(四层漏斗:底层逻辑→四维筛子→可达性体检→最小验证) | 机会候选清单 + 自身约束(人脉盘/时间/资金/目标节奏) 或 JSON 评分输入 | 四维评分裁决表(含硬伤维度) + 自身可达性体检结论 + 4 周最小验证计划 |
 | package-and-deploy-system | 将已测系统整理为可重复构建/可运维的交付物(容器/CI/回滚文档) | 发布门禁文件、测试报告、构建产物 | 基础设施文件(infra/deploy/.github)、release-manifest.json、deployment-report.md、operations-runbook.md、handoff-checklist.md |
 | plan-system-implementation | 由 PRD/原型/仓库生成可执行的工程实施蓝图(架构/切片/任务板) | output/spec/*.json、PRD、原型、当前代码仓库 | implementation-plan.md、architecture.json、task-board.json、traceability.json、risk-register.md、ADR 决策记录 |
 | prd-quality-checker | 在下游工作前基于证据审核 PRD 质量，输出门禁报告(Audit/Improve) | 主 PRD/需求基线、关联清单、产品配置、可选上下文 | Markdown 门禁报告(READY/CONDITIONAL/NOT_READY)+ 可选 JSON + AI 开发准备度附录 |
@@ -86,14 +89,15 @@
 | rd-init | 工作台加载器：扫描 skills 目录全部 skill，生成索引和完整性报告 | skills 目录路径 | `.workbench-index.json`(索引) + 对话报告(分类统计/警告清单) |
 | ruanzhu-doc-generator | 由产品截图生成中文软著产品说明书 DOCX(区分 PC 后台与移动端) | 截图文件夹 + 可选 PRD/README/产品事实 | `(管理后台)产品说明书.docx`/`(移动端)产品说明书.docx`(混合时两份) |
 | screenshot-operation-manual | 由截图/录屏生成 PC 后台与移动端操作手册(DOCX/PDF/MD/HTML) | 截图/录屏/截图文件夹、平台分类 | manual_spec.json + 操作手册.docx(封面、目录、模块说明、步骤、FAQ) |
-| short-drama-audio-forge | AI 短剧流水线阶段6：配音/音乐/字幕生成(与 video-forge 并行) | `docs/scripts/EP*.md`、`docs/STORYBOARD.md` | `audio/{ep}/line_{XX}.mp3`、`audio/bgm_{name}.mp3`、`subtitles/{ep}.srt` |
+| short-drama-asset-forge | AI 短剧流水线阶段4.5：资产定妆与基线锁定(角色/变体/场景/道具/音色/风格卡)，批量生产前的一致性中枢 | `docs/ASSET_MANIFEST.json`、`docs/VISUAL_SPEC.md`、`docs/STORYBOARD.md` | `assets/{char,scene,prop,voice,style}/**`、`docs/ASSET_BASELINE.md`、回写 `docs/ASSET_MANIFEST.json` |
+| short-drama-audio-forge | AI 短剧流水线阶段6：配音/音乐/字幕生成(与 video-forge 并行；音色取自 voice 资产) | `docs/scripts/EP*.md`、`docs/STORYBOARD.md`、`docs/ASSET_MANIFEST.json` | `audio/{ep}/line_{XX}.mp3`、`audio/bgm_{name}.mp3`、`subtitles/{ep}.srt` |
 | short-drama-blueprint | AI 短剧流水线阶段1：一页纸短剧立项蓝图(类型/工具链/复杂度/裁剪) | 已确认选题或 `docs/TOPIC_PROPOSAL.md` | `docs/SHORT_DRAMA_BLUEPRINT.md` |
 | short-drama-edit | AI 短剧流水线阶段7：剪辑合成成片(内含 Gate 5 成片实跑门) | `production/manifest.json`、`shots/`、`audio/`、`subtitles/` | `episodes/EP{XX}.mp4`、`docs/BUILD_REPORT.md` |
-| short-drama-forge-master | AI 短剧制作总纲调度中枢(类型判定/工具链决策/阶段裁剪/串联下游)，本身不产出文件 | 用户一句话短剧需求 | 调度下游各阶段产物(固定路径)，本 skill 不直接产出业务文件 |
-| short-drama-quality-gate | AI 短剧流水线跨阶段质量门(Gate 0~4 契约校验+实跑预检，FAIL 硬阻断) | 蓝图/规格/剧本/分镜/生产产物 | `docs/GATE_{0..4}_REPORT.md`(只读业务产物) |
+| short-drama-forge-master | AI 短剧制作总纲调度中枢(类型判定/工具链决策/阶段裁剪/串联下游/守住资产基线)，本身不产出文件 | 用户一句话短剧需求 | 调度下游各阶段产物(固定路径)，本 skill 不直接产出业务文件 |
+| short-drama-quality-gate | AI 短剧流水线跨阶段质量门(Gate 0~4 + Gate 3.5 资产门，契约校验+实跑预检，FAIL 硬阻断) | 蓝图/规格/剧本/分镜/资产清册/生产产物 | `docs/GATE_{0..4}_REPORT.md`、`docs/GATE_3.5_REPORT.md`(只读业务产物) |
 | short-drama-script | AI 短剧流水线阶段3：竖屏正式剧本(每集一文件，1-3 分钟/集，强卡点) | `docs/STORY_SPEC.md`、`docs/EPISODE_OUTLINE.md` | `docs/scripts/EP{01..NN}.md` |
 | short-drama-spec | AI 短剧流水线阶段2：故事规格(发动机/规则/人物/秘密/阶段/情绪曲线)+分集大纲 | `docs/SHORT_DRAMA_BLUEPRINT.md` | `docs/STORY_SPEC.md`、`docs/EPISODE_OUTLINE.md` |
-| short-drama-storyboard | AI 短剧流水线阶段4：分镜脚本+视觉规范(每镜头文生图/图生视频 prompt) | `docs/scripts/EP*.md` | `docs/STORYBOARD.md`、`docs/VISUAL_SPEC.md` |
+| short-drama-storyboard | AI 短剧流水线阶段4：分镜脚本+视觉规范+资产需求清册(每镜头文生图/图生视频 prompt) | `docs/scripts/EP*.md` | `docs/STORYBOARD.md`、`docs/VISUAL_SPEC.md`、`docs/ASSET_MANIFEST.json` |
 | short-drama-topic-brainstorm | AI 短剧流水线阶段0(可选)：选题脑暴(观看动力/趋势/多样性/评分) | 模糊想法/一句话需求 | `docs/TOPIC_PROPOSAL.md` |
 | short-drama-video-forge | AI 短剧流水线阶段5：机读生产清单+逐镜头 AI 视频生成(失败降级静态图) | `docs/STORYBOARD.md`、`docs/VISUAL_SPEC.md` | `production/manifest.json`、`shots/{ep}/shot_{XX}.mp4`(.png 降级) |
 | skill-runtime | Agent Runtime 层(定义 runtime.yaml 契约:timeout/retry/inputs/outputs/degrade) | skill 目录 | runtime-contract-report.json(校验结果) |
@@ -369,6 +373,7 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [short-drama-spec](./short-drama-spec/SKILL.md)（阶段 2）
 - [short-drama-script](./short-drama-script/SKILL.md)（阶段 3）
 - [short-drama-storyboard](./short-drama-storyboard/SKILL.md)（阶段 4）
+- [short-drama-asset-forge](./short-drama-asset-forge/SKILL.md)（阶段 4.5：资产定妆与基线锁定）
 - [short-drama-video-forge](./short-drama-video-forge/SKILL.md)（阶段 5）
 - [short-drama-audio-forge](./short-drama-audio-forge/SKILL.md)（阶段 6）
 - [short-drama-edit](./short-drama-edit/SKILL.md)（阶段 7）
