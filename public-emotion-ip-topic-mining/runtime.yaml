@@ -1,0 +1,46 @@
+# runtime.yaml — public-emotion-ip-topic-mining
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1800
+retry:
+  max: 2
+  backoff: fixed
+  interval: 10
+inputs:
+  - name: 素材清单
+    type: text
+    required: true
+    description: 公共情绪素材（历史人物/现实新闻人物/文物/非遗/被污名者），需要规模化整理的原始清单
+  - name: 目标载体
+    type: text
+    required: false
+    description: 短剧 / 小游戏 / 内容产品；默认短剧
+  - name: 已有表或字段
+    type: text
+    required: false
+    description: 若已存在资料库表，传入表 ID 与字段清单以做增量填充
+  - name: 选样要求
+    type: text
+    required: false
+    description: 短名单条数、是否必须题材去重、是否需要黑马位
+outputs:
+  - path: 结构化选题资料库（数据表）
+    type: external
+  - path: 三类描述字段批量填充内容
+    type: external
+  - path: 投产短名单（S/A/B/黑马位 + 推荐理由）
+    type: external
+  - path: 开采报告（分布统计 + 合规提示 + 下一步建议）
+    type: inline
+degrade:
+  - trigger: 无法创建或写入资料库表
+    action: 降级为本地 Markdown 表 + JSON 快照，字段与表结构保持一致，标注"未入表"
+    target: 结构化选题资料库
+  - trigger: 素材条数不足或字段缺失导致无法判定路线/风险
+    action: 该条标记"待定"，输出缺失项清单交用户补全，不阻断其余条目
+    target: 三类描述字段批量填充内容
+  - trigger: 大批量写作中标签对齐校验不通过
+    action: L1 仅重做不一致条目；L2 若整组路线串味则重新生成该组；L3 仍不通过则标注"标签未对齐"并把标签原值附在文本头部
+    target: 三类描述字段批量填充内容
+  - trigger: 候选池题材分布过度集中（单一族群超过 30%）
+    action: 触发题材去重，同族群只保留最高分 1~2 条，其余降为备选，并强制补足黑马位
+    target: 投产短名单
