@@ -41,7 +41,7 @@
 | R2.1 | 字段类型正确 | timeout/retry.max/retry.interval 为 integer;retry.backoff 为 string;inputs[].required/outputs[].optional 为 boolean | `R2-SCHEMA-INVALID` |
 | R2.2 | 必填字段存在 | inputs[].name、outputs[].path、outputs[].type、degrade[].trigger、degrade[].action 均存在 | `R2-SCHEMA-INVALID` |
 | R2.3 | 无未知字段 | 无 schema 未声明的顶层/嵌套字段(additionalProperties:false) | `R2-SCHEMA-INVALID` |
-| R2.4 | 枚举值合法 | retry.backoff ∈ {fixed, exponential};outputs[].type ∈ {file, directory} | `R2-SCHEMA-INVALID` |
+| R2.4 | 枚举值合法 | retry.backoff ∈ {fixed, exponential};outputs[].type ∈ {file, directory, inline, external} | `R2-SCHEMA-INVALID` |
 
 ### 2.3 契约一致性(R3)
 

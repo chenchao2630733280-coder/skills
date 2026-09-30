@@ -46,13 +46,15 @@ runtime.yaml 是单个 YAML 文件,位于 skill 根目录(如 `game-asset-forge/
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `path` | string | 是 | - | 产物路径,相对 skill 根目录,支持 glob |
-| `type` | string (enum) | 是 | - | 取值 `file` / `directory` |
+| `path` | string | 是 | - | 产物路径,相对 skill 根目录,支持 glob;`type: inline` / `external` 时作为产物名称/标签 |
+| `type` | string (enum) | 是 | - | 取值 `file` / `directory` / `inline` / `external` |
 | `optional` | boolean | 否 | false | 是否可选产物 |
 
 约束:
 - `path` 必须为非空字符串
-- `type` 取值必须在 `file` / `directory` 枚举集合内
+- `type` 取值必须在 `file` / `directory` / `inline` / `external` 枚举集合内
+- `inline` 用于在对话中直接交付、不落盘的产物(如建议、候选集、报告文本);此时 `path` 作为产物名称而非文件路径
+- `external` 用于写入外部系统的产物(数据表 / 云文档 / 云盘等),不落回仓库;此时 `path` 作为产物名称/标签
 - `optional` 必须为布尔值
 
 ## 五、degrade[] 子字段
@@ -114,7 +116,7 @@ runtime.yaml 是单个 YAML 文件,位于 skill 根目录(如 `game-asset-forge/
         "required": ["path", "type"],
         "properties": {
           "path": { "type": "string", "minLength": 1 },
-          "type": { "type": "string", "enum": ["file", "directory", "inline"] },
+          "type": { "type": "string", "enum": ["file", "directory", "inline", "external"] },
           "optional": { "type": "boolean" }
         }
       }

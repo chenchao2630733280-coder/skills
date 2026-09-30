@@ -43,8 +43,8 @@ runtime.yaml 是每个 skill **可选**声明的运行时元数据文件,位于 
 | `inputs[].schema` | string | 否 | null | JSON Schema 文件路径(相对 skill 根目录) |
 | `inputs[].required` | boolean | 否 | true | 是否必填 |
 | `outputs` | array | 否 | `[]` | 产物声明列表,每项含 path/type/optional |
-| `outputs[].path` | string | 是 | - | 产物路径(相对 skill 根目录,支持 glob) |
-| `outputs[].type` | string | 是 | - | `file` / `directory` |
+| `outputs[].path` | string | 是 | - | 产物路径(相对 skill 根目录,支持 glob);`inline`/`external` 时为产物名称 |
+| `outputs[].type` | string | 是 | - | `file` / `directory` / `inline` / `external`(分别指本地文件、本地目录、对话内交付、外部系统) |
 | `outputs[].optional` | boolean | 否 | false | 是否可选产物 |
 | `degrade` | array | 否 | `[]` | 降级策略列表,每项含 trigger/action/target;模式见 `references/degrade-patterns.md` |
 | `degrade[].trigger` | string | 是 | - | 触发条件描述(如"生图失败") |
