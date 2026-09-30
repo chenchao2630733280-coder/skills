@@ -53,6 +53,17 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 - 分镜缺失 → 报错"docs/STORYBOARD.md 缺失,请先调用 short-drama-storyboard",直接退出
 - 台词抽取时发现分镜缺少对应镜头号 → 记录到 ASSET_ISSUES,该句降级为"旁白式配音"(归入最近镜头),不阻塞
 
+**音色资产锁定校验(硬前置)**:与 video-forge §二.0 对等,音频层同样不得消费未锁定音色。扫描清册中本剧说话人对应的全部 `voice[]` 条目,逐条检查:
+
+| 检查 | 不通过行为 |
+|---|---|
+| `voice[]` 条目存在且 `status == "locked"`(或 `skipped`) | **报错退出**:列出未锁定/缺失音色的角色清单,提示回阶段 4.5 定妆并过 Gate 3.5 |
+| `samplePath` 文件存在(`assets/voice/{charId}.mp3`) | 报错退出,列出缺失文件路径 |
+| 文件 sha256 前 12 位 == 清册 `hash` | 报错退出(音色样本被偷换),提示回阶段 4.5 走变更流程 |
+| 蓝图标注音频裁剪时 `voice` 整体 `skipped=true` | 跳过本表,按 §3.1 走"试音失败"降级路径(保留 voiceId/音色描述,样本留空) |
+
+> 与 video-forge 的区别:音频层没有"图像漂移"这种可事后检测的软降级,音色一旦不一致只能整段重配 —— 所以这里的锁定校验同样是**硬阻断**,不设"先跑后修"。
+
 ---
 
 ## 三、TTS 情感配音
@@ -189,6 +200,7 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 ## 八、自检清单
 
 - [ ] 每集台词全覆盖:剧本对白行→配音文件一一对应(数量/顺序/镜头号)
+- [ ] **输入校验已过:全剧说话人对应的 `voice[]` 条目均 `status=locked`,样本文件存在且 hash 相符(或整类 `skipped=true`)**
 - [ ] 每句台词情感标签与剧情一致(对照剧本上下文)
 - [ ] **每句台词声源可解析到清册 `voice[].id`;无"临时挑的音色"**
 - [ ] **同角色全剧同一 `voiceId`(跨集音色一致);`AUDIO_SPEC.md` 以 voiceId 引用而非重述音色**

@@ -37,6 +37,23 @@
 
 Gate 3.5 回退分流判据:图缺失/不达标/hash 不符/未锁定 → 阶段 4.5;清册 schema 非法/引用不闭合/漏声明资产/变体 seed 冲突 → 阶段 4。
 
+**Gate 3.5 失败码速查**(填 §二 表格时直接取用,与 `gate-checks.md` 3.5.1~3.5.13 一一对应):
+
+| # | 失败码 | 含义 | 回退 |
+|---|---|---|---|
+| 3.5.1 | G35-MANIFEST-INVALID | 清册不可解析/五类不全 | 阶段 4 |
+| 3.5.2 | G35-NOT-LOCKED | 被引用资产未锁定 | 阶段 4.5 |
+| 3.5.3 | G35-LOCK-FIELD-MISSING | 锁定字段有空值 | 阶段 4.5 |
+| 3.5.4 / 3.5.5 | G35-ASSET-FILE-MISSING | 角色/场景/道具图缺失 | 阶段 4.5 |
+| 3.5.6 | G35-HASH-MISMATCH | hash 与实体文件不符 | 阶段 4.5 |
+| 3.5.7 | G35-BASELINE-MISMATCH | 基线表与清册对不上 | 阶段 4.5 |
+| 3.5.8 | G35-VARIANT-INCOMPLETE | 变体缺失/seed 冲突 | 阶段 4 |
+| 3.5.9 | G35-STYLE-BASELINE-MISSING | 风格基线缺失/不唯一 | 阶段 4.5 |
+| 3.5.10 | G35-REF-QUALITY-WEAK | 定妆图技术不达标 | 阶段 4.5 |
+| 3.5.11 | G35-VOICE-MISSING | 音色资产缺失 | 阶段 4.5 |
+| 3.5.12 | G35-DEGRADE-UNMARKED | 降级未在基线表签字 | 阶段 4.5 |
+| 3.5.13 | G35-IMPACT-MISSING | 有变更但缺影响面报告 | 阶段 4.5 |
+
 ## 三、软问题清单(WARNING,不阻断)
 
 | # | 检查项 | 详情 | 建议处理 |

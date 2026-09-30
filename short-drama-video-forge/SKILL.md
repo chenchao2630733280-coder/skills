@@ -17,7 +17,7 @@ description: "Stage 5 of the AI short-drama production pipeline. Reads docs/STOR
 
 **输入**(必读):
 - `docs/STORYBOARD.md`(分镜,取每镜头 prompt/时长/景别/运镜/角色(+变体)/场景/道具)
-- `docs/ASSET_MANIFEST.json`(**资产唯一真源**:取 refImage 路径/seed/styleKeywords/变体表/风格基线 token;所有资产必须 `status=locked`)
+- `docs/ASSET_MANIFEST.json`(**资产唯一真源**,只读,不修改):从中取 `refImage` 路径 / `seed` / `styleKeywords` / 变体表 / 风格基线 token 用于**生成**;所有被引用资产必须 `status=locked`。**这些字段只在清册里读,不得转写进 `production/manifest.json`**(见 §3.2)
 - `docs/VISUAL_SPEC.md`(取镜头级补充描述:场景设定、道具设定、字幕样式安全区)
 - `docs/SHORT_DRAMA_BLUEPRINT.md`(取工具链选型,决定调用哪些工具)
 
