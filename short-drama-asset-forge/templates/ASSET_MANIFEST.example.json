@@ -1,0 +1,199 @@
+{
+  "version": "1.0",
+  "project": {
+    "title": "雨夜追凶",
+    "totalEpisodes": 60,
+    "aspectRatio": "9:16",
+    "resolution": [1080, 1920],
+    "style": "都市悬疑"
+  },
+  "styleBaseline": {
+    "id": "style_main",
+    "name": "都市悬疑-冷调电影感",
+    "keywords": ["都市悬疑", "冷色调", "电影感"],
+    "negativeKeywords": ["低质量", "变形", "多余手指", "文字水印", "边框"],
+    "colorTendency": "冷蓝+霓虹点缀",
+    "lightMoodMap": {
+      "紧张": "冷光硬影",
+      "压抑": "低照度高反差",
+      "温馨": "暖光柔焦",
+      "释然": "柔光渐亮"
+    },
+    "status": "locked",
+    "assetVersion": 1,
+    "hash": "e5f6a1b2c3d4",
+    "lockedAt": "2025-01-01T10:00:00+08:00",
+    "lockedBy": "user-confirm",
+    "cardPath": "assets/style/baseline.json"
+  },
+  "characters": [
+    {
+      "id": "linwan",
+      "name": "林晚",
+      "role": "protagonist",
+      "ageRange": "25 岁左右",
+      "appearsIn": ["EP01", "EP02", "EP07", "EP11"],
+      "shotRefCount": 412,
+      "variants": [
+        {
+          "variantId": "default",
+          "label": "常态",
+          "appearance": "高马尾/黑色风衣/利落碎发",
+          "refImage": "assets/char/linwan/default.png",
+          "seed": 20241,
+          "styleKeywords": ["都市悬疑", "冷色调", "电影感"],
+          "derivedFrom": null,
+          "episodes": ["EP01", "EP02", "EP11"],
+          "status": "locked",
+          "assetVersion": 1,
+          "hash": "a1b2c3d4e5f6",
+          "lockedAt": "2025-01-01T10:00:00+08:00",
+          "lockedBy": "user-confirm"
+        },
+        {
+          "variantId": "student",
+          "label": "学生时代（回忆线）",
+          "appearance": "齐耳短发/白衬衫/藏青校服外套",
+          "refImage": "assets/char/linwan/student.png",
+          "seed": 20242,
+          "styleKeywords": ["都市悬疑", "冷色调", "电影感"],
+          "derivedFrom": "default",
+          "episodes": ["EP07"],
+          "status": "locked",
+          "assetVersion": 1,
+          "hash": "b2c3d4e5f6a1",
+          "lockedAt": "2025-01-01T10:00:00+08:00",
+          "lockedBy": "user-confirm"
+        }
+      ]
+    },
+    {
+      "id": "chenmo",
+      "name": "陈默",
+      "role": "antagonist",
+      "ageRange": "35 岁左右",
+      "appearsIn": ["EP01", "EP03"],
+      "shotRefCount": 240,
+      "variants": [
+        {
+          "variantId": "default",
+          "label": "常态",
+          "appearance": "背头/深灰西装/金丝眼镜",
+          "refImage": "assets/char/chenmo/default.png",
+          "seed": 20251,
+          "styleKeywords": ["都市悬疑", "冷色调", "电影感"],
+          "derivedFrom": null,
+          "episodes": ["EP01", "EP03"],
+          "status": "declared",
+          "assetVersion": null,
+          "hash": null,
+          "lockedAt": null,
+          "lockedBy": null
+        }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "rainy_alley",
+      "name": "雨夜巷口",
+      "description": "雨夜巷口，霓虹灯牌，水洼倒影",
+      "mood": "压抑悬疑",
+      "lighting": "冷蓝侧光，雨丝可见",
+      "refImage": "assets/scene/rainy_alley.png",
+      "seed": 30011,
+      "oneOff": false,
+      "episodes": ["EP01", "EP02", "EP11"],
+      "shotRefCount": 96,
+      "status": "locked",
+      "assetVersion": 1,
+      "hash": "c3d4e5f6a1b2",
+      "lockedAt": "2025-01-01T10:00:00+08:00",
+      "lockedBy": "user-confirm"
+    },
+    {
+      "id": "rooftop_night",
+      "name": "天台夜",
+      "description": "写字楼天台，城市夜景，冷风",
+      "mood": "孤绝",
+      "lighting": "环境冷光 + 城市光污染",
+      "refImage": null,
+      "seed": null,
+      "oneOff": true,
+      "episodes": ["EP22"],
+      "shotRefCount": 2,
+      "status": "skipped",
+      "assetVersion": null,
+      "hash": null,
+      "lockedAt": null,
+      "lockedBy": null
+    }
+  ],
+  "props": [
+    {
+      "id": "prop_watch",
+      "name": "旧怀表",
+      "significance": "终极真相线索：表盖内侧刻字指向真凶",
+      "firstHintEp": "EP03",
+      "refImage": "assets/prop/prop_watch.png",
+      "seed": 41002,
+      "episodes": ["EP03", "EP12", "EP48"],
+      "shotRefCount": 14,
+      "status": "locked",
+      "assetVersion": 1,
+      "hash": "d4e5f6a1b2c3",
+      "lockedAt": "2025-01-01T10:00:00+08:00",
+      "lockedBy": "user-confirm"
+    }
+  ],
+  "voice": [
+    {
+      "id": "voice_linwan",
+      "charId": "linwan",
+      "timbre": "低沉磁性女声，略带沙哑",
+      "baseEmotion": "平静",
+      "speechRate": 1.0,
+      "ttsVoiceName": "zh-CN-XiaoxiaoNeural",
+      "samplePath": "assets/voice/linwan.mp3",
+      "emotionTags": ["平静", "愤怒", "悲伤", "阴险", "释然"],
+      "status": "locked",
+      "assetVersion": 1,
+      "hash": "f6a1b2c3d4e5",
+      "lockedAt": "2025-01-01T10:00:00+08:00",
+      "lockedBy": "user-confirm",
+      "skipped": false
+    },
+    {
+      "id": "voice_chenmo",
+      "charId": "chenmo",
+      "timbre": "沉稳中年男声，压低声线",
+      "baseEmotion": "平静",
+      "speechRate": 0.95,
+      "ttsVoiceName": "zh-CN-YunyeNeural",
+      "samplePath": null,
+      "emotionTags": ["平静", "阴险", "愤怒"],
+      "status": "degraded",
+      "assetVersion": null,
+      "hash": null,
+      "lockedAt": null,
+      "lockedBy": null,
+      "skipped": false
+    }
+  ],
+  "usage": {
+    "shotTotal": 900,
+    "characterRefs": 812,
+    "sceneRefs": 430,
+    "propRefs": 26,
+    "voiceLines": 640
+  },
+  "summary": {
+    "characterCount": 2,
+    "variantCount": 3,
+    "sceneCount": 2,
+    "propCount": 1,
+    "voiceCount": 2,
+    "assetTotal": 8,
+    "degradedCount": 2
+  }
+}

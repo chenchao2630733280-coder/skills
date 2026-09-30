@@ -14,10 +14,14 @@ inputs:
     type: file
     required: true
     description: 分镜脚本（镜头号/时长/音效音乐提示，short-drama-storyboard 产出）
-  - name: docs/VISUAL_SPEC.md
+  - name: docs/ASSET_MANIFEST.json
     type: file
     required: true
-    description: 角色视觉设定（年龄/性别/气质，音色映射依据）
+    description: 音色资产唯一来源（voice[].id/ttsVoiceName/timbre/speechRate/emotionTags）；必须 status=locked，音频裁剪时 voice.skipped=true
+  - name: docs/VISUAL_SPEC.md
+    type: file
+    required: false
+    description: 角色视觉设定（仅用于理解角色；音色以 ASSET_MANIFEST.json 为准）
 outputs:
   - path: audio/{ep}/line_{XX}.mp3
     type: file
@@ -31,12 +35,21 @@ outputs:
   - path: docs/AUDIO_SPEC.md
     type: file
     optional: true
-    description: 音频规格（音色映射/情感标签/语速/BGM 匹配标注）
+    description: 音频规格（音色映射以 voiceId 引用 / 情感标签 / 语速 / BGM 匹配标注）
   - path: docs/ASSET_ISSUES.md
     type: file
     optional: true
     description: 失败清单（追加，不覆盖）
 degrade:
+  - trigger: 声源无法解析到 voiceId，或整角色缺失 voice 资产
+    action: 单句→旁白式配音降级 + 记入 ASSET_ISSUES；整角色缺失→报错退出，回 short-drama-asset-forge（阶段 4.5）补齐音色资产；禁止自行挑音色
+    target: 音色资产
+  - trigger: voice.status != locked（降级未签字）
+    action: 有用户签字 → 按 ttsVoiceName 直出并标 WARNING；无签字 → 报错退出，不得自行换音色
+    target: 音色资产
+  - trigger: 情感标签超出该 voice 资产的 emotionTags
+    action: 就近归入已批准标签 + 记入 ASSET_ISSUES；不得新增标签（新增 = 资产变更，回阶段 4.5）
+    target: 情感标签
   - trigger: TTS 生成失败
     action: 静音占位（1s 静音 mp3）+ 字幕保留并标记"配音待补"；或切换备选 TTS 重试 ≤2 次
     target: audio/{ep}/line_{XX}.mp3

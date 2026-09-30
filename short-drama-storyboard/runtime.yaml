@@ -20,7 +20,10 @@ outputs:
     description: 分镜脚本，每镜头含文生图/图生视频 prompt
   - path: docs/VISUAL_SPEC.md
     type: file
-    description: 视觉规范：角色卡/场景设定/风格基线/字幕样式/画幅安全区
+    description: 视觉规范：角色卡(含变体子表)/场景设定/道具/风格基线/字幕样式/画幅安全区
+  - path: docs/ASSET_MANIFEST.json
+    type: file
+    description: 机读资产需求清册（五类资产 status=declared），阶段 4.5 定妆与阶段 5/6 的唯一资产来源
 degrade:
   - trigger: 剧本过长为镜头数爆炸（单集超过 25 镜头）
     action: 合并冗余镜头（同场景连续同景别合并、删动作细节只留主事件），优先保卡点镜头与情绪特写，压缩回 10-25 镜头
@@ -31,3 +34,6 @@ degrade:
   - trigger: 镜头时长与对白时长不匹配（字幕读不完或留白过长）
     action: 调整镜头时长至对白可读完（3-10 秒内）；对白过长则拆分对白到连续两个镜头
     target: 镜头时长/对白
+  - trigger: 资产需求清册汇总不一致（引用到的角色/变体/场景未在 VISUAL_SPEC 定义，或 summary 计数与引用不符）
+    action: 以 STORYBOARD 实际引用为准回填 VISUAL_SPEC 与清册；同角色多变体 seed 冲突时强制重分配互异 seed
+    target: 资产需求清册

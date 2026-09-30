@@ -1,6 +1,6 @@
 # Gate {N} {门名}报告
 
-> 模板说明:复制本文件到 `docs/GATE_{N}_REPORT.md`(N = 0~4,与总纲 §八 固定路径一致),填写 {占位符} 后删除本说明行。只写报告,不修改任何业务产物。
+> 模板说明:复制本文件到 `docs/GATE_{N}_REPORT.md`(N = 0~4 与 3.5,与总纲 §八 固定路径一致),填写 {占位符} 后删除本说明行。只写报告,不修改任何业务产物(含不得回写 docs/ASSET_MANIFEST.json)。
 
 - 检查时间:{ISO8601,如 2025-01-01T10:00:00+08:00}
 - 检查范围(本 Gate 输入):{列出实际校验的产物固定路径}
@@ -32,7 +32,10 @@
 | Gate 1 FAIL | short-drama-spec(阶段 2) |
 | Gate 2 FAIL | short-drama-script(阶段 3) |
 | Gate 3 FAIL | short-drama-storyboard(阶段 4) |
+| Gate 3.5 FAIL | 实体层问题 → short-drama-asset-forge(阶段 4.5);声明层问题 → short-drama-storyboard(阶段 4) |
 | Gate 4 FAIL | short-drama-video-forge / short-drama-audio-forge(阶段 5/6) |
+
+Gate 3.5 回退分流判据:图缺失/不达标/hash 不符/未锁定 → 阶段 4.5;清册 schema 非法/引用不闭合/漏声明资产/变体 seed 冲突 → 阶段 4。
 
 ## 三、软问题清单(WARNING,不阻断)
 

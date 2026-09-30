@@ -1,52 +1,58 @@
 {
+  "version": "1.0",
   "project": {
-    "name": "{剧名}",
-    "total_episodes": 60,
-    "aspect_ratio": "9:16",
-    "resolution": "1080x1920",
-    "style": "{风格关键词，与 VISUAL_SPEC 一致}"
+    "title": "{剧名}",
+    "totalEpisodes": 60,
+    "aspectRatio": "9:16",
+    "resolution": [1080, 1920],
+    "style": "{风格关键词，与 VISUAL_SPEC / ASSET_MANIFEST 一致}"
   },
   "toolchain": {
-    "image": "{即梦 / Midjourney / SD / Flux}",
-    "video": "{可灵 / 即梦 / Runway / Pika / Sora / 海螺}",
+    "textToImage": "{即梦 / Midjourney / SD / Flux}",
+    "imageToVideo": "{可灵 / 即梦 / Runway / Pika / Sora / 海螺}",
     "tts": "{火山引擎 / Edge TTS / CosyVoice / Azure}",
     "music": "{Suno / Udio / 平台曲库}"
   },
-  "characters": [
-    {
-      "id": "hero",
-      "name": "{角色名}",
-      "ref_image": "{参考图路径，如 assets/ref/hero.png}",
-      "seed": 12345,
-      "style_keywords": "{风格关键词}"
-    }
-  ],
-  "scenes": [
-    {
-      "id": "scene_01",
-      "name": "{场景名}",
-      "description": "{环境/氛围/光线}"
-    }
-  ],
+  "assets": {
+    "source": "docs/ASSET_MANIFEST.json",
+    "sourceVersion": "1.0",
+    "sourceHash": "{清册文件 sha256 前 12 位}",
+    "characters": [
+      { "id": "linwan", "variant": "default", "assetVersion": 1, "hash": "{a1b2c3d4e5f6}" },
+      { "id": "linwan", "variant": "student", "assetVersion": 1, "hash": "{b2c3d4e5f6a1}" }
+    ],
+    "scenes": [ { "id": "rainy_alley", "assetVersion": 1, "hash": "{c3d4e5f6a1b2}" } ],
+    "props": [ { "id": "prop_watch", "assetVersion": 1, "hash": "{d4e5f6a1b2c3}" } ],
+    "voice": [ { "id": "voice_linwan", "assetVersion": 1, "hash": "{f6a1b2c3d4e5}" } ],
+    "styleBaseline": { "id": "style_main", "assetVersion": 1, "hash": "{e5f6a1b2c3d4}" }
+  },
   "episodes": [
     {
       "ep": "EP01",
+      "bgm": "audio/bgm_tension.mp3",
       "shots": [
         {
           "id": "EP01-S01",
-          "script_file": "docs/scripts/EP01.md",
-          "image_prompt": "{文生图 prompt：主体+动作+环境+光线+风格+9:16}",
-          "video_prompt": "{图生视频 prompt：画面主体+运动+镜头运动+时长}",
-          "duration_s": 4,
-          "shot_scale": "近景",
+          "scriptFile": "docs/scripts/EP01.md",
+          "imagePrompt": "{主体+动作+环境+光线+风格+9:16+reference:assets/char/linwan/default.png+负面词}",
+          "videoPrompt": "{画面主体+运动+镜头运动+时长}",
+          "duration": 4,
+          "shotSize": "近景",
           "camera": "固定",
-          "characters": ["hero"],
-          "scene": "scene_01",
-          "sfx": "{音效}",
+          "characters": ["linwan"],
+          "charVariants": { "linwan": "default" },
+          "scenes": ["rainy_alley"],
+          "props": [],
+          "voiceId": "voice_linwan",
+          "sound": "{音效}",
           "subtitle": "{对白/字幕文本}",
           "status": "pending",
-          "degrade_type": null,
-          "output_path": "shots/EP01/shot_01.mp4"
+          "degradeType": null,
+          "outputPath": "shots/EP01/shot_01.mp4",
+          "line": "audio/EP01/line_01.mp3",
+          "assetSnapshot": {
+            "linwan": { "variant": "default", "assetVersion": 1, "hash": "{a1b2c3d4e5f6}" }
+          }
         }
       ]
     }

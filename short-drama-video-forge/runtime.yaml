@@ -10,10 +10,18 @@ inputs:
     type: file
     required: true
     description: 阶段 4 short-drama-storyboard 产出，取每镜头 prompt/时长/景别/运镜/角色/场景
+  - name: 资产需求清册（docs/ASSET_MANIFEST.json）
+    type: file
+    required: true
+    description: 资产唯一真源；取 refImage/seed/styleKeywords/变体表/风格基线；全部被引用资产必须 status=locked，否则硬前置违约直接退出
+  - name: 资产基线锁定表（docs/ASSET_BASELINE.md）
+    type: file
+    required: false
+    description: 追溯"哪一集用哪版定妆图"；有降级资产签字时用于判断是否放行
   - name: 视觉规范（docs/VISUAL_SPEC.md）
     type: file
     required: true
-    description: 取角色参考图路径/seed/风格关键词/场景设定
+    description: 取镜头级补充描述：场景设定/道具设定/字幕样式安全区
   - name: 立项蓝图（docs/SHORT_DRAMA_BLUEPRINT.md）
     type: file
     required: false
@@ -21,7 +29,7 @@ inputs:
 outputs:
   - path: production/manifest.json
     type: file
-    description: 机读生产清单，阶段 7 剪辑与 Gate 4 只读此文件
+    description: 机读生产清单（含 assets 引用块：id+variant+assetVersion+hash；禁止复制资产定义），阶段 7 剪辑与 Gate 4 只读此文件
   - path: shots/{ep}/shot_{XX}.mp4
     type: file
     description: 镜头视频，1080x1920 / 3-10 秒
@@ -32,6 +40,12 @@ outputs:
     type: file
     description: 失败/降级记录，有降级时必写
 degrade:
+  - trigger: 资产硬前置违约（被引用资产 status != locked / 实体文件缺失 / 文件 hash 与清册不符 / 风格基线未锁定）
+    action: 不降级、不继续——报错退出并列出问题资产清单，提示回 short-drama-asset-forge（阶段 4.5）定妆或走变更流程；由 Gate 3.5 复核。禁止用未锁定资产生成镜头
+    target: 资产基线
+  - trigger: 系统性角色漂移（同一资产在多个镜头持续漂移）
+    action: 不逐镜头硬凑——报错并建议回阶段 4.5 做资产变更（生成 ASSET_IMPACT.md 影响面 + 用户决策），变更后按新 hash 重跑受影响镜头
+    target: 资产基线
   - trigger: 单镜头生成失败（文生图或图生视频报错/超时/质检不合格）
     action: 重试 ≤3 次（指数退避）；仍失败：图生视频失败→降级静态图+缩放/平移模拟运镜（degradeType=static-image）；文生图失败→纯色+文字占位图标注"待人工出图"（degradeType=placeholder）
     target: 单镜头

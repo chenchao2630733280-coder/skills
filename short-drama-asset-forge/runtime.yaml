@@ -1,0 +1,71 @@
+# runtime.yaml — short-drama-asset-forge
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 1800
+retry:
+  max: 3
+  backoff: exponential
+  interval: 10
+inputs:
+  - name: 资产需求清册（docs/ASSET_MANIFEST.json）
+    type: file
+    required: true
+    description: 阶段 4 short-drama-storyboard 产出（status=declared），资产唯一真源
+  - name: 视觉规范（docs/VISUAL_SPEC.md）
+    type: file
+    required: true
+    description: 角色卡/场景设定/风格基线/字幕样式，定妆图的文字依据
+  - name: 分镜脚本（docs/STORYBOARD.md）
+    type: file
+    required: true
+    description: 取各资产的实际引用集数与镜头数，判定 oneOff 与变更影响面
+  - name: 立项蓝图（docs/SHORT_DRAMA_BLUEPRINT.md）
+    type: file
+    required: false
+    description: 取工具链选型（文生图/TTS 工具）与阶段裁剪（音频是否裁剪）
+outputs:
+  - path: assets/char/{charId}/{variantId}.png
+    type: file
+    description: 角色定妆图（含变体），短边 ≥1024px，单人半身
+  - path: assets/scene/{sceneId}.png
+    type: file
+    description: 场景定稿图，oneOff 场景可免
+  - path: assets/prop/{propId}.png
+    type: file
+    description: 剧情道具定稿图
+  - path: assets/voice/{charId}.mp3
+    type: file
+    description: 音色试音样本（10-20 秒）
+  - path: assets/style/baseline.json
+    type: file
+    description: 风格基线卡（locked token，全剧强制叠加）
+  - path: docs/ASSET_BASELINE.md
+    type: file
+    description: 资产基线锁定表（锁定表/变更记录/已知风险签字）
+  - path: docs/ASSET_MANIFEST.json
+    type: file
+    description: 回写 status/assetVersion/hash/lockedAt
+  - path: docs/ASSET_IMPACT.md
+    type: file
+    description: 资产变更影响面报告，仅变更时产出
+  - path: docs/ASSET_ISSUES.md
+    type: file
+    description: 失败/降级记录，追加，有降级时必写
+degrade:
+  - trigger: 单个资产生成失败（文生图/TTS 报错、超时、质检不达标）
+    action: 原文重试 2 次 → 简化 prompt 1 次 → 换备选工具 1 次；仍失败落占位图并把该资产标 status=degraded（占位图：纯色底+资产名+DEGRADED 角标，分辨率同正式图）
+    target: 单个资产
+  - trigger: 定妆图不达标（多人/带文字水印/全身远景/短边<1024px）
+    action: 按 references/asset-baseline-rules.md §6 修 prompt 重生成 ≤3 次；仍不达标则该资产停 status=declared，等 Gate 3.5 硬阻断
+    target: 定妆图
+  - trigger: 变体 seed 冲突（同角色多变体共用 seed）
+    action: 强制重分配互异 seed 并重出该变体；不修正则由 Gate 3.5 按 G35-VARIANT-SEED-COLLISION 阻断
+    target: 角色变体
+  - trigger: TTS 试音失败或鉴权不可用
+    action: 切备选 TTS 重试 ≤2 次；仍失败保留 voiceId/timbre/ttsVoiceName，samplePath 置空并标 voice.status=degraded（Gate 3.5 记 WARNING，不阻断阶段 6）
+    target: 音色资产
+  - trigger: 音频阶段被裁剪（口播/图文短剧）
+    action: 不产占位文件，voice 类标 skipped=true，Gate 3.5 跳过该类校验
+    target: 音色资产类
+  - trigger: 工具链整体不可用（全部文生图工具不可达）
+    action: 不静默降级；明确告知用户「整剧只能出占位资产」的后果，全类标 degraded；仅在用户于 docs/ASSET_BASELINE.md 签字豁免后放行，无签字由 Gate 3.5 硬阻断
+    target: 工具链

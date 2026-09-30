@@ -17,13 +17,15 @@ description: "AI short-drama pipeline stage 7 (final edit, contains the Gate 5 r
 - `audio/{ep}/line_{XX}.mp3`、`audio/bgm_{name}.mp3`、`audio/sfx_{name}.mp3`(short-drama-audio-forge 产出)
 - `subtitles/{ep}.srt`:字幕
 - `docs/AUDIO_SPEC.md`(如有,BGM 分段电平标注)
+- `docs/ASSET_BASELINE.md` + `docs/ASSET_ISSUES.md`(如有,**必须读取**:遗留降级资产清单要写进 BUILD_REPORT)
 - `docs/GATE_4_REPORT.md`(如有,了解已知问题)
 
 **输出**(固定路径,与总纲 §八 严格一致):
 - `episodes/EP{XX}.mp4`:每集成片(XX=两位数编号)
 - `docs/BUILD_REPORT.md`:合成与验收报告(内含 Gate 5 结果)
 
-> manifest 结构以 short-drama-video-forge 产出为准;本 skill 的最小读取契约:每集含 `episode`、`shots[]`(每镜头含 `shot_id`、`file`、`type`(video/image)、`duration`、可选 `line`(对应配音文件))、`bgm`。字段缺失时按 §六 降级。
+> **manifest 字段契约以 `short-drama-video-forge/SKILL.md` §三 为准**(camelCase,唯一真源)。
+> 本 skill 的最小读取契约:每集含 `ep`、`bgm`(可选)、`shots[]`;每镜头含 `id`、`outputPath`(`.mp4`,降级时为 `.png`)、`duration`、`subtitle`,可选 `line`(对应配音文件)、`sound`、`props`、`assetSnapshot`。字段缺失时按 §六 降级 —— **不得在本 skill 内自行推断资产或音色**(那属于阶段 4.5 的产物)。
 
 ---
 
@@ -125,6 +127,7 @@ description: "AI short-drama pipeline stage 7 (final edit, contains the Gate 5 r
 - [ ] 每集通过 Gate 5 全部检查项,或已记录失败清单
 - [ ] BUILD_REPORT.md 每集含时长/文件大小/检查项 PASS/FAIL + 失败清单
 - [ ] 降级项全部写入报告(占位黑场/待补拍/未烧录标记)
+- [ ] **BUILD_REPORT.md 含"遗留降级资产清单"**:把 `docs/ASSET_BASELINE.md`「已知风险签字」栏与 `docs/ASSET_ISSUES.md` 中尚未替换的降级资产逐条列出(资产 id / 版本 / 影响集数 / 建议处理)—— 这是签字豁免资产的最终兜底可见性
 
 ---
 

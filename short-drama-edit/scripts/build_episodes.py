@@ -11,18 +11,19 @@
 说明:
     本脚本是 SKILL.md §三/§四 的自动化形态:读取 production/manifest.json,
     按集生成"拼接→转场→运镜→混音→烧字幕→导出"的 ffmpeg 命令并执行。
-    manifest 结构(最小读取契约,以 short-drama-video-forge 实际产出为准):
+    manifest 结构(最小读取契约,以 short-drama-video-forge/SKILL.md §三 为准):
         {
-          "episode": "EP01",
-          "shots": [
-            {"shot_id": 1, "file": "shots/EP01/shot_01.mp4",
-             "type": "video", "duration": 5.0, "line": "line_01"},
-            {"shot_id": 5, "file": "shots/EP01/shot_05.png",
-             "type": "image", "duration": 5.0, "line": null}
-          ],
+          "ep": "EP01",
           "bgm": "audio/bgm_tension.mp3",
-          "sfx": ["audio/sfx_door.mp3"]
+          "shots": [
+            {"id": "EP01-S01", "outputPath": "shots/EP01/shot_01.mp4",
+             "duration": 5, "subtitle": "你终于来了。", "line": "audio/EP01/line_01.mp3",
+             "characters": ["linwan"], "charVariants": {"linwan": "default"}, "props": []},
+            {"id": "EP01-S05", "outputPath": "shots/EP01/shot_05.png",
+             "duration": 5, "subtitle": "", "line": null}
+          ]
         }
+    shot 类型由 outputPath 后缀推断(.mp4=视频 / .png=静态图降级)。
     本文件为骨架实现:命令生成逻辑(gen_ffmpeg_cmd)是主流程,执行/重试/占位降级
     按 SKILL.md §六 处理。可直接运行,也允许流水线内按需改写(非强制完整实现)。
 """
@@ -59,20 +60,38 @@ def load_manifest() -> dict:
         sys.exit(f"[错误] manifest JSON 解析失败(行 {e.lineno}): {e}\n原文片段: {MANIFEST.read_text(encoding='utf-8')[:200]}")
 
 
+def shot_path(shot: dict) -> Path:
+    """镜头素材路径(outputPath 为准);兼容旧字段 file。"""
+    rel = shot.get("outputPath") or shot.get("file")
+    return PROJECT_ROOT / rel if rel else PROJECT_ROOT / "_missing"
+
+
+def shot_no(shot: dict) -> int:
+    """镜头序号(从 id 如 EP01-S03 解析,失败回退 0);兼容旧字段 shot_id。"""
+    sid = shot.get("id") or shot.get("shot_id")
+    if isinstance(sid, int):
+        return sid
+    if isinstance(sid, str) and "-S" in sid:
+        tail = sid.rsplit("-S", 1)[1]
+        if tail.isdigit():
+            return int(tail)
+    return 0
+
+
 def gen_ffmpeg_cmd(episode: dict, out_dir: Path) -> list[str]:
     """按集生成 ffmpeg 命令(骨架:拼接+统一参数;完整混音/字幕见 references/ffmpeg-recipes.md)。
 
     返回 ffmpeg 命令参数列表。缺镜头文件时命令引用占位黑场(占位生成见 gen_placeholder)。
     """
-    ep = episode["episode"]
+    ep = episode.get("ep") or episode.get("episode")
     # 1. 拼接清单
     list_file = PROJECT_ROOT / f"list_{ep}.txt"
     lines = []
     for shot in episode["shots"]:
-        src = PROJECT_ROOT / shot["file"]
+        src = shot_path(shot)
         if not src.exists():
             # 缺镜头:降级为占位黑场 + 字幕"待补拍"标记(见 SKILL.md §六)
-            placeholder = gen_placeholder(ep, shot["shot_id"])
+            placeholder = gen_placeholder(ep, shot_no(shot))
             lines.append(f"file '{placeholder.as_posix()}'")
         else:
             lines.append(f"file '{src.as_posix()}'")
@@ -103,7 +122,7 @@ def gen_placeholder(ep: str, shot_id: int) -> Path:
 def run_episode(episode: dict, out_dir: Path, dry_run: bool, max_retry: int = 2) -> bool:
     """合成单集;失败重试 ≤2 次,仍失败返回 False(不阻塞其他集,见 SKILL.md §六)。"""
     cmd = gen_ffmpeg_cmd(episode, out_dir)
-    ep = episode["episode"]
+    ep = episode.get("ep") or episode.get("episode")
     if dry_run:
         print(f"# {ep} 命令清单:\n  " + " ".join(cmd) + "\n")
         return True
@@ -133,9 +152,10 @@ def main() -> None:
     out_dir = Path(args.out_dir)
     results = {}
     for episode in episodes:
-        if args.ep and episode["episode"] != args.ep:
+        ep = episode.get("ep") or episode.get("episode")
+        if args.ep and ep != args.ep:
             continue
-        results[episode["episode"]] = run_episode(episode, out_dir, args.dry_run)
+        results[ep] = run_episode(episode, out_dir, args.dry_run)
 
     if not args.dry_run:
         failed = [ep for ep, ok in results.items() if not ok]

@@ -1,6 +1,6 @@
 ---
 name: "short-drama-blueprint"
-description: "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity, stage trimming, and estimated artifact scale. Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master."
+description: "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity (incl. asset count), stage trimming (asset-forge is never trimmed), and estimated artifact scale (incl. asset count and key-art output volume). Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master."
 ---
 
 # Short Drama Blueprint — 短剧立项蓝图
@@ -86,6 +86,7 @@ TTS：{火山引擎 / ...}
 |---|---|
 | 场景数 | {...} |
 | 角色数 | {...} |
+| 资产数（角色+变体+场景+道具） | {...} |
 | 特效量 | {...} |
 | 镜头数 | {...} |
 | 外部依赖 | {...} |
@@ -95,13 +96,16 @@ TTS：{火山引擎 / ...}
 - short-drama-spec：执行 / 跳过（理由：...）
 - short-drama-script：执行 / 跳过（理由：...）
 - short-drama-storyboard：执行 / 跳过（理由：...）
+- short-drama-asset-forge：执行（阶段 4.5 **不裁剪**，总纲 §四；音色资产：执行 / 跳过）
 - short-drama-video-forge：执行 / 跳过（理由：...）
 - short-drama-audio-forge：执行 / 跳过（理由：...）
 - short-drama-edit：执行（阶段 7 不裁剪，总纲 §四）
-- 质量门 Gate 0~4：执行（必走，总纲 §四）
+- 质量门 Gate 0~4 + Gate 3.5：执行（必走，总纲 §四）
 
 ## 11. 估算产物规模
 - 镜头总数：~{N} 个
+- **资产总数：~{N} 个（角色 {A} + 变体 {B} + 场景 {C} + 道具 {D} + 音色 {E}）**
+- **资产出图张数（含候选与重出）：~{N} 张（按 "资产数 × 2~4 张候选 × 1.3 重出系数"估）**
 - 音频文件数：~{N} 个（配音 + BGM）
 - 成片总时长：{N} 分钟（{集数} × {单集分钟}）
 ```
@@ -142,11 +146,14 @@ TTS：{火山引擎 / ...}
 |---|---|---|---|---|---|
 | 场景数 | 1-2 | 3-4 | 5-8 | 9-15 | >15 |
 | 角色数 | ≤3 | 4-6 | 7-10 | 11-20 | >20 |
+| **资产数（角色+变体+场景+道具）** | **≤5** | **6-12** | **13-25** | **26-45** | **>45** |
 | 特效量 | 无 | 少量 | 常规 | 较多 | 重度 |
 | 镜头数 | <100 | 100-300 | 300-600 | 600-1200 | >1200 |
 | 外部依赖 | 0 | 1 | 2 | 3 | >3 |
 
-总分 5-8 → ★；9-12 → ★★；13-17 → ★★★；18-22 → ★★★★；23+ → ★★★★★
+总分 6-10 → ★；11-15 → ★★；16-21 → ★★★；22-26 → ★★★★；27+ → ★★★★★
+
+> **为什么把"资产数"单列为评分维度**:资产是全剧**一次定妆、跨几百镜头复用**的基线,它的数量决定阶段 4.5 的工作量与一致性风险面。角色变体（换装/年龄/战损）尤其容易在立项时被低估 —— 一个角色 3 个变体 = 3 份必须跨集维护的定妆资产。
 
 ### 5. 范围边界
 "做什么"必须可执行，"不做"≥3 项。常见"不做"项：
@@ -161,11 +168,14 @@ TTS：{火山引擎 / ...}
 - 口播/数字人：跳过 storyboard/video-forge
 - 图文短剧：跳过 video-forge，storyboard 只出图 prompt
 - 全 AI 生成：全流程
-- 真人实拍辅助：script/storyboard/edit 必走，其余裁剪
+- 真人实拍辅助：script/storyboard/asset-forge/edit 必走，其余裁剪
+- **阶段 4.5（short-drama-asset-forge）不裁剪**：任何类型都要有资产基线；音频裁剪时只把"音色资产"标为跳过（`voice.skipped=true`），且阶段 5 开工前仍须过 Gate 3.5
 - 阶段 7（short-drama-edit）**不裁剪**：任何类型都要合成成片
 
 ### 7. 估算产物规模
 按集数与单集镜头数估算：一集约 10-25 个镜头（总纲 §八）；音频文件数 = 每集对白条数 + BGM 数；成片总时长 = 集数 × 单集分钟。
+
+**资产规模单独估算**（本阶段就要算，不要留到分镜后才发现）：资产总数 = 角色数 + 变体数 + 常驻场景数 + 剧情道具数（+ 音色数）；出图张数按"资产数 × 2~4 张候选 × 1.3 重出系数"估。**变体要逐个点名**（哪几个角色需要年龄/换装/战损变体），因为它直接决定阶段 4.5 的工作量与 Gate 3.5 的检查规模。
 
 ---
 
@@ -192,9 +202,10 @@ TTS：{火山引擎 / ...}
 - [ ] 范围边界"不做"≥3 项
 - [ ] 商业化模式明确（IAA/分账/版权/IP 联运，标注主次）
 - [ ] 工具链选型按总纲 §3.2，每环节含默认+备选+理由
-- [ ] 复杂度评级与各维度打分一致
-- [ ] 阶段裁剪建议逐阶段标注执行/跳过+理由
-- [ ] 估算产物规模含镜头总数/音频文件数/成片总时长
+- [ ] 复杂度评级与各维度打分一致（6 维度含**资产数**）
+- [ ] 阶段裁剪建议逐阶段标注执行/跳过+理由，且 **short-drama-asset-forge 标注为"执行（不裁剪）"**
+- [ ] 估算产物规模含镜头总数/**资产总数与出图张数**/音频文件数/成片总时长
+- [ ] 需变体的角色已逐个点名（年龄跨度/换装/战损/身份反转造型）
 - [ ] 文档无 TODO/占位文字
 - [ ] 自检未通过项已局部重做（≤2 轮）或标注交人工
 

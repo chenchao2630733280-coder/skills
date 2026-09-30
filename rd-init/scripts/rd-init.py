@@ -43,6 +43,7 @@ DRAMA_SKILLS = {
     # 短剧制作流水线（short-drama-*）
     "short-drama-forge-master", "short-drama-topic-brainstorm", "short-drama-blueprint",
     "short-drama-spec", "short-drama-script", "short-drama-storyboard",
+    "short-drama-asset-forge",
     "short-drama-video-forge", "short-drama-audio-forge", "short-drama-edit",
     "short-drama-quality-gate",
 }

@@ -18,12 +18,15 @@
 示例:
 
 ```
-portrait 9:16, 林晚(reference:char/linwan.png, seed:20241, 都市悬疑,冷色调,电影感),
+portrait 9:16, 林晚(reference:assets/char/linwan/default.png, seed:20241, 都市悬疑,冷色调,电影感),
 缓缓回头,侧脸,眼神锐利,
 雨夜巷口,地面水洼倒映霓虹,
 冷蓝侧光,雨丝可见,
-都市悬疑,电影感,cinematic lighting
+都市悬疑,电影感,cinematic lighting, 无文字, 无水印
+负面词: 低质量, 变形, 多余手指, 文字水印, 边框
 ```
+
+> **refPath 契约**:统一写 `assets/char/{charId}/{variantId}.png`,由阶段 4.5 short-drama-asset-forge 定妆产出;`{seed}` 与 `{styleKeywords}` 取自 `docs/ASSET_MANIFEST.json` 对应变体。负面词取自 `styleBaseline.negativeKeywords`。变体示例:学生时代线写 `reference:assets/char/linwan/student.png, seed:20242`。
 
 **要素检查**(缺一不可):主体 / 动作 / 环境 / 光线 / 风格 / 画幅(9:16)。
 

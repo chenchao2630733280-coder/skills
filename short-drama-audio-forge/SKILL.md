@@ -14,8 +14,11 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 **输入**(必读):
 - `docs/scripts/EP{01..NN}.md`:正式剧本(对白行、旁白、动作提示)
 - `docs/STORYBOARD.md`:分镜(镜头号、时长、景别、音效/音乐提示)
-- `docs/VISUAL_SPEC.md`:角色视觉设定(年龄/性别/气质,用于音色映射)
+- `docs/ASSET_MANIFEST.json`(**音色资产唯一来源**:取 `voice[]` 的 `voiceId`/`ttsVoiceName`/`timbre`/`speechRate`/`emotionTags`;必须 `status=locked`,音频裁剪时 `skipped=true`)
+- `docs/VISUAL_SPEC.md`:角色视觉设定(仅用于理解角色,音色**以清册为准**)
 - `docs/SHORT_DRAMA_BLUEPRINT.md`(取"8. 工具链选型"章节,TTS/音乐工具按蓝图决定)
+
+> **音频层同样有资产基线**:音色由阶段 4.5 定妆锁定(每角色一个 `voiceId` + 试音样本)。本阶段**不选音色**,只按 `voiceId` 取音 —— 跨集音色漂移是观众最容易察觉的破绽之一。
 
 **输出**(固定路径,与总纲 §八 严格一致):
 - `audio/{ep}/line_{XX}.mp3`:每集每镜头配音(XX=镜头号,2 位补零)
@@ -54,20 +57,24 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 
 ## 三、TTS 情感配音
 
-### 3.1 角色→音色映射(按 VISUAL_SPEC)
+### 3.1 角色→音色映射(取自 voice 资产,不得自选)
 
-| VISUAL_SPEC 设定 | 音色选择 | 示例 |
-|---|---|---|
-| 阳光少年/青年男 | 明亮青年男声 | Edge TTS zh-CN-YunxiNeural / 火山青年音色 |
-| 沉稳中年男 | 低沉中年男声 | Edge TTS zh-CN-YunyeNeural |
-| 甜美少女 | 甜美元气女声 | Edge TTS zh-CN-XiaoyiNeural |
-| 成熟御姐 | 低沉磁性女声 | Edge TTS zh-CN-XiaoxiaoNeural(调低音调) |
-| 沧桑老年 | 沙哑慢速 | 平台老年音色 |
-| 阴险反派 | 压低+气声/变调 | 火山/CosyVoice 情感音色 + 后期 EQ 压低 |
-| 旁白/画外音 | 中性磁性解说音 | 男/女解说音色,语速略慢 |
+**取数契约**:每句台词的说话人 → 清册 `voice[].id`(经 `charId` 对应角色)→ 用该条目的 `ttsVoiceName` / `speechRate` 生成。**本阶段没有"挑音色"的权限。**
 
-- 映射结果写入 `docs/AUDIO_SPEC.md`(角色→音色、情感标签、基准语速)
-- 原则:音色必须能从 VISUAL_SPEC 的年龄/性别/气质直接推导,不允许凭空选音。
+| 步骤 | 动作 |
+|---|---|
+| 1 | 读 `ASSET_MANIFEST.json` 的 `voice[]`,建立 `charId → voiceId / ttsVoiceName / speechRate / emotionTags` 映射 |
+| 2 | 每条台词按说话人解析到 `charId`,再取 `voiceId`;解析不到 → 记入 ASSET_ISSUES,该句降级为旁白式配音 |
+| 3 | 情感语速 = 资产基准 `speechRate` × 情感标签偏移(§3.2 表);**基准值不可改** |
+| 4 | 情感标签必须 ∈ 该资产的 `emotionTags`;超出范围 → 记 ASSET_ISSUES 并就近归入已批准标签 |
+
+- 映射结果写入 `docs/AUDIO_SPEC.md`(**引用 `voiceId`,而非重复描述音色**)
+- 原则:**音色已由阶段 4.5 定妆锁定**;本阶段不做音色决策,只做忠实还原。音色不合适 → 回阶段 4.5 走资产变更流程,不在本阶段换音
+- 音色参考表(阶段 4.5 定妆时的选音依据,本阶段仅供理解)见 `../short-drama-asset-forge/references/asset-baseline-rules.md` §4
+
+### 3.1b 旁白/画外音的资产归属
+
+旁白也必须有归属:若为某角色的内心独白 → 用该角色 `voiceId`(情感标签取 `平静`/`悲伤` 等);若为纯叙述旁白 → 在清册 `voice[]` 中登记一条 `voice_narrator`(阶段 4.5 产出),**不得临时用一个"看起来合适"的音色**。
 
 ### 3.2 情感标签体系
 
@@ -174,7 +181,7 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 | BGM | `audio/bgm_{name}.mp3` | name=情绪场景名 |
 | 音效 | `audio/sfx_{name}.mp3` | name=音效名 |
 | 字幕 | `subtitles/{ep}.srt` | ep=EP{01..NN} |
-| 音频规格 | `docs/AUDIO_SPEC.md` | 音色/情感/语速/BGM 匹配标注 |
+| 音频规格 | `docs/AUDIO_SPEC.md` | 音色(**引用 voiceId**)/情感/语速/BGM 匹配标注 |
 | 失败清单 | `docs/ASSET_ISSUES.md` | 追加,不覆盖 |
 
 ---
@@ -183,7 +190,10 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 
 - [ ] 每集台词全覆盖:剧本对白行→配音文件一一对应(数量/顺序/镜头号)
 - [ ] 每句台词情感标签与剧情一致(对照剧本上下文)
-- [ ] 音色与 VISUAL_SPEC 角色设定一致
+- [ ] **每句台词声源可解析到清册 `voice[].id`;无"临时挑的音色"**
+- [ ] **同角色全剧同一 `voiceId`(跨集音色一致);`AUDIO_SPEC.md` 以 voiceId 引用而非重述音色**
+- [ ] **每句情感标签 ∈ 该 voice 资产的 `emotionTags`;超出者已记入 ASSET_ISSUES**
+- [ ] TTS 使用的 `ttsVoiceName` 与清册一致(未擅自换音色/换工具音)
 - [ ] 字幕时间轴覆盖全片,首尾闭合,无重叠
 - [ ] 字幕每行 ≤20 字,断句与 TTS 台词一致
 - [ ] BGM 每首有情绪匹配标注(镜头段/情绪/建议电平)
@@ -201,6 +211,9 @@ description: "AI short-drama pipeline stage 6 (audio; runs in parallel with vide
 | 音乐生成失败 | 平台免费曲库 BGM 占位 + 标记 |
 | 字幕时间轴缺失 | 按台词平均语速(约 4 字/秒)估算时间轴并标注"估算时间轴" |
 | 分镜缺镜头对应台词 | 旁白式配音降级或跳过,记入 ASSET_ISSUES |
+| **声源无法解析到 voiceId** | 该句记入 ASSET_ISSUES 并降级为旁白式配音;若整角色缺失 voice 资产 → **报错退出**,回阶段 4.5 补齐音色资产(不自行挑音) |
+| **`voice.status != locked`(降级未签字)** | 若清册/ASSET_BASELINE 有签字 → 按 `ttsVoiceName` 直出并标 WARNING;无签字 → **报错退出** |
+| **情感标签超出 `emotionTags`** | 就近归入已批准标签并记入 ASSET_ISSUES;不得新增标签(新增即资产变更) |
 
 ---
 

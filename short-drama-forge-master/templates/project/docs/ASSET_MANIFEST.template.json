@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+
+  "project": {
+    "title": "{剧名}",
+    "totalEpisodes": 60,
+    "aspectRatio": "9:16",
+    "resolution": [1080, 1920],
+    "style": "{风格关键词，与 VISUAL_SPEC 一致}"
+  },
+
+  "styleBaseline": {
+    "id": "style_main",
+    "name": "{风格名，如 都市悬疑-冷调电影感}",
+    "keywords": ["{风格关键词1}", "{风格关键词2}"],
+    "negativeKeywords": ["低质量", "变形", "多余手指", "文字水印", "边框"],
+    "colorTendency": "{冷蓝+霓虹点缀}",
+    "lightMoodMap": {
+      "{情绪1}": "{光线处理1}",
+      "{情绪2}": "{光线处理2}"
+    },
+    "status": "declared",
+    "assetVersion": null,
+    "hash": null,
+    "lockedAt": null,
+    "lockedBy": null,
+    "cardPath": "assets/style/baseline.json"
+  },
+
+  "characters": [
+    {
+      "id": "linwan",
+      "name": "{角色名}",
+      "role": "protagonist",
+      "ageRange": "{25 岁左右}",
+      "appearsIn": ["EP01"],
+      "shotRefCount": 0,
+      "variants": [
+        {
+          "variantId": "default",
+          "label": "常态",
+          "appearance": "{外貌/服装/发型，写到可生图粒度}",
+          "refImage": "assets/char/linwan/default.png",
+          "seed": 20241,
+          "styleKeywords": ["{风格关键词1}", "{风格关键词2}"],
+          "derivedFrom": null,
+          "episodes": ["EP01"],
+          "status": "declared",
+          "assetVersion": null,
+          "hash": null,
+          "lockedAt": null,
+          "lockedBy": null
+        }
+      ]
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "rainy_alley",
+      "name": "{场景名}",
+      "description": "{环境}",
+      "mood": "{氛围}",
+      "lighting": "{光线}",
+      "refImage": "assets/scene/rainy_alley.png",
+      "seed": 30011,
+      "oneOff": false,
+      "episodes": ["EP01"],
+      "shotRefCount": 0,
+      "status": "declared",
+      "assetVersion": null,
+      "hash": null,
+      "lockedAt": null,
+      "lockedBy": null
+    }
+  ],
+
+  "props": [
+    {
+      "id": "prop_watch",
+      "name": "{道具名}",
+      "significance": "{剧情作用：为何必须跨集一致}",
+      "firstHintEp": "EP03",
+      "refImage": "assets/prop/prop_watch.png",
+      "seed": 41002,
+      "episodes": ["EP03"],
+      "shotRefCount": 0,
+      "status": "declared",
+      "assetVersion": null,
+      "hash": null,
+      "lockedAt": null,
+      "lockedBy": null
+    }
+  ],
+
+  "voice": [
+    {
+      "id": "voice_linwan",
+      "charId": "linwan",
+      "timbre": "{音色描述，可由 VISUAL_SPEC 年龄/性别/气质推导}",
+      "baseEmotion": "平静",
+      "speechRate": 1.0,
+      "ttsVoiceName": "{具体 TTS 音色名，按蓝图 toolchain 的 TTS 工具}",
+      "samplePath": "assets/voice/linwan.mp3",
+      "emotionTags": ["平静", "愤怒", "悲伤"],
+      "status": "declared",
+      "assetVersion": null,
+      "hash": null,
+      "lockedAt": null,
+      "lockedBy": null,
+      "skipped": false
+    }
+  ],
+
+  "usage": {
+    "shotTotal": 0,
+    "characterRefs": 0,
+    "sceneRefs": 0,
+    "propRefs": 0,
+    "voiceLines": 0
+  },
+
+  "summary": {
+    "characterCount": 1,
+    "variantCount": 1,
+    "sceneCount": 1,
+    "propCount": 1,
+    "voiceCount": 1,
+    "assetTotal": 4,
+    "degradedCount": 0
+  }
+}
