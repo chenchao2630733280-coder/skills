@@ -1,17 +1,17 @@
 {
   "schemaVersion": "1.0",
-  "scanned_at": "2026-08-17T09:38:16",
+  "scanned_at": "2026-10-10T13:38:17",
   "skills_dir": "C:\\Users\\26307\\.agents\\skills",
-  "total_skills": 79,
+  "total_skills": 87,
   "categories": {
     "agent-system": 25,
-    "drama": 12,
-    "unknown": 8,
+    "drama": 13,
+    "unknown": 15,
     "product": 22,
     "game": 11,
     "workbench": 1
   },
-  "runtime_yaml_count": 36,
+  "runtime_yaml_count": 38,
   "warning_count": 1,
   "critical_count": 0,
   "skills": [
@@ -73,7 +73,7 @@
     {
       "name": "ai-short-drama-project-development",
       "dir": "ai-short-drama-project-development",
-      "description": "短剧选题确认后的项目开发总监。当用户已确定短剧选题后调用，依次完成选题复核、故事发动机、核心规则、主角目标、人物关系、对手系统、核心秘密、故事阶段、情绪曲线、悬念卡点、分集大纲、制作商业可行性、风险诊断 13 步，将选题转化为可推进、可拍摄、可进入正式剧本创作的项目。",
+      "description": "短剧选题确认后的项目开发总监。当用户已确定短剧选题后调用，依次完成选题复核（含可懂性准入复检）、故事发动机、核心规则、主角目标、人物关系、对手系统、核心秘密、故事阶段、情绪曲线、悬念卡点、分集大纲、制作商业可行性、风险诊断 13 步，将选题转化为可推进、可拍摄、可进入正式剧本创作的项目。",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
@@ -83,10 +83,20 @@
     {
       "name": "ai-short-drama-topic-planner",
       "dir": "ai-short-drama-topic-planner",
-      "description": "Generate, diversify, trend-enhance, evaluate, and refine AI short-drama story topics. Use when the user asks for short-drama concepts, high-concept premises, viewing-motivation analysis, topic diversification, trend radar, future event windows, topic comparison, or continued creative branching.",
+      "description": "Generate, diversify, trend-enhance, evaluate, and refine AI short-drama story topics. Use when the user asks for short-drama concepts, high-concept premises, viewing-motivation analysis, topic diversification, trend radar, future event windows, topic comparison, or continued creative branching. Includes a hard accessibility gate (one-line pitch / visualizable premise / physical payoff / no jargon) that filters out premises ordinary viewers cannot understand within 30 seconds.",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
+      "references": [],
+      "warnings": []
+    },
+    {
+      "name": "approval-chain-integrity",
+      "dir": "approval-chain-integrity",
+      "description": "带审核流/审批流的业务系统『审批链断链』排查手册。当审批任务已生成但处理时报 403/无权限、任务派给了错误的人、或出现『审批人不得审批自己提报的单据』类业务校验拦截、审批流『提报后卡住不动』时调用。覆盖流配置 × 角色权限 × 人员归属三要素核查、审批人动态解析（部门负责人/角色/指定人）陷阱、以及把修正固化为回归测试的方法。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
       "references": [],
       "warnings": []
     },
@@ -117,6 +127,16 @@
         "references/screenshot-folder.md",
         "references/session-case.md"
       ],
+      "warnings": []
+    },
+    {
+      "name": "bing-image-harvest",
+      "dir": "bing-image-harvest",
+      "description": "为网站/原型/图鉴类项目批量采集真实配图（无需 API Key、无需外网直连），并做质量筛检与人工抽查。当任务需要「给 N 个条目各配几张真实图片」「抓取配图并本地化」「配图有水印/防盗链/跑题需要替换」时调用。含必应图库检索解析、图库/水印站屏蔽、缩略图优先下载、Pillow 质检、拼版抽查、定点重采六步法。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
       "warnings": []
     },
     {
@@ -186,6 +206,19 @@
       "references": [
         "references/embedding-models.md",
         "references/indexing-strategy.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "coupon-batch-create",
+      "dir": "coupon-batch-create",
+      "description": "把「场次明细」Excel（剧目/演出日期/演出场地/每场票数/可用商户）批量创建为苏州卡券平台（szd-coupon.2500city.com）后台的兑换券卡券；也用于已建卡券的封面重裁、批量换封面、核验。当用户要「把 couponX 表格的卡券创建到管理后台」「批量建卡券」「补建演出票卡券」「重新裁切封面」「替换卡券封面」时使用。含封面递归匹配、智能裁切、纯 API 上传与批量提交、note 富文本补写、全量核验全流程。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/api-reference.md",
+        "references/case-2026-09.md"
       ],
       "warnings": []
     },
@@ -439,9 +472,11 @@
       "references": [
         "references/interaction-patterns.md",
         "references/mobile-archetype-specs.md",
+        "references/mobile-business-patterns.md",
         "references/mobile-navbar-template.md",
         "references/mobile-page-skeleton.md",
         "references/mobile-product-design-standards.md",
+        "references/mobile-theme-profiles.md",
         "references/mobile-tokens-and-classes.md",
         "references/pc-admin-navigation-style.md"
       ],
@@ -509,6 +544,7 @@
       "has_runtime_yaml": false,
       "references": [
         "references/brainstorming-gate.md",
+        "references/business-domain-patterns.md",
         "references/pc_admin_ui_spec.md",
         "references/prd-document-template.md",
         "references/prd-stage-boundary.md",
@@ -527,6 +563,16 @@
         "references/operation-levels.md",
         "references/sensitive-paths.md"
       ],
+      "warnings": []
+    },
+    {
+      "name": "html-single-file-pack",
+      "dir": "html-single-file-pack",
+      "description": "把多文件静态站点（HTML + CSS + JS + 本地图片）打包成一个自包含单文件 HTML——CSS/JS/图片全部内联，零外部依赖，双击即开、云端上传不丢图。当出现「上传到资料库/云文档/网盘后图片全裂」「发给别人打开是空白」「单文件里地图/图表/某一块整块空白但自包含检查全绿」「需要离线单文件交付」时调用。含 img() 双源兼容改造、加载失败降级占位、自包含性核查、原图优先/体积超标才压缩的取舍规则，以及 String.replace 的 $$ 转义陷阱、数据文件漏内联导致模块静默早退等必踩坑。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [],
       "warnings": []
     },
     {
@@ -574,6 +620,22 @@
       "has_runtime_yaml": false,
       "references": [
         "references/engineering-constraints.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "opportunity-screening",
+      "dir": "opportunity-screening",
+      "description": "个人/小团队商业机会的挖掘、筛选与自身适配评估方法论。当用户问'我该做什么副业/第二曲线''这几个方向哪个能做''这个机会值不值得做''XX 是不是红海了''没人脉能不能做''还有什么挖掘机会的手段''帮我评估这些机会'时调用。提供四层漏斗:L1 商业底层逻辑(交易创造财富·省时间·价值≠成本) → L1.5 机会采集(六条矿脉:交易摩擦·抱怨密集区·供给缺口·平台规则变化·资产复用·跨界迁移 + 三条采集纪律 + 巡检节奏) → L2 四维筛子(客户购买力·竞争空位·启动投入·获客门槛) → L3 自身可达性体检(人脉盘·获客机制·四条换法) → L4 最小验证协议(带付费点的公开作品 + 4 周时间盒)。核心判据:'高客单 + 低获客门槛'的象限几乎不存在,获客门槛是唯一不可靠努力弥补的维度,个人唯一杠杆是用作品替代人脉;'低门槛'不等于可行——到场型服务的获客门槛几乎必然过高。附确定性评分脚本 scripts/score_opportunities.py。区别于 brainstorm-product-feature(产品功能脑暴)与该 skill 的机会层评估。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/business-logic.md",
+        "references/case-example.md",
+        "references/screening-dimensions.md",
+        "references/self-fit-assessment.md",
+        "references/validation-protocol.md"
       ],
       "warnings": []
     },
@@ -657,6 +719,18 @@
       "references": [
         "references/prompt-structure.md",
         "references/prompt-versioning.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "public-emotion-ip-topic-mining",
+      "dir": "public-emotion-ip-topic-mining",
+      "description": "把公共情绪IP素材规模化开采为可排序、可查、可投产的选题资料库。当用户要\"从公共情绪/公共IP里挖选题\"\"把素材整理成选题库/总表\"\"批量给素材写情绪点/介绍/剧本\"\"筛选最值得做的选题\"\"给选题打优先级\"时调用。涵盖五大情绪池、借IP三层级、合规风险三档、三类描述字段（情绪点/介绍/剧本）的规模化生产、多维投产评分与题材去重选样。面向短剧/小游戏/内容产品的前期选题工业化。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/field-and-scoring-schema.md"
       ],
       "warnings": []
     },
@@ -750,6 +824,20 @@
       "warnings": []
     },
     {
+      "name": "short-drama-asset-forge",
+      "dir": "short-drama-asset-forge",
+      "description": "Stage 4.5 of the AI short-drama production pipeline (asset baseline lock). Reads docs/ASSET_MANIFEST.json + docs/VISUAL_SPEC.md + docs/STORYBOARD.md, materializes the baseline assets (character key-art + variants, scene plates, plot props, voice timbre samples, style baseline token), writes assets/{char,scene,prop,voice,style}/ + docs/ASSET_BASELINE.md, and writes asset status/hash/lockedAt back into docs/ASSET_MANIFEST.json. Hard prerequisite for stage 5: video-forge may only consume locked assets. Use when scheduled by short-drama-forge-master after Gate 3, or when the user asks to produce / lock the character baseline (定妆) before mass production.",
+      "category": "drama",
+      "agent_dimension": "",
+      "has_runtime_yaml": true,
+      "references": [
+        "references/asset-baseline-rules.md",
+        "references/asset-manifest-schema.md",
+        "references/failover-recipes.md"
+      ],
+      "warnings": []
+    },
+    {
       "name": "short-drama-audio-forge",
       "dir": "short-drama-audio-forge",
       "description": "AI short-drama pipeline stage 6 (audio; runs in parallel with video-forge). Reads the script docs/scripts/EP*.md and the storyboard docs/STORYBOARD.md, produces voice-over audio/{ep}/line_{XX}.mp3, BGM audio/bgm_{name}.mp3, and subtitles subtitles/{ep}.srt. Use when scheduled by short-drama-forge-master for this stage, or when the user asks to generate dubbing / BGM / sound effects / subtitles for a short drama.",
@@ -757,6 +845,7 @@
       "agent_dimension": "",
       "has_runtime_yaml": true,
       "references": [
+        "references/asset-baseline-rules.md",
         "references/music-matching.md",
         "references/subtitle-rules.md",
         "references/tts-emotion.md"
@@ -766,7 +855,7 @@
     {
       "name": "short-drama-blueprint",
       "dir": "short-drama-blueprint",
-      "description": "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity, stage trimming, and estimated artifact scale. Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master.",
+      "description": "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity (incl. asset count), stage trimming (asset-forge is never trimmed), and estimated artifact scale (incl. asset count and key-art output volume). Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master.",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
@@ -791,7 +880,7 @@
     {
       "name": "short-drama-forge-master",
       "dir": "short-drama-forge-master",
-      "description": "AI 短剧制作流水线总纲（调度中枢）。接收用户一句话短剧需求，判定短剧类型与制作路径（全 AI 生成 / 图文短剧 / 真人实拍辅助 / 口播短剧），选择工具链、裁剪阶段、串联下游 8 个阶段 skill 与跨阶段质量门，提供失败回退策略与人工确认点。当用户要'用 AI 制作/生成一部短剧'、'端到端产出短剧成片'、'按流水线制作短剧'、'从选题到成片'时调用。",
+      "description": "AI 短剧制作流水线总纲（调度中枢）。接收用户一句话短剧需求，判定短剧类型与制作路径（全 AI 生成 / 图文短剧 / 真人实拍辅助 / 口播短剧），选择工具链、裁剪阶段、串联下游 9 个阶段 skill（含资产定妆阶段 4.5）与跨阶段质量门（Gate 0~4 + Gate 3.5 资产门），提供失败回退策略与人工确认点。资产层（角色/变体/场景/道具/音色/风格基线）在批量生产前定妆并锁定，是全剧一致性基线。当用户要'用 AI 制作/生成一部短剧'、'端到端产出短剧成片'、'按流水线制作短剧'、'从选题到成片'时调用。",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": false,
@@ -814,7 +903,7 @@
     {
       "name": "short-drama-quality-gate",
       "dir": "short-drama-quality-gate",
-      "description": "Cross-stage quality gate for the AI short-drama production pipeline. Intervenes at 5 checkpoints (Gate 0 post-blueprint, Gate 1 post-spec, Gate 2 post-script, Gate 3 post-storyboard, Gate 4 post-production) to run contract validation and runtime pre-checks; on FAIL it hard-blocks the pipeline and returns fix suggestions. Read-only on business artifacts (writes gate reports only). Call when short-drama-forge-master dispatches a Gate 0~4 checkpoint, or when the user asks to validate / gate-check / inspect the short-drama production artifacts.",
+      "description": "Cross-stage quality gate for the AI short-drama production pipeline. Intervenes at 6 checkpoints (Gate 0 post-blueprint, Gate 1 post-spec, Gate 2 post-script, Gate 3 post-storyboard, Gate 3.5 post-asset-baseline, Gate 4 post-production) to run contract validation and runtime pre-checks; on FAIL it hard-blocks the pipeline and returns fix suggestions. Read-only on business artifacts (writes gate reports only). Call when short-drama-forge-master dispatches a Gate 0~4 or Gate 3.5 checkpoint, or when the user asks to validate / gate-check / inspect the short-drama production artifacts.",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
@@ -855,11 +944,12 @@
     {
       "name": "short-drama-storyboard",
       "dir": "short-drama-storyboard",
-      "description": "Stage 4 of the AI short-drama production pipeline. Reads docs/scripts/EP{01..NN}.md and converts the script into an executable storyboard (docs/STORYBOARD.md) with per-shot text-to-image and image-to-video prompts, plus a visual specification (docs/VISUAL_SPEC.md) covering characters, scenes, style baseline, subtitles, and safe areas. Use when scheduled by short-drama-forge-master after Gate 2, or when the user asks to turn a short-drama script into storyboards and visual specs.",
+      "description": "Stage 4 of the AI short-drama production pipeline. Reads docs/scripts/EP{01..NN}.md and converts the script into an executable storyboard (docs/STORYBOARD.md) with per-shot text-to-image and image-to-video prompts, a visual specification (docs/VISUAL_SPEC.md) covering characters, scenes, style baseline, subtitles and safe areas, plus a machine-readable asset requirement manifest (docs/ASSET_MANIFEST.json) declaring every character/variant, scene, prop, voice and the style baseline for stage 4.5 to materialize. Use when scheduled by short-drama-forge-master after Gate 2, or when the user asks to turn a short-drama script into storyboards and visual specs.",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
       "references": [
+        "references/asset-manifest-schema.md",
         "references/shot-language.md",
         "references/visual-prompt-engine.md"
       ],
@@ -882,11 +972,12 @@
     {
       "name": "short-drama-video-forge",
       "dir": "short-drama-video-forge",
-      "description": "Stage 5 of the AI short-drama production pipeline. Reads docs/STORYBOARD.md and docs/VISUAL_SPEC.md, builds the machine-readable production manifest (production/manifest.json), then generates per-shot videos shots/{ep}/shot_{XX}.mp4 (static .png with simulated camera motion on failure). Use when scheduled by short-drama-forge-master after Gate 3, or when the user asks to generate short-drama shots/videos from a storyboard.",
+      "description": "Stage 5 of the AI short-drama production pipeline. Reads docs/STORYBOARD.md, docs/VISUAL_SPEC.md and the LOCKED baseline docs/ASSET_MANIFEST.json, builds the machine-readable production manifest (production/manifest.json) that REFERENCES the locked assets by id+variant+hash, then generates per-shot videos shots/{ep}/shot_{XX}.mp4 (static .png with simulated camera motion on failure). Hard-gated on locked assets: it must never generate from a declared or degraded asset. Use when scheduled by short-drama-forge-master after Gate 3.5, or when the user asks to generate short-drama shots/videos from a storyboard.",
       "category": "drama",
       "agent_dimension": "",
       "has_runtime_yaml": true,
       "references": [
+        "references/asset-manifest-schema.md",
         "references/character-consistency.md",
         "references/failover-recipes.md",
         "references/tool-recipes.md"
@@ -1082,6 +1173,18 @@
         "references/cloudbase.md",
         "references/github-pages.md",
         "references/postbuild-snippet.md"
+      ],
+      "warnings": []
+    },
+    {
+      "name": "weekly-report-formatter",
+      "dir": "weekly-report-formatter",
+      "description": "按「阶段（交付时间）：进展描述」固定格式整理项目周报/日报进度。支持两类项目——单一系统按整体阶段描述、拆分子功能的按功能逐条描述。当用户要「整理周报」「写周报」「按格式整理进度」「本周项目进展汇总」「项目进度汇报」时调用。含阶段判定表、交付时间写法、进展描述规范与格式校验脚本。",
+      "category": "unknown",
+      "agent_dimension": "",
+      "has_runtime_yaml": false,
+      "references": [
+        "references/stage-definitions.md"
       ],
       "warnings": []
     },
