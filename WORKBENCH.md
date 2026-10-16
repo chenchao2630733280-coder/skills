@@ -23,7 +23,7 @@ generate-html-pages          第3/4阶段：HTML原型路由器（判断端类�
   ├─ generate-html-pc-admin       PC管理后台HTML原型（深色侧栏+工作区页签）
   └─ generate-html-mobile         移动端HTML原型（任务型：综合入口/详情/交易等）
         ↓
-generate-portal              第5阶段：三栏演示门户（output/site/index.html，独占）
+generate-portal              第5阶段：演示门户（端切换+标注跟随，output/site/index.html，独占）
         ↓ 原型评审通过，进入生产阶段（交接给 build-working-system）
 plan-system-implementation   实施规划（可选）：可执行的工程实施蓝图（首次产出）
         ↓ 控制权交接
@@ -143,7 +143,7 @@ opportunity-screening        四层漏斗：底层逻辑 → 四维筛子 → �
 | `generate-html-pages` | 3/4 路由 | 端判断 + 调度子skill + 汇总 `build-report.json` | `output/site/` |
 | `generate-html-pc-admin` | 3/4 PC | `pc/` 静态页面（深色侧栏+工作区页签） | `output/site/pc/` |
 | `generate-html-mobile` | 3/4 移动 | `mobile/` 静态页面（任务型原型） | `output/site/mobile/` |
-| `generate-portal` | 5 门户 | `index.html` 三栏演示门户（独占） | `output/site/` |
+| `generate-portal` | 5 门户 | `index.html` 演示门户（端切换/标注跟随，独占） | `output/site/` |
 | `plan-system-implementation` | 实施 | 实施蓝图、架构契约、任务板、追溯表 | `output/build/` |
 | `bid-functional-solution` | 旁线 | 标书功能建设方案 `.docx` | 用户指定 |
 | `ruanzhu-doc-generator` | 旁线 | 软著说明书 `.docx`（PC/移动端分离） | 用户指定 |
@@ -420,3 +420,32 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - **新增维护脚本** `_shared/fix-frontmatter-name.py`：把 frontmatter `name` 批量规范为 `name: "<value>"`，幂等、可指定 skill
 - **踩坑（重要，已写进脚本注释）**：本仓库部分 `SKILL.md` 是 **CRLF** 换行且 `core.autocrlf=true`。用 `.split('\n')` 或 `splitlines(keepends=True)` 配 `r'^name:[ \t]*(.+?)[ \t]*$'` 时，尾部 `\r` 会被 `(.+?)` 吃掉，导致两种静默损坏：CRLF 未加引号 → `name: "xxx<CR>"`（CR 被塞进引号里、悄悄丢换行）；CRLF 已加引号 → `name: ""xxx"<CR>"`（畸形）。**正确做法**：先切出「行体 + 终止符」，只在行体上取值，回写保留原终止符；批量脚本务必先核查目标文件的换行风格
 - **校验**：`validate.ps1` 全部通过（frontmatter 双引号 86/86、references 引用 108 处、workflow.yaml 1 个外部格式已声明豁免）
+
+
+### 2026-10-15 generate-portal 对齐门户交互现状（端切换 / 标注跟随）
+
+- 门户 `output/site/index.html` 已由「页面树三栏 + 设备切换」演进为 **端切换驱动的评审台**：
+  顶部工具栏按 `projectMap` 模块切端并加载入口页；**画幕外本端页面列表仅移动端渲染**（PC 端沿用原型自带菜单，画幕占满）；
+  右侧标注随**任意来源**的页面切换同步（含画幕内导航）。
+- 同步更新：`SKILL.md` 第五/六节重写 + 概述与行动指令对齐；新增 `references/portal-interaction-contract.md`（布局与交互权威口径、
+  `syncFromFile` 双通道、三条硬约束、验收清单）；`references/annotation-standards.md` §5 明确「`file://` 只降级 DOM 角标定位，
+  页面级标注跟随仍须可用」；`agents/openai.yaml` 与 README/WORKBENCH 技能表去「三栏」表述。
+- 依据：乌海项目 2026-10-15 的端切换 / 画幕外列表 / 标注跟随改造（含 `file://` 与 `http://` 行为分叉的实测结论）。
+
+
+### 2026-10-16 四个工程 skill 沉淀乌海项目 10-15/16 轮次教训
+
+- **delivery-consistency-gate**：新增第五节「门禁与被测对象的隐式契约」——固定列索引（`td[N]`/`children[N]`）、
+  元素 id、文案正则三类假设随 UI 改动必须同改；**改 UI 前先 grep 门禁源码建「门禁同步清单」**；断言重排换健壮锚点
+  （行识别别绑易下线列）；「静默取 0 行」判失败；有副作用的门禁显式标注（审查轮禁跑）。checklist +2，description 补词。
+- **state-label-surgery**：新增第五节「概念整体退役八件套」——贯穿多页+共享库+规则的领域概念下线：先接替代源、
+  样本改型不留 remap、**同批删完防半下线**、门禁断言按新口径重写（非同步数字）、作废 BR 登记勿删号。
+  拓扑判定表加「概念退役」档；标准流程/checklist 同步；`pitfalls.md` 补 S11（半下线事故形态，附渠道下线实战）。
+- **snapshot-guard**：`forensics.md` 差异形态表补「瞬时写回（自愈型）」行（首跑差异/复跑自愈/行级 diff=0）；
+  取证五步之「性质判定」前插**复跑确认**——自愈型只记档勿还原（还原可能覆盖正在写入的会话）。checklist +1。
+- **engineering-ledger-hygiene**：新增 M6「并发会话红项归属判定（基线复现法）」——起点快照解包复跑，
+  基线同样红 ⇒ 既有问题不修（属在建轮次收口）；日志记并发窗口；勿顺手修他线红项。
+  M1 补「明细外置伴生文件」表述；五条机制改六条；收工仪式与 checklist 同步。
+- 依据：乌海项目 b149~b161 界面收敛（门禁三连踩）、2026-10-16 需求轮（渠道概念整体下线）、
+  当日一致性审查轮（快照瞬时写回实测）。全库扫引用：README/WORKBENCH 无这四 skill 的旧口径复述，
+  product-pipeline-master 引用的门禁分类法（A~H/I~K）未变，无需联动。
