@@ -43,7 +43,7 @@ screenshot-operation-manual  截图操作手册（DOCX/PDF/Markdown）
 
 ```text
 【总编排】
-game-forge-master            调度中枢：引擎选择（Phaser 3 / Pixi.js / 纯Canvas / Godot 4 / Unity）+ 阶段裁剪 + 失败回退
+game-forge-master            调度中枢：引擎选择（Phaser 3 / Pixi.js / 纯Canvas / Godot 4 / Unity / Three.js）+ 阶段裁剪 + 失败回退
         ↓
 game-topic-brainstorm        阶段0（可选）：游戏选题脑暴
         ↓

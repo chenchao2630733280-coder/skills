@@ -132,9 +132,9 @@ generate-portal 消费 build-report.json:
 
 **示例**:
 ```
-game-code-forge frontmatter: "支持 Phaser/Pixi/纯 Canvas/Godot 4/Unity 五引擎"
-game-code-forge 决策树: 5 个引擎分支 ✓
-game-code-forge 模板索引: 5 个 engine-*-template.md ✓
+game-code-forge frontmatter: "支持 Phaser/Pixi/纯 Canvas/Godot 4/Unity/Three.js 六引擎"
+game-code-forge 决策树: 6 个引擎分支 ✓
+game-code-forge 模板索引: 6 个 engine-*-template.md ✓
 三者一致 ✓
 ```
 

@@ -275,7 +275,7 @@ c:\Users\26307\.agents\skills\
   │
   ▼
 [1] game-forge-master（编排总纲）
-    → 决策：引擎选择（Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity）
+    → 决策：引擎选择（Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity / Three.js）
     → 裁剪：按游戏类型决定哪些阶段跳过
   │
   ▼
@@ -307,7 +307,7 @@ c:\Users\26307\.agents\skills\
 [9] game-polish（可选）→ 完成
 ```
 
-**五引擎覆盖**：
+**六引擎覆盖**：
 
 | 引擎 | 适用场景 | 代码生成 | 构建命令 | 产物路径 |
 |------|---------|---------|---------|---------|
@@ -316,6 +316,7 @@ c:\Users\26307\.agents\skills\
 | 纯 Canvas | 轻量 2D Web 游戏 | TypeScript + Vite | `npm run build` | dist/ |
 | Godot 4 | 2D/3D 桌面游戏 | GDScript 4.x | `godot --headless --export-release` | export/ |
 | Unity | 3D 游戏 / 跨平台 | C# | `unity -batchmode -executeMethod` | Build/ |
+| Three.js | 3D Web H5 / 大量实例化单位 | TypeScript + Vite | `npm run build` | dist/ |
 
 **关键设计**：
 - game-forge-master 统一编排，按游戏类型裁剪阶段
@@ -674,7 +675,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 └──────┘        └──────┘         └──────┘         └──────┘
 +3 扩展          +3 扩展          +2 扩展          +3 扩展
 
-平行扩展:产研流水线(22 skill) + 游戏流水线(11 skill,五引擎) + AI短剧(2 skill) + 工作台元(1 skill: rd-init)
+平行扩展:产研流水线(22 skill) + 游戏流水线(11 skill,六引擎) + AI短剧(2 skill) + 工作台元(1 skill: rd-init)
 ```
 
 > 注：以上 Phase 1-4 的 skill 计数仅统计 Agent 体系层（25 个）。产研业务层（22 个）、游戏流水线（11 个）、AI 短剧（2 个）、工作台元 skill（1 个：rd-init）作为平行业务扩展，独立于 Agent 体系层的 4 阶段演进。
@@ -819,7 +820,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 |-------|------|
 | rd-init | 工作台加载器。扫描 skills 目录全部 skill，生成 `.workbench-index.json` 索引和完整性报告（frontmatter 规范/references 路径/runtime.yaml 声明），让 AI 快速掌握工作台全貌。不生成业务产物 |
 
-**AI 游戏生成流水线**（11 个，game-forge，支持五引擎）
+**AI 游戏生成流水线**（11 个，game-forge，支持六引擎）
 
 | 游戏阶段 | skill | 作用 |
 |---------|-------|------|
@@ -828,7 +829,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 | 游戏 PRD | game-spec | 详细 PRD + TECH_DESIGN（玩法/数值/UI/关卡/状态机） |
 | 美术规范 | game-art-spec | 美术规范 + ASSET_MANIFEST.json 资源清单 |
 | 美术资源 | game-asset-forge | AI 生图 + 图集打包 + 音频占位 |
-| 代码生成 | game-code-forge | 五引擎代码生成（Phaser/Pixi/Canvas/Godot/Unity） |
+| 代码生成 | game-code-forge | 六引擎代码生成（Phaser/Pixi/Canvas/Godot/Unity/Three.js） |
 | 集成构建 | game-integrate | npm/godot/unity 构建 + 实跑预检 |
 | 效果打磨 | game-polish | 可选，视觉/手感/反馈打磨 |
 | 质量门禁 | game-quality-gate | 4 节点契约校验 + 实跑预检 |
