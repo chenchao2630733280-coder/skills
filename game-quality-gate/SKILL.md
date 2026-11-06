@@ -74,8 +74,8 @@ game-polish (可选)
 | # | 检查项 | 通过条件 | 失败码 |
 |---|---|---|---|
 | 0.1 | 必填字段 | 类型/平台/引擎/玩法/范围/复杂度 6 项齐全 | `G0-MISSING-FIELD` |
-| 0.2 | 引擎枚举 | 值 ∈ {Phaser 3, Pixi.js, 纯 Canvas, Godot 4, Unity} | `G0-INVALID-ENGINE` |
-| 0.3 | 引擎-类型匹配 | 3D 类型 → Godot 4 / Unity;2D → 任意 | `G0-ENGINE-TYPE-MISMATCH` |
+| 0.2 | 引擎枚举 | 值 ∈ {Phaser 3, Pixi.js, 纯 Canvas, Godot 4, Unity, Three.js} | `G0-INVALID-ENGINE` |
+| 0.3 | 引擎-类型匹配 | 3D 类型 → Godot 4 / Unity / Three.js;2D → 任意 | `G0-ENGINE-TYPE-MISMATCH` |
 | 0.4 | 范围可行 | 核心机制 ≤ 8 项 | `G0-SCOPE-OVER` |
 | 0.5 | 一句话定义 | ≤ 30 字 | `G0-DEFINITION-TOO-LONG` |
 | 0.6 | 玩家动机 | 蓝图 §4.5 三行(自主/胜任/关联)齐全且主导动机已选 | `G0-MOTIVATION-MISSING` |
@@ -238,6 +238,7 @@ game-polish (可选)
 > | Pixi.js | `references/engine-checks-pixi.md` | 3.10 AnimatedSheet 帧数一致 |
 > | Godot 4 | `references/engine-checks-godot.md` | 3.11 NodePath 一致 / 3.12 信号连接一致 |
 > | Unity | `references/engine-checks-unity.md` | 3.13 Resources.Load 路径 / 3.14 SceneBuilder 产出 |
+> | Three.js | `references/engine-checks-three.md` | 3.21~3.26 实例化/曲线/坐标契约 |
 > | 纯 Canvas | 无(无引擎特定 L2 检查) | — |
 >
 > **新增引擎时**:只需新建 `references/engine-checks-{engine}.md` 并在上方表格登记,SKILL.md 不动。
@@ -259,6 +260,7 @@ game-polish (可选)
 > | 纯 Canvas | 回退到 `references/engine-checks-phaser.md` §L3(Web 引擎通用 typecheck) | 3.15 `npm run typecheck` |
 > | Godot 4 | `references/engine-checks-godot.md` §L3 | 3.16 `godot --headless --check-only --script scripts/main.gd` |
 > | Unity | `references/engine-checks-unity.md` §L3 | 3.17 Unity 编译检查(沙箱无 Unity 时 SKIPPED,延后 Gate 4) |
+> | Three.js | `references/engine-checks-three.md` §L3 | 3.15 typecheck / 3.19 build / 3.20 浏览器启动 |
 >
 > **新增引擎时**:只需在对应 `references/engine-checks-{engine}.md` 中补充 §L3 小节,SKILL.md 不动。
 

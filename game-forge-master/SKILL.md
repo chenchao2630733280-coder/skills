@@ -1,13 +1,13 @@
 ---
 name: "game-forge-master"
-description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity)、阶段裁剪规则、模板索引、失败回退策略与质量门接入。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
+description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树(Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js)、阶段裁剪规则、模板索引、失败回退策略与质量门接入。当用户要'用 AI 生成/制作一个游戏'、'端到端生成游戏工程'、'按流水线生成游戏'时调用。"
 ---
 
 # Game Forge Master — AI 游戏生成总纲
 
 本 skill 是整套"AI 生成游戏"流水线的**调度中枢**,本身不直接产出游戏文件,职责是:
 1. 接收用户一句话需求,决定走哪条生成路径
-2. 选择目标引擎(Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity)
+2. 选择目标引擎(Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity / Three.js)
 3. 裁剪阶段(简单游戏可跳过音频/网络/任务系统)
 4. 串联下游 5 个阶段 skill + 跨阶段质量门的执行顺序
 5. 提供通用模板索引与失败回退策略 + 质量门阻断规则
@@ -27,7 +27,7 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 **不要**在以下场景调用:
 - 用户只是问"游戏怎么做"(纯咨询,用对话回答即可)
 - 用户要修改已有游戏的某一处代码(直接用 Edit/Write)
-- 用户要做的是 3D 游戏(仅 Godot 4 / Unity 支持,Web 引擎不覆盖 3D)
+- 用户要做的是 3D 游戏且明确不使用 Godot 4 / Unity / Three.js(流水线不覆盖其它 3D 引擎)
 
 ---
 
@@ -102,6 +102,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
    ├─ 2D 桌面游戏(需 exe/原生窗口) → Godot 4
    ├─ 2D + 高性能渲染需求(不需 exe,如重度 2D 手游/大量动态光影) → Godot 4
    ├─ 3D 游戏(中小型/开源优先) → Godot 4
+   ├─ 3D Web H5(真透视/大量实例化单位/需浏览器直开) → Three.js
    ├─ 3D 复杂游戏/需 Unity 生态/跨平台工业级发布 → Unity
    └─ 用户明确指定 → 尊重用户选择
 ```
@@ -119,6 +120,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | 2D 桌面游戏(需原生窗口/exe) | **Godot 4** | 原生导出 exe/pck,无需浏览器,性能优于 Web |
 | 2D + 高性能渲染(不需 exe,如重度 2D 手游/大量动态光影) | **Godot 4** | 原生渲染性能优于 Web(Phaser 3/Pixi.js 受浏览器 WebGL 约束),适合高吞吐粒子/复杂着色器 |
 | 3D 游戏(中小型/开源优先) | **Godot 4** | 内置 3D 物理/光照/骨骼动画,AI 可用 GDScript 生成 |
+| 3D Web H5(真透视/数百实例化单位/纯代码可生成) | **Three.js** | InstancedMesh + 曲线路径 + 程序化几何,浏览器直开可自测,无需编辑器 |
 | 复杂 2D+3D 混合 | **Godot 4** | 统一引擎,2D/3D 混合渲染无需切换 |
 | 3D 复杂游戏/需 Unity 生态 | **Unity** | 工业级 3D 渲染、Asset Store 资源、跨平台发布最强 |
 | 需要 C# 生态/现有 Unity 团队 | **Unity** | C# 生态成熟,团队技能复用 |
@@ -131,6 +133,13 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 平台:Web H5
 引擎:Phaser 3.80.x
 依赖:phaser、axios(如需网络)
+理由:[一句话]
+```
+
+```
+平台:Web H5
+引擎:Three.js + TypeScript + Vite
+依赖:three、vite、typescript
 理由:[一句话]
 ```
 
@@ -190,10 +199,10 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
 | game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |
 | game-asset-forge | format-conversion-guide.md + card-bg-spec.md |
-| game-code-forge | 5 个 engine-*-template.md(五引擎模板) + 6 个 pitfall 文件 + web-config.md |
+| game-code-forge | 6 个 engine-*-template.md(六引擎模板) + 6 个 pitfall 文件 + web-config.md |
 | game-integrate | build-report-template.md |
 | game-polish | asset-fix-recipes.md + overlay-spec.md |
-| game-quality-gate | 4 个 engine-checks-*.md(五引擎质量检查) |
+| game-quality-gate | 5 个 engine-checks-*.md(六引擎质量检查) |
 
 **跨 skill 引用**:game-topic-brainstorm 引用 `../game-blueprint/references/` 下的设计原则;两总纲引用 `../workflow-runtime/references/execution-semantics.md`。
 

@@ -39,10 +39,10 @@ description: "AI 游戏生成流水线阶段 1。基于用户一句话需求生�
 
 ## 3. 平台与引擎
 平台:{Web H5 / 微信小游戏 / Windows Desktop / iOS / Android / WebGL}
-引擎:{Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity}
+引擎:{Phaser 3 / Pixi.js / 纯 Canvas / Godot 4 / Unity / Three.js}
 设计分辨率:{如 750x1624}
 适配模式:{fitWidth / fitHeight / RESIZE}
-依赖:{phaser、axios / godot 4.x / unity 2022.3 LTS}
+依赖:{phaser、axios / godot 4.x / unity 2022.3 LTS / three、vite、typescript}
 理由:{一句话}
 
 ## 4. 核心玩法循环

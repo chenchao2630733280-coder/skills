@@ -9,7 +9,7 @@
 - 构建时间:{ISO timestamp}
 - 构建结果:{成功/失败}
 - 工程路径:{绝对路径}
-- 引擎:{Phaser 3 / Pixi / Canvas / Godot 4 / Unity}
+- 引擎:{Phaser 3 / Pixi / Canvas / Godot 4 / Unity / Three.js}
 - 代码文件数:{N}
 - 资源文件数:{M}
 

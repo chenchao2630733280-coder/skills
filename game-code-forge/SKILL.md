@@ -1,6 +1,6 @@
 ---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity 五引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js 六引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -121,6 +121,7 @@ Unity 工程:
 | `references/engine-canvas-template.md` | 引擎为 Canvas 时 |
 | `references/engine-godot-template.md` | 引擎为 Godot 4 时 |
 | `references/engine-unity-template.md` | 引擎为 Unity 时 |
+| `references/engine-three-template.md` | 引擎为 Three.js 时 |
 | `references/web-config-template.md` | Web 引擎生成配置文件时 |
 | `references/pitfall-sprite-body-offset.md` | Phaser 角色物理碰撞生成时 |
 | `references/pitfall-balance-validation.md` | 跑酷类游戏数值配置生成时 |
@@ -208,6 +209,20 @@ Unity 工程:
 | 包依赖 | Packages/manifest.json | 2D/3D 包按需裁剪 |
 
 **关键差异**:Unity 与 Godot/Web 引擎在入口/脚本语言/场景格式/资源加载/物理/导出/类型检查/工程识别上均不同,详见 `references/engine-unity-template.md` §7.12 差异对比表。
+
+### Three.js 引擎模板(关键差异)
+
+> 完整模板已抽离到 `references/engine-three-template.md`,生成 Three.js 代码时读取该文件。
+
+| 模块 | 文件 | 说明 |
+|------|------|------|
+| 场景单例 | Scene3D.ts | Scene / PerspectiveCamera / WebGLRenderer 全局唯一 |
+| 实例化人群 | InstancedCrowd.ts | InstancedMesh + 对象池,逻辑数量与渲染数量解耦 |
+| 曲线路径 | Pipe.ts | CatmullRomCurve3,单位按独立 t 进度插值 |
+| 输入映射 | DragToLane.ts | 射线投射到地面平面,输出 (lane,z) |
+| 构建 | vite.config.ts | npm run typecheck / build → dist/index.html |
+
+**关键差异**:判定一律用赛道局部坐标 `(lane,z)`,禁止屏幕像素参与;详见 `references/engine-three-template.md` §判定契约。
 
 ---
 
