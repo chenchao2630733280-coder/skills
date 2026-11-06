@@ -1,0 +1,37 @@
+# runtime.yaml — game-asset-forge
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/ASSET_MANIFEST.json
+    type: text
+    required: true
+    description: 阶段 3 产出的机读资源清单，逐条消费 prompt/path/size 字段
+  - name: docs/ART_SPEC.md
+    type: text
+    required: false
+    description: 美术规范，取颜色调板与风格策略
+outputs:
+  - path: assets/
+    type: directory
+    description: 资源目录（role/ui/bg/atlases/audio），供 game-code-forge 与 game-integrate 消费
+  - path: docs/ASSET_ISSUES.md
+    type: file
+    optional: true
+    description: 软降级失败清单（占位图/静音音频等标记），无失败时不产出
+  - path: docs/ASSET_MANIFEST.json
+    type: file
+    description: 回写 actualFormat/actualPath/converted/conversionNote 字段；增量更新时另存 ASSET_MANIFEST.prev.json 供质量门追溯
+degrade:
+  - trigger: AI 生图失败
+    action: 占位图（纯色 + 文字标识）替代 + 标记到 docs/ASSET_ISSUES.md，不阻塞流水线
+    target: assets/
+  - trigger: 切图/图集打包失败
+    action: 降级用散图（性能略差但能跑）+ 标记
+    target: assets/atlases/
+  - trigger: 音频生成失败
+    action: 1 秒静音 wav 占位 + 标记
+    target: assets/audio/

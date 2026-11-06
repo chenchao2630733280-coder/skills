@@ -1,0 +1,26 @@
+# runtime.yaml — game-spec
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/GAME_BLUEPRINT.md
+    type: text
+    required: true
+    description: 阶段 1 产物蓝图，取玩法/数值范围/引擎与目录约定
+outputs:
+  - path: docs/PRD.md
+    type: file
+    description: 详细 PRD（玩法/数值/UI/关卡/状态机），路径与总纲 §二 固定契约一致
+  - path: docs/TECH_DESIGN.md
+    type: file
+    description: 技术设计（目录/模块/类设计/接口契约），供 game-art-spec 与 game-code-forge 消费
+degrade:
+  - trigger: 蓝图信息不足以支撑 PRD 细化
+    action: 回读用户原始需求补齐；仍不足则按游戏类型合理默认生成并在文档标注"假设：{...}"
+    target: docs/PRD.md
+  - trigger: 数值或状态机设计出现矛盾
+    action: 局部重做矛盾章节，最多 2 轮；仍矛盾则标注"待人工评审"后输出
+    target: docs/PRD.md

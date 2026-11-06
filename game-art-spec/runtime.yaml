@@ -1,0 +1,33 @@
+# runtime.yaml — game-art-spec
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/PRD.md
+    type: text
+    required: true
+    description: 阶段 2 产物，取角色/场景/UI 资源需求
+  - name: docs/TECH_DESIGN.md
+    type: text
+    required: true
+    description: 阶段 2 产物，取目录结构与资源加载约定
+outputs:
+  - path: docs/ART_SPEC.md
+    type: file
+    description: 美术规范，路径与总纲 §二 固定契约一致
+  - path: docs/ASSET_MANIFEST.json
+    type: file
+    description: 机读资源清单（含 prompt/path/size 等字段），供 game-asset-forge 消费
+  - path: docs/AUDIO_SPEC.md
+    type: file
+    description: 音频规范
+degrade:
+  - trigger: 风格基线与题材冲突
+    action: 列出候选风格基线与差异，AskUserQuestion 交用户选择
+    target: docs/ART_SPEC.md
+  - trigger: PRD 资源需求不明确，无法枚举全部资源条目
+    action: 按游戏类型默认资源清单生成 manifest，并在 ART_SPEC 标注"按默认清单补齐：{...}"
+    target: docs/ASSET_MANIFEST.json

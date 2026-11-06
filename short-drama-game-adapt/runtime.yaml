@@ -1,0 +1,27 @@
+# runtime.yaml — short-drama-game-adapt
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 已有题材的设定与爽点描述
+    type: text
+    required: true
+    description: 短剧/热门 IP/社会热梗的核心设定、爽点与大众记忆点（区别于 game-topic-brainstorm 的从 0 脑暴）
+  - name: 改编目标偏好
+    type: text
+    required: false
+    description: 目标平台/付费模型（IAA 等）/题材保留度等偏好
+outputs:
+  - path: 机制转化方案（6 角度转化框架 + 大众记忆点优先原则 + IAA 双价值模型 + 不可逆操作/付费安全阀门模式）
+    type: inline
+    description: 方法论输出，对话内交付；确认后的落地走 game-blueprint 进入流水线
+degrade:
+  - trigger: 题材信息不足以提取设定与爽点
+    action: 用 AskUserQuestion 补齐核心设定后再转化，不凭空脑补原作设定
+    target: 机制转化方案
+  - trigger: 题材无法转化出可玩机制
+    action: 如实告知不可行原因，建议改用 game-topic-brainstorm 从 0 选题，不强行产出换皮方案
+    target: 机制转化方案

@@ -1,0 +1,23 @@
+# runtime.yaml — game-blueprint
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 确认的选题或一句话需求
+    type: text
+    required: true
+    description: 用户一句话需求，或 docs/TOPIC_PROPOSAL.md 的推荐方案（阶段 0 产物）
+outputs:
+  - path: docs/GAME_BLUEPRINT.md
+    type: file
+    description: 一页纸游戏蓝图（类型/平台/引擎/玩法/范围/复杂度），路径与总纲 §二 固定契约一致
+degrade:
+  - trigger: 游戏类型与引擎/平台选择矛盾
+    action: 用 AskUserQuestion 澄清关键点后再生成，最多 2 轮；仍矛盾则输出冲突清单交人工决策
+    target: 蓝图引擎与平台章节
+  - trigger: 复杂度超出所选引擎可承载范围
+    action: 按引擎决策树降复杂度档位并在蓝图标注"降级自：{原复杂度}，原因：{...}"
+    target: 蓝图范围与复杂度章节

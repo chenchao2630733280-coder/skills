@@ -1,0 +1,30 @@
+# runtime.yaml — game-polish
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 可运行游戏
+    type: text
+    required: true
+    description: game-integrate 产物（dist/ 或 export/ 或 Build/），打磨前置条件
+  - name: docs/BUILD_REPORT.md
+    type: text
+    required: false
+    description: 集成验收报告，了解构建状态与遗留标记
+outputs:
+  - path: docs/POLISH_REPORT.md
+    type: file
+    description: 打磨报告（改动清单 + 效果说明），路径与总纲 §二 一致
+  - path: src/
+    type: directory
+    description: 打磨改动直接写回工程（增量叠加动画/特效/反馈，不改核心玩法与数值）
+degrade:
+  - trigger: 效果叠加导致性能明显下降
+    action: 降级为可开关的效果选项（默认关闭），并在报告标注性能对比
+    target: src/
+  - trigger: 无法在既有结构上无损叠加效果
+    action: 只产出打磨建议清单不改动代码，在报告标注"待结构允许后实施"
+    target: docs/POLISH_REPORT.md

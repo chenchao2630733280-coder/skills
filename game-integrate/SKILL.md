@@ -53,12 +53,16 @@ description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 as
 
 ---
 
+## 全局约束
+
+遵循 `../_shared/references/engineering-constraints.md`（项目隔离/技术栈沿用/密钥/验证/追溯/增量修改等 10 条通用工程约束，唯一事实来源）。
+
 ## 二、执行流程
 
 ### 2.0 引擎判定
 
 读取 `docs/GAME_BLUEPRINT.md` 的"3. 平台与引擎"章节,按引擎走不同分支:
-- **Web 引擎(Phaser 3/Pixi.js/纯 Canvas)**:走 npm/Vite 流程(§2.1-§2.6 原有步骤)
+- **Web 引擎(Phaser 3/Pixi.js/纯 Canvas/Three.js)**:走 npm/Vite 流程(§2.1-§2.6 原有步骤)
 - **Godot 4**:走 Godot CLI 流程(§2.7 新增步骤)
 - **Unity**:走 Unity CLI 流程(§2.8 新增步骤,需宿主安装 Unity Editor)
 
@@ -376,7 +380,7 @@ npm run build
 
 > 下方默认为 Web 引擎清单;Godot 4 见 §2.7、Unity 见 §2.8 的对应检查项。
 
-**Web 引擎(Phaser 3/Pixi.js/纯 Canvas)**:
+**Web 引擎(Phaser 3/Pixi.js/纯 Canvas/Three.js)**:
 - [ ] npm install 成功
 - [ ] typecheck 通过或已降级
 - [ ] dev server 能启动

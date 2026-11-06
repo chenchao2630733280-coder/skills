@@ -1,0 +1,27 @@
+# runtime.yaml — game-topic-brainstorm
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 模糊游戏想法或选题方向
+    type: text
+    required: true
+    description: 用户一句话想法、兴趣方向，或"想做游戏但没想好"类输入
+  - name: 约束偏好
+    type: text
+    required: false
+    description: 平台/品类/题材/成本等用户偏好，用于缩小候选范围
+outputs:
+  - path: docs/TOPIC_PROPOSAL.md
+    type: file
+    description: Top N 选题方案（含爆款原则验证），路径与总纲 §二 一致，供 game-blueprint 消费
+degrade:
+  - trigger: 用户兴趣方向过于宽泛，无法收敛候选
+    action: 用 AskUserQuestion 缩小品类/平台/题材范围，最多 2 轮；仍宽泛则基于默认假设继续并明确标注
+    target: 选题候选集
+  - trigger: 候选方案未通过爆款原则验证
+    action: 标注未通过项与改进方向，如实输出不伪装通过
+    target: 选题候选集

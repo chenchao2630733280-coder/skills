@@ -1,0 +1,23 @@
+# runtime.yaml — game-forge-master
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 用户一句话游戏需求
+    type: text
+    required: true
+    description: 用户的游戏想法/需求描述；模糊时先路由 game-topic-brainstorm（阶段 0）
+outputs:
+  - path: 阶段裁剪与执行顺序方案（引擎选择 + 阶段清单 + 质量门/人工确认点安排）
+    type: inline
+    description: 调度方案本身不落盘，业务产物由下游阶段 skill 生成
+degrade:
+  - trigger: 需求模糊，无法判定引擎与阶段裁剪
+    action: 先路由 game-topic-brainstorm 做选题脑暴，确认后再回本 skill 编排
+    target: 阶段裁剪方案
+  - trigger: 引擎决策树无法唯一判定引擎
+    action: 列出候选引擎与判断依据，AskUserQuestion 交用户选择，不擅自定夺
+    target: 引擎选择

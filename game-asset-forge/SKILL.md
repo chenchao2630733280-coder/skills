@@ -9,6 +9,10 @@ description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执
 
 ---
 
+## 全局约束
+
+遵循 `../_shared/references/engineering-constraints.md`（项目隔离/技术栈沿用/密钥/验证/追溯/增量修改等 10 条通用工程约束，唯一事实来源）。
+
 ## 一、输入与输出
 
 **输入**(必读):

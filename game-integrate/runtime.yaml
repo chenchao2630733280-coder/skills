@@ -1,0 +1,46 @@
+# runtime.yaml — game-integrate
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/GAME_BLUEPRINT.md
+    type: text
+    required: true
+    description: 阶段 1 产物，"3. 平台与引擎"章节用于引擎判定（SKILL.md §2.0）
+  - name: assets/
+    type: text
+    required: true
+    description: 阶段 4a 产物资源目录（与 src/ 或 Godot/Unity 工程一起构成构建输入）
+  - name: src/ 或 Godot/Unity 工程
+    type: text
+    required: true
+    description: 阶段 4b 产物：Web 引擎为 src/ 工程，Godot 4 为 project.godot 工程，Unity 为 Unity 工程
+outputs:
+  - path: dist/
+    type: directory
+    optional: true
+    description: Web 引擎构建产物（npm run build）；三选一，按引擎判定产出
+  - path: export/
+    type: directory
+    optional: true
+    description: Godot 4 导出产物（godot --headless --export-release）；三选一
+  - path: Build/
+    type: directory
+    optional: true
+    description: Unity 构建产物（unity -batchmode）；三选一
+  - path: docs/BUILD_REPORT.md
+    type: file
+    description: 验收报告（内含 Gate 4 实跑门结果），报告模板见 references/build-report-template.md
+degrade:
+  - trigger: Godot CLI 或 Unity Editor 不可用（沙箱缺失）
+    action: 输出对应平台的手动构建/导出指令供用户执行，构建延后到宿主环境，不报错中断
+    target: dist/ 或 export/ 或 Build/
+  - trigger: 构建/导出命令执行失败
+    action: 错误清单写入验收报告，按 Gate 4 软降级处理（输出失败清单 + 截图，不阻塞流水线）
+    target: docs/BUILD_REPORT.md
+  - trigger: 资源加载 404
+    action: 自动用占位图替代 + 标记到报告（与总纲 §6.2 软降级约定一致）
+    target: dist/ 或 export/ 或 Build/

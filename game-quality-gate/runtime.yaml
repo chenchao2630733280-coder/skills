@@ -1,0 +1,23 @@
+# runtime.yaml — game-quality-gate
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 300
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 各阶段产物
+    type: text
+    required: true
+    description: 按介入节点取用：docs/GAME_BLUEPRINT.md（Gate 0）/ docs/PRD.md + docs/TECH_DESIGN.md（Gate 1）/ docs/ART_SPEC.md + docs/ASSET_MANIFEST.json（Gate 2）/ assets/ + src/（Gate 3）
+outputs:
+  - path: docs/GATE_[0-3]_REPORT.md
+    type: file
+    description: 质量门报告（每次介入产出对应编号一份，glob 表示 0~3 四份），FAIL 时硬阻断并附修复建议
+degrade:
+  - trigger: L3 实跑预检工具缺失（沙箱无 node/godot CLI）
+    action: 标注 SKIPPED 延后到 Gate 4 由 game-integrate 补检（对齐 G3-UNITY-SKIPPED 先例），不伪装通过
+    target: docs/GATE_[0-3]_REPORT.md
+  - trigger: 产物缺失或 JSON 解析失败
+    action: 报告标注 FAIL 与缺失清单，硬阻断回原产出 skill 修复，不降级放行
+    target: docs/GATE_[0-3]_REPORT.md

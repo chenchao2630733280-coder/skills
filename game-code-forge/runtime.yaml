@@ -1,0 +1,46 @@
+# runtime.yaml — game-code-forge
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: docs/GAME_BLUEPRINT.md
+    type: text
+    required: true
+    description: 阶段 1 产物，取引擎选择（三份输入文档缺失时校验报错退出，见 SKILL.md §十二）
+  - name: docs/PRD.md
+    type: text
+    required: true
+    description: 阶段 2 产物，取玩法/UI/关卡/状态机规格
+  - name: docs/TECH_DESIGN.md
+    type: text
+    required: true
+    description: 阶段 2 产物，取目录/模块/类设计与接口契约
+  - name: docs/ASSET_MANIFEST.json
+    type: text
+    required: true
+    description: 阶段 3 产物，资源引用统一走 Manifest（SKILL.md §九 生成规则 2）
+outputs:
+  - path: src/
+    type: directory
+    description: 可运行工程源码（Web 引擎）；Godot 4 为 project.godot + scenes/Main.tscn + scripts/main.gd，Unity 为 Assets/Scripts + Editor/BuildScript.cs，结构详见 SKILL.md §一
+  - path: index.html
+    type: file
+    optional: true
+    description: Web 引擎入口；Godot/Unity 不产出
+  - path: package.json
+    type: file
+    optional: true
+    description: Web 引擎配置（含 dev/build/typecheck scripts）；Godot/Unity 为 project.godot/manifest.json 等
+degrade:
+  - trigger: typecheck / Godot check 不通过
+    action: 沿用自身修复策略重试，最多 3 轮（与总纲 §6.1 Gate 3 L3 失败约定一致）；仍失败则返回错误日志交质量门
+    target: src/
+  - trigger: 引擎特性超出现有模板覆盖范围
+    action: 读取对应 pitfall 文件后按最接近模板降级实现，并在 README 标注"降级实现：{...}"
+    target: src/
+  - trigger: 引用资源在 ASSET_MANIFEST 中不存在
+    action: 用占位资源路径生成代码并在 ASSET_ISSUES.md 标记，不阻塞
+    target: src/

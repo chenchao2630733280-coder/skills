@@ -199,7 +199,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
 | game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |
 | game-asset-forge | format-conversion-guide.md + card-bg-spec.md |
-| game-code-forge | 6 个 engine-*-template.md(六引擎模板) + 6 个 pitfall 文件 + web-config.md |
+| game-code-forge | 6 个 engine-*-template.md(六引擎模板) + 6 个 pitfall 文件 + web-config-template.md |
 | game-integrate | build-report-template.md |
 | game-polish | asset-fix-recipes.md + overlay-spec.md |
 | game-quality-gate | 5 个 engine-checks-*.md(六引擎质量检查) |

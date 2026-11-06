@@ -58,7 +58,7 @@ Unity 工程:
 
 ---
 
-## 二、通用工程结构(Web 三引擎通用;Godot/Unity 见各自 references 模板)
+## 二、通用工程结构(Web 四引擎通用;Godot/Unity 见各自 references 模板)
 
 ```
 {项目名}/
@@ -109,6 +109,10 @@ Unity 工程:
 ```
 
 ---
+
+## 全局约束
+
+遵循 `../_shared/references/engineering-constraints.md`（项目隔离/技术栈沿用/密钥/验证/追溯/增量修改等 10 条通用工程约束，唯一事实来源）。
 
 ## references 使用指引
 
@@ -210,7 +214,7 @@ Unity 工程:
 
 **关键差异**:Unity 与 Godot/Web 引擎在入口/脚本语言/场景格式/资源加载/物理/导出/类型检查/工程识别上均不同,详见 `references/engine-unity-template.md` §7.12 差异对比表。
 
-### Three.js 引擎模板(关键差异)
+## 八、Three.js 引擎模板(关键差异)
 
 > 完整模板已抽离到 `references/engine-three-template.md`,生成 Three.js 代码时读取该文件。
 
@@ -226,7 +230,7 @@ Unity 工程:
 
 ---
 
-## 八、生成规则
+## 九、生成规则
 
 ### 1. 严格 TypeScript
 - `strict: true`
@@ -287,19 +291,19 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 九、配置文件生成
+## 十、配置文件生成
 
 > Web 引擎配置模板已抽离到 `references/web-config-template.md`,Godot 配置见 `references/engine-godot-template.md`,Unity 配置见 `references/engine-unity-template.md`。
 
 | 引擎类型 | 配置文件 | references 文件 |
 |---------|---------|----------------|
-| Web(Phaser 3/Pixi.js/纯 Canvas) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
+| Web(Phaser 3/Pixi.js/纯 Canvas/Three.js) | package.json/tsconfig.json/vite.config.ts/index.html/README.md | `references/web-config-template.md` |
 | Godot 4 | project.godot/export_presets.cfg | `references/engine-godot-template.md` |
 | Unity | ProjectVersion.txt/manifest.json/.asmdef/.csproj | `references/engine-unity-template.md` |
 
 ---
 
-## 十、生成顺序
+## 十一、生成顺序
 
 按依赖关系顺序生成(Web 引擎步骤;Godot/Unity 引擎时按对应 references 模板的目录结构生成,顺序一致但文件替换为 .gd/.cs):
 1. 工程配置文件(Web:package.json/tsconfig/vite.config/index.html;Godot:project.godot/export_presets.cfg;Unity:ProjectVersion.txt/manifest.json/.asmdef/.csproj)
@@ -315,7 +319,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 十一、交互约定
+## 十二、交互约定
 
 0. **输入校验(读取前一次性)**:逐个检查 4 份输入文档是否存在,缺失则报错并列出缺失文件后退出,不进入生成流程:
    - `docs/GAME_BLUEPRINT.md` 缺失 → "缺少蓝图,请先调用 game-blueprint"
@@ -329,7 +333,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 十二、质量检查清单
+## 十三、质量检查清单
 
 - [ ] 所有文件已生成(对照 TECH_DESIGN 目录结构)
 - [ ] package.json scripts 完整(dev/build/typecheck)
@@ -346,31 +350,31 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ---
 
-## 十三、Sprite/Body 偏移安全(关键踩坑)
+## 十四、Sprite/Body 偏移安全(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-sprite-body-offset.md`。
 
 核心约束:body.setSize/setOffset 必须在 create 物理后调用,否则偏移无效导致碰撞框错位。
 
-## 十四、数值平衡校验(关键踩坑)
+## 十五、数值平衡校验(关键踩坑)
 
 > **跨引擎通用**(跑酷类)。完整规范见 `references/pitfall-balance-validation.md`。
 
 核心约束:GameConfig 必须带注释推导链,jumpVelocity/gravity/obstacleInterval/obstacleSpeed 必须可数学验证。
 
-## 十五、Phaser 中文文字换行(关键踩坑)
+## 十六、Phaser 中文文字换行(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-phaser-text-wrap.md`。
 
 核心约束:中文文字必须用 `wordWrap.useAdvancedWrap` + 手动按字符切分,否则换行无效。
 
-## 十六、图集帧名格式匹配(关键踩坑)
+## 十七、图集帧名格式匹配(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-atlas-frame-format.md`。
 
 核心约束:generateFrameNames 的 prefix/suffix/start/end 必须与 JSON Hash 中的实际帧名完全匹配。
 
-## 十七、Phaser UI 交互 / 层级踩坑(关键踩坑)
+## 十八、Phaser UI 交互 / 层级踩坑(关键踩坑)
 
 > **Phaser 专属**。完整规范见 `references/pitfall-phaser-ui-overlay-input.md`。
 
@@ -382,7 +386,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - 局部变量不能用 `let x?: T`,用 `let x: T | undefined`。
 - 缺 favicon 会产生无害 404,`index.html` 加 `<link rel="icon" href="data:," />` 消除。
 
-## 十八、状态切换的可见反馈(关键踩坑)
+## 十九、状态切换的可见反馈(关键踩坑)
 
 > **跨引擎通用**。完整规范见 `references/pitfall-state-visual-feedback.md`。
 
