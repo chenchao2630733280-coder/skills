@@ -38,6 +38,7 @@ description: "Generates terminal-aware page prototype documents for admin web, m
 | `../_shared/references/schemas/annotations.example.json` | 声明页面标注（SXX）时参考结构；`annotations.json` 由本 Skill 创建和维护，`generate-portal` 只读取展示；`generate-html-pages` 不消费标注 |
 | `../_shared/references/schemas/` 下其他共享示例（`pages`、`actions`、`navigation`、`overlays`、`components`、`pipeline-context` 等） | 需要向 `output/spec/` 产出 JSON 工件时参考对应结构 |
 | `references/schemas/` 下本阶段示例（`page-archetypes`、`prototype-output-profile`、`prototype-validation-report`） | 需要原型分类、输出档位或校验报告结构时参考 |
+| `../_shared/references/output-conventions.md` | 编写页面原型文档与标注前读取。交付物产出规范：初版口吻（无变更口吻）、程序化图形、开发注释与产品提示双轨、流转记法 ASCII `>`、表格列宽程序化对齐、术语白名单 |
 
 ---
 

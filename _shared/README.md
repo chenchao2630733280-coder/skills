@@ -9,6 +9,7 @@ _shared/references/
 ├── ui-design-standards.md          # 通用 UI 设计规范（移动端默认档案）
 ├── pc_admin_ui_spec.md             # PC 管理端权威设计规范（vue-admin-plus / Element Plus）
 ├── engineering-constraints.md      # 工程通用约束（10 条，plan-system-implementation / build-working-system 共用）
+├── output-conventions.md           # 交付物产出规范（初版口吻 / 程序化图形 / 注释双轨 / 记法 / 表格列宽 / 术语白名单）
 └── schemas/
     ├── acceptance-matrix.example.json  # 验收矩阵结构（plan-system-implementation 产出）
     ├── actions.example.json            # 页面动作结构

@@ -326,9 +326,68 @@ body.sidebar-collapsed .menu-link { justify-content: center; padding-inline: 0; 
   .admin-main { padding: 16px; }
   .page-surface { padding: 16px; }
 }
+
+/* ---------- 开发注释块（原型标注约定，非产品 UI） ---------- */
+.dev-note {
+  position: relative;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  color: var(--text-regular);
+  background: #f7fbff;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.dev-note__tag {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  height: 18px;
+  padding: 0 7px;
+  color: var(--primary);
+  background: #fff;
+  border: 1px dashed var(--primary);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.dev-note b { color: var(--text-primary); font-weight: 600; }
+.dev-note i { font-style: normal; color: var(--text-secondary); }
 ```
 
-## 5. sidebar.js 行为模板
+## 5. 开发注释块（dev-note）
+
+页面内**静态书写**的规则 / 口径 / 业务规则（BR）说明块属**开发注释**，不是产品界面文案。必须渲染为虚线框 + 「开发注释」角标，避免被误读为真实界面提示。样式定义见 §4（`.dev-note` / `.dev-note__tag`）。
+
+**判据（只处理静态规则说明，不动产品 UI 模拟）：**
+
+| 类别 | 处理 |
+|---|---|
+| 静态写在 HTML 里的页面级说明块（规则 / 口径 / BR） | ✅ 用 `.dev-note` |
+| JS 运行期生成的 alert（抽屉状态文案 / 区间校验 / 导入结果） | ❌ 属产品 UI 模拟，保持 `.alert` 样式 |
+| 字段级 `form-tip` / `upload-tip` | ❌ 表单 UI 帮助文字，不动 |
+| 小字产品提示（如 `.tip`） | ❌ 产品提示，不动 |
+
+**HTML 结构模板：**
+
+```html
+<div class="dev-note">
+  <span class="dev-note__tag">开发注释</span>
+  <b>聚合主体</b>：结算汇总单以<i>局办（企业）</i>为聚合主体，同一局办下的多张子单合并为一张汇总单。
+</div>
+```
+
+**约束：**
+
+- 一个注释块一个 `.dev-note__tag`，角标文案固定为「开发注释」，不再重复使用 `ℹ️` 等表情符号（角标已表意）。
+- 块内强调用 `<b>`、次要说明用 `<i>`；`.dev-note i` 只在 PC `common.css` 定义，跨端复用时移动端需另行定义。
+- 开发注释是标注层内容，不承载可交互控件；不要在其中放置按钮、表单或跳转链接。
+- 同一语义的注释在双端对应页面应保持一致口径。
+
+## 6. sidebar.js 行为模板
 
 ```javascript
 (function () {
@@ -457,7 +516,7 @@ body.sidebar-collapsed .menu-link { justify-content: center; padding-inline: 0; 
 }());
 ```
 
-## 6. 菜单配置示例
+## 7. 菜单配置示例
 
 ```javascript
 var SIDEBAR_MENUS = [
@@ -480,7 +539,7 @@ var SIDEBAR_MENUS = [
 ];
 ```
 
-## 7. 验收清单
+## 8. 验收清单
 
 - 侧边栏深色背景 `#282c34`，文字 `hsla(0,0%,100%,0.95)`，选中项背景主色 `#1890ff`、文字纯白。
 - 顶栏、侧栏、工作区页签栏在滚动时保持固定或粘性，不随内容消失。
@@ -492,3 +551,4 @@ var SIDEBAR_MENUS = [
 - 折叠状态刷新后保持，键盘焦点可见，按钮具有 `aria-label`。
 - 全站圆角 2.5px，阴影 `0 1px 4px rgba(0,21,41,0.08)`，控件高度 32px。
 - 所有导航图标来自同一套内联 SVG，不使用 Emoji 或外部 CDN。
+- 页面内静态规则 / 口径 / BR 说明块使用 `.dev-note` + `.dev-note__tag`（虚线框 + 「开发注释」角标），未与产品 UI 的 `.alert` 混用。

@@ -799,7 +799,7 @@ Phase 1          Phase 2          Phase 3          Phase 4
 | 原型生成 | generate-html-pages | 消费原型页面文档生成 HTML，判定端类型后路由到 mobile/pc-admin 子 skill |
 | 原型生成 | generate-html-mobile | 移动端 HTML 原型（任务型页面：入口/发现/检索/详情/交易/个人中心） |
 | 原型生成 | generate-html-pc-admin | PC 管理后台 HTML 原型（vue-admin-plus 风格：深色侧栏+工作区页签） |
-| 总控门户 | generate-portal | 生成总控演示门户（三栏布局：导航+跨端预览+PRD 动态标注） |
+| 总控门户 | generate-portal | 生成演示门户（端切换 + 跨端预览 + 本端页面列表 + PRD 标注随页跟随） |
 | 前端实现 | implement-frontend | 将原型转为生产级前端（类型化 API/可访问性/校验/权限/测试） |
 | 后端实现 | implement-backend | 实现后端 API/领域服务/校验/授权/审计/集成测试 |
 | 数据层 | implement-data-layer | 实现数据库 schema/migration/constraints/seed/repo/事务规则 |

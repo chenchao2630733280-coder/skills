@@ -64,6 +64,7 @@ output/site/
 | 进度条 | `.progress-bar` `.progress-fill` `.red/yellow/green` | 进度条 |
 | 弹窗 | `.modal-overlay` `.modal` `.modal-sm/md/lg` `.modal-header/body/footer` | 居中浮层弹窗 |
 | 提示 | `.alert` `.alert-warning/danger/info/success` | 消息提示 |
+| 开发注释 | `.dev-note` `.dev-note__tag` | 页面内静态规则 / 口径 / BR 说明块（虚线框 + 「开发注释」角标），与产品 UI 的 `.alert` 严格区分（详见 `pc-admin-navigation-style.md` §5） |
 | Tab | `.tabs` `.tab-item` | 标签页 |
 | 详情 | `.detail-row` `.detail-overview-bar` `.detail-tabs` `.detail-tab-content` | 详情页 |
 | 附件 | `.upload-area` `.file-item` | 附件上传 |
@@ -81,6 +82,7 @@ output/site/
 - 主工作区内容优先放入白色 `.page-surface` 或卡片；页面内容内边距默认 20px，小于 1440px 可降至 16px。
 - 表格高频操作直接展示；删除、禁用等低频危险操作收纳到“更多”。
 - 数值右对齐；日期、金额和 ID 使用等宽数字。
+- 页面内**静态书写**的规则 / 口径 / 业务规则说明块属**开发注释**，统一用 `.dev-note` + `<span class="dev-note__tag">开发注释</span>`（虚线框 + 角标），不得与产品 UI 的 `.alert` 混用；JS 运行期 alert、`form-tip`/`upload-tip` 等产品提示保持原样（详见 `references/pc-admin-navigation-style.md` §5）。
 
 ### 3.2 PC端 sidebar.js
 
@@ -295,6 +297,7 @@ output/site/
 11. **交互可用性**：文件/图片上传可触发文件选择并显示预览或回填文件名；详情/编辑弹窗可打开并填充数据；删除等危险操作有二次确认（详见 §六 交互实现模式）
 12. **图标体系统一**：全项目只使用一套图标体系，优先内联 SVG；禁止混用 Emoji、FontAwesome、Ant Design Icons 等多套图标库；菜单、消息、用户、折叠等图标均使用内联 SVG
 13. **viewport 一致**：PC 端使用 `width=device-width, initial-scale=1, viewport-fit=cover`
+14. **开发注释与产品 UI 区分**：静态规则 / 口径 / BR 说明块使用 `.dev-note` + `.dev-note__tag`（虚线框 + 「开发注释」角标），JS 运行期 alert 与表单帮助文字保持产品 UI 样式，二者不混用（详见 `references/pc-admin-navigation-style.md` §5）
 
 ### 5.4 增量改造与批量补丁的校验流水线（V1.x 迭代必用）
 
@@ -452,10 +455,11 @@ output/site/
 
 | 参考文件 | 路径（相对本 Skill 根目录） | 用途 |
 |---------|---------------------------|------|
-| PC 壳层与导航基准 | `references/pc-admin-navigation-style.md` | PC 端 Token、尺寸、色值、圆角、阴影、DOM 骨架与 sidebar.js 行为的唯一基准 |
+| PC 壳层与导航基准 | `references/pc-admin-navigation-style.md` | PC 端 Token、尺寸、色值、圆角、阴影、DOM 骨架、sidebar.js 行为与开发注释块（`.dev-note`）的唯一基准 |
 | PC 壳层示例 | `references/examples/pc-admin-shell-demo.html` | 检查 PC 壳层（侧栏+顶栏+页签栏+内容区）效果 |
 | 交互实现模式 | `../generate-html-pages/references/interaction-patterns.md` | Toast/Modal/上传/弹窗/CRUD/排序的完整代码模板与检查点 |
 | PC 后台 UI 规范 | `../_shared/references/pc_admin_ui_spec.md` | PC 管理后台共享 UI 规范（与导航基准对齐） |
 | 上游工件结构示例 | `../_shared/references/schemas/` | `pages.json` / `navigation.json` / `annotations.json` 等上游 JSON 工件结构示例 |
+| 交付物产出规范 | `../_shared/references/output-conventions.md` | 初版口吻/程序化图形/注释双轨/流转记法/表格列宽/术语白名单（跨端共享） |
 | 构建报告结构示例 | `../_shared/references/schemas/html-build-report.example.json` | `output/site/build-report.json` 结构示例 |
 | 设计 Token 工件 | `output/spec/design-tokens.json` | 项目 UI Token（优先于默认 Token） |

@@ -61,7 +61,9 @@ generate-html-pages        → 判端路由 + 调度子skill + 汇总 build-repo
        ↓
 ⏸ 人工确认点 3 (AskUserQuestion: 进入门户生成 / 回退修复 HTML / 终止)
        ↓
-generate-portal            → output/site/index.html (三栏演示门户,独占)
+generate-portal            → output/site/index.html (演示门户,端切换+标注跟随,独占)
+       ↓
+[交付验收] 一致性门禁 + 只读审查 + 快照入库（交付前建议执行,见 §十.1）
        ↓
 ⏸ 人工确认点 4 (AskUserQuestion: 进入实施规划(可选) / 流水线完成 / 回退修复门户)
        ↓
@@ -84,6 +86,7 @@ screenshot-operation-manual  → 操作手册 .docx
 - 阶段 6（plan-system-implementation）：**可选过渡**，首次产出实施蓝图后，**控制权交接给 build-working-system** 进入生产阶段；product-pipeline-master 到此结束
 - 生产阶段（build-working-system）：**超出本流水线范围**，由 build-working-system 接管，负责恢复蓝图→骨架→implement-*→集成→测试→部署
 - 旁线文档：**可并行**，任何阶段都能触发，不依赖主线顺序
+- **交付验收（门户之后、确认点 4 之前）：强烈建议**，用 `delivery-consistency-gate` + `snapshot-guard` 做机械一致性、只读审查与快照入库（见 §十.1）；轻量演示可裁剪，裁剪需在确认点 4 明确告知"未经一致性门禁"
 - **人工确认点 1~4：强制暂停**，每阶段质量门禁 PASS 后用 AskUserQuestion 确认，不允许自动进入下一阶段(见 §九.1)
 
 **关键约束**：每阶段产物的路径与文件名固定，下游 skill 必须按固定路径读取上游产物，不允许自定义路径。
@@ -261,6 +264,11 @@ generate-html-pages 产出:
    - 汇总子 skill 产出的 build-report.json
    - ⏸ **人工确认点 3**：HTML 质量门禁 PASS 后，简报 HTML 页面数/build-report 结果，AskUserQuestion 询问"进入门户生成 / 回退修复 HTML / 终止流水线"
 5. 调用 `generate-portal`，读取 HTML 页面 + `build-report.json` + `annotations.json`，产出 `output/site/index.html`
+   - **交付验收（交付前建议执行，见 §十.1）**：
+     - 调用 `delivery-consistency-gate` 跑一致性门禁（A~H；多端原型/应用场景再加 I~K：渲染真值 / 导航三方一致 / 编号双向治理）。门禁**只报不修**：出缺口则回退修复并复跑，全绿才进确认点 4。
+     - 调用 `snapshot-guard` 刷新交付集快照，并做**「磁盘 vs 快照」逐字节比对**（含「快照外新增」档）；差异先保全现场再还原。
+     - 如需只读审查（不改任何交付物）：审查脚本放临时目录、不跑会重写产物的脚本、审前审后各比对一次快照，证明交付集未被改动。
+     - 轻量演示可裁剪本步；裁剪时须在确认点 4 明确告知用户"**未经一致性门禁与快照**"。
    - ⏸ **人工确认点 4**：门户质量门禁 PASS 后，简报门户路径/iframe 预览状态，AskUserQuestion 询问"进入实施规划(可选) / 流水线完成 / 回退修复门户"
    - ⏸ **人工确认点 5（可选 Tool）**：门户完成后(或确认点 4 选"流水线完成"后),若用户明确要"提交/部署",AskUserQuestion 询问"提交产物到 Git / 部署到平台 / 跳过 Tool 操作"
      - 选"提交到 Git" → 调用 `tool-git-ops`(commit 产物目录,默认不 push)
@@ -342,8 +350,19 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 原型 | `pages.json` 的 `archetypeId` 已填充；`annotations.json` 与页面清单对齐 |
 | HTML | `build-report.json` 的 `result` 为 `PASS`；`openIssues` 为空或有明确说明 |
 | 门户 | `index.html` 可独立打开；iframe 预览正常；标注渲染正确 |
+| 交付验收(建议) | `delivery-consistency-gate` A~H（多端加 I~K）全绿、无缺口；`snapshot-guard` 「磁盘 vs 快照」逐字节一致（含快照外新增档）；只读审查前后快照未变 |
 | 实施 | 任务板 `task-board.json` 与 PRD 页面清单可追溯 |
 | Tool(可选) | `tool-git-ops` 产出 `git-ops-report.json`；`tool-deploy-ops` 产出 `deploy-ops-report.json`；`guardrail` 前置检查通过 |
+
+### 10.1 交付验收 = 门禁 + 只读审查 + 快照
+
+「生成完」不等于「交付完」。门户产出后、宣告流水线完成前，建议走一道**交付验收**（见 §八 步骤 5 内的"交付验收"子步骤），三步：
+
+1. **一致性门禁**（`delivery-consistency-gate`）：把「同一事实的多副本」机械核对一遍（A~H；多端场景加 I~K）。它是**只报不修**的 —— 出缺口就回到相应阶段修，修完复跑，全绿为止。
+2. **只读审查**（可选，若需人工复核而非改产物）：审查脚本放**临时目录**、不落进项目；**不跑会重写产物的脚本**（例如会重写 `build-report.json` 的构建脚本，改为只读复算）；审前审后各做一次「磁盘 vs 快照」比对，**证明交付集分毫未动**。
+3. **快照入库**（`snapshot-guard`）：刷新交付集快照（当前 / 上一轮 / 历史基线三档），并做逐字节比对；差异按「磁盘缺失 / 内容不一致 / 快照外新增」三档处置，先保全现场再还原。
+
+**门禁 ≠ 万能**：静态门禁查不出「文件被外部工具在快照之后改过」——一份被回退或重排过的文件**内容依然合规**。唯一能发现它的是**与快照逐字节比对**。故第 3 步不可省。
 
 **防回归校验**：修改任何共享文件或 skill 引用后，运行：
 ```powershell

@@ -320,4 +320,5 @@ output/site/mobile/
 | 交互实现模式 | `../generate-html-pages/references/interaction-patterns.md` | Toast/Modal/上传/CRUD/排序代码模板（跨端共享） |
 | HTML构建报告示例 | `../_shared/references/schemas/html-build-report.example.json` | `build-report.json` 结构定义 |
 | 工件结构示例 | `../_shared/references/schemas/` | 上游 JSON 工件结构示例 |
+| 交付物产出规范 | `../_shared/references/output-conventions.md` | 初版口吻/程序化图形/注释双轨/流转记法/表格列宽/术语白名单（跨端共享） |
 | PC端导航样式 | `../generate-html-pc-admin/references/pc-admin-navigation-style.md` | 双端共享品牌色/语义色基准（只读参考） |

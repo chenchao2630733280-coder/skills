@@ -74,7 +74,7 @@
 | generate-html-mobile | 任务型移动端静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/mobile/`(common.css、navbar.js、PXX-*.html) |
 | generate-html-pages | 多端静态原型生成路由器，判端并调度 PC/移动端子 skill，汇总构建报告 | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`、`output/site/mobile/`、`output/site/build-report.json` |
 | generate-html-pc-admin | PC 管理后台静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`(common.css、sidebar.js、PXX-*.html) |
-| generate-portal | 原型演示与标注总控台生成器(三栏布局+iframe 预览+PRD 标注) | 产品设计方案.md、页面原型文档.md、annotations.json、build-report.json、已生成 HTML | `output/site/index.html`(独立门户，独占) |
+| generate-portal | 原型演示与标注总控台生成器(端切换+跨端 iframe 预览+本端页面列表+PRD 标注跟随) | 产品设计方案.md、页面原型文档.md、annotations.json、build-report.json、已生成 HTML | `output/site/index.html`(独立门户，独占) |
 | generate-prototype | 由系统 PRD 生成终端感知的标准化页面原型文档(UI/UX 交互规格) | 系统产品设计文档(PRD) | `{系统名称}-页面原型文档.md` + 可选 `output/spec/annotations.json` 等 JSON |
 | generate-system-prd | 由需求生成标准化系统产品设计文档(13章+附录，多端适配) | 产品名称/目标/端类型/范围/目标用户/核心场景等(可来自脑暴结论) | `{产品名称}-产品设计方案-V{版本号}.md` + 可选 `output/spec/*.json` |
 | implement-backend | 按垂直切片实现生产级后端 API/服务/校验/权限/测试 | 架构文件、business-rules.json、permissions.json、data-model.json、已实现数据层 | 后端源码、API 契约、测试、backend-implementation-report.md、更新追溯表 |

@@ -1,6 +1,6 @@
 ---
 name: "generate-portal"
-description: "Generates the project demo portal (index.html) with three-pane navigation, cross-device iframe preview, and PRD-driven annotations. Use when HTML prototype pages exist under output/site/ and a unified review portal is needed."
+description: "生成/更新原型演示门户 index.html（demo portal / review portal）：顶部端切换 + 跨端 iframe 预览 + 移动端本端页面列表 + PRD 标注随页跟随（含画幕内导航）；当 output/site/ 下已有 HTML 原型页、需要统一评审门户时调用。"
 ---
 
 # generate-portal — 原型演示与标注总控台
@@ -12,11 +12,11 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 - **所有权**：`output/site/index.html` 由本 Skill **独占生成和维护**。`generate-html-pages` 不再生成总控台；若已存在旧版总控台，以本 Skill 输出覆盖。
 - **文件要求**：必须是一个**独立**的 HTML 文件（CSS/JS 内联），不依赖任何后端服务。
 - **视觉要求**：不强制任何特定 CSS 框架、图标库或固定配色。视觉 Token 遵循 `../_shared/references/ui-design-standards.md` 与项目 `output/spec/design-tokens.json`（存在时优先）；图标使用内联 SVG，禁止混用 Emoji 与多套图标库；默认不依赖外部 CDN。
-- **核心功能**：采用**三栏布局**，集成页面导航、Iframe 预览和动态产品标注功能。
+- **核心功能**：**端（角色）切换 + 跨端 Iframe 预览 + PRD 标注跟随** —— 顶部工具栏切端，移动端在画幕外常驻本端页面列表，PC 端沿用原型自带菜单；任意来源的页面切换都要驱动标题 / 路径 / 列表高亮 / 右侧标注四处同步（见 `references/portal-interaction-contract.md`）。
 
 ## 一、定位与触发条件
 
-当 `output/site/` 下已存在由 `generate-html-pages` 生成的原型页面，需要生成或更新统一评审门户时使用本 Skill。重复执行时应增量更新 `projectMap` 与标注数据，不改变门户的交互结构。
+当 `output/site/` 下已存在由 `generate-html-pages` 生成的原型页面，需要生成或更新统一评审门户时使用本 Skill。重复执行时只增量更新 `projectMap` 与标注数据；**门户的布局与交互以第五节 + `references/portal-interaction-contract.md` 为准**（端切换 / 画幕外本端列表 / 标注跟随），**不要退回早期的「页面树三栏」形态**。
 
 ## 二、输入
 
@@ -32,12 +32,14 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 | 文件 | 何时读取 |
 |------|---------|
+| `references/portal-interaction-contract.md` | **必读**。门户（index.html）布局与交互的权威口径：端切换、画幕外本端列表、标注跟随的两条通道与三条硬约束、验收清单。改动门户前先读 |
 | `references/annotation-standards.md` | **必读**。定义 `annotations.json` 与门户的映射（含 `pageId` 分组与可选 `selector` 定位）、降级模式与安全规则，优先级高于本文件中的任何视觉描述 |
 | `../_shared/references/ui-design-standards.md` | 生成门户视觉样式前读取；项目 Token 优先于该默认值 |
 | `../_shared/references/schemas/annotations.example.json` | 需要解析或校验 `annotations.json` 结构时参考 |
 | `references/schemas/portal-build-report.example.json` | 需要输出构建报告时参考（本阶段特有） |
 | `../_shared/references/schemas/html-build-report.example.json` | 需要解析 `generate-html-pages` 产出的 `build-report.json` 时参考 |
 | `../_shared/references/schemas/` 下其他共享示例 | 需要与上游工件（pages/actions/navigation 等）对齐字段时按需参考 |
+| `../_shared/references/output-conventions.md` | 生成门户内容前读取；交付物产出规范（初版口吻/程序化图形/注释双轨/记法/术语白名单） |
 
 ## 四、标注契约
 
@@ -53,30 +55,32 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ## 五、布局要求
 
-实现全屏三栏无缝布局（具体尺寸与色值以项目 Token 为准，以下为默认建议）：
+实现全屏无缝布局（具体尺寸与色值以项目 Token 为准）。**权威口径见 `references/portal-interaction-contract.md`**，本节为其摘要：
 
-### 1. 左侧：导航栏 (Sidebar) - 默认宽度 260px
+### 1. 顶部：工具栏（一行）
 
-* **内容**：
-  * 顶部：项目标题（使用系统名称）。
-  * 列表：按"端"和"模块"分组的折叠菜单（动态生成）。
-* **交互**：点击菜单项时，高亮当前项，并触发中间预览区和右侧标注区的状态更新。
+* 左：当前页标题 + 相对路径；中：计数说明（总页数 / 可见页数 / 标注数，由 `projectMap` 派生，禁止写死）。
+* 右：**端切换器** —— 每个模块（端）一个按钮（`data-end="<moduleId>"`），内联 SVG 或纯文本，当前端高亮。
+* 切端即加载该端**入口页**（第一个非隐藏页），并按该页 `device` 切换画幕框。
 
-### 2. 中间：预览区 (Viewport) - 自适应宽度
+### 2. 中间：画幕区（自适应）
 
-* **顶部工具栏**：
-  * 显示当前正在预览的页面标题和相对路径。
-  * **设备切换器**：提供 [ 手机 ] / [ PC ] 切换按钮（使用内联 SVG 图标）。
-* **Iframe 容器**：
-  * `<iframe id="preview-frame">` 用于加载目标页面。
-  * **手机模式**：iframe 尺寸强制为 `375px * 812px`，居中显示，带有类似手机的阴影或边框。
-  * **PC 模式**：iframe 尺寸铺满 `100% * 100%`。
+* **左侧「本端页面」列表**：仅当该端含移动页时渲染；常驻展开、可滚动，标题为模块名 + 「N 页」，当前页高亮，点击加载。
+  该端全为 PC 页时**不渲染**该列表（PC 原型自带左侧菜单），画幕占满整宽。
+* **Iframe 容器**：`<iframe id="preview-frame">`；移动端 `375px × 812px` 居中带手机阴影，PC 端铺满 `100% × 100%`。
 
 ### 3. 右侧：标注面板 (Specs Panel) - 默认宽度 340px
 
 * **头部**：固定标题 "开发标注 (Dev Specs)"。
-* **内容区**：根据左侧选中的页面，动态渲染对应的标注内容（严格遵循下方的"标注撰写规范"）。
+* **内容区**：随当前页动态渲染（严格遵循"标注撰写规范"）；
+  **必须在画幕内导航时同步切换**（两条通道见下节），不能只跟工具栏。
 * 角标与右侧标注支持双向定位和键盘访问；角标不得遮挡关键文字，密集区域可使用引线或包含框。
+
+### 4. 画幕内导航的标注跟随（不可省）
+
+* 父窗口统一走 `syncFromFile(file)`，由两条通道驱动：`iframe load`（http 下读 `contentWindow.location`）与 `message`（子页面 `postMessage` 自报，`file://` 下唯一可用）。
+* 子页面上报代码置于 `pc/sidebar.js` 与 `mobile/navbar.js` **顶部**（共享派生块之前）。
+* 三条硬约束：不依赖父窗口读 `location`；兜底**不得**回退读 `iframe.getAttribute('src')`；上报代码不得插在共享派生块之后。
 
 ---
 
@@ -103,10 +107,13 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 ### 3. 状态联动 (State Linkage)
 
-* 点击左侧菜单 ->
-* (1) 中间 Iframe 加载目标页面路径。
-* (2) **自动视图切换**：目标路径位于 `mobile/` 时切为手机视图，位于 `pc/` 时切为 PC 视图；根目录单端页面使用其在 `projectMap` 中声明的端类型。
-* (3) 右侧渲染对应的标注数据；若 `annotations.json` 中该标注含 `selector` 字段，在 iframe 内定位元素并叠加角标，否则仅页面级展示。
+页面切换有**三个来源**，任一来源都必须驱动同一套同步：
+
+* **端切换**：加载该端入口页 -> (1) 画幕 iframe 载入该页；(2) **按该页 `device` 自动切画幕**（`mobile/` 手机视图、`pc/` PC 视图）；(3) 右侧渲染该页标注；(4) 刷新画幕外列表高亮。
+* **画幕外列表点击**（移动端）：同上第 (1)~(4) 步。
+* **画幕内导航**（PC 原型菜单 / 移动页内跳转）：经 `iframe load` + `message` 双通道进入 `syncFromFile(file)`，同步 **标题 / 路径 / 列表高亮 / 右侧标注**；若跳到了别的端，顺带切换顶部端。
+
+标注含 `selector` 时在 iframe 内定位元素并叠加角标，否则按页面级展示。**不允许出现「页换了、标注没换」的状态**——两种打开方式（`http://` 与 `file://`）都要验。
 
 ---
 
@@ -167,6 +174,6 @@ description: "Generates the project demo portal (index.html) with three-pane nav
 
 当收到执行该 Skill 的命令时：
 
-1. 先读取 `references/annotation-standards.md`，再按 Inputs 读取上游文档与 `output/site/` 目录。
+1. 先读取 `references/annotation-standards.md`；**若本次要生成或改动门户本体，必须先读 `references/portal-interaction-contract.md`**，再按 Inputs 读取上游文档与 `output/site/` 目录。
 2. 输出 `output/site/index.html` 的完整源代码：完整的 HTML5 结构、内联 CSS（Token 化）、内联 JavaScript 逻辑、内联 SVG 图标。
 3. 代码中硬编码一份基于上下文自动生成的 `projectMap` 数据作为演示和测试基础；`projectMap` 中的页面路径必须是 `output/site/` 下真实存在的文件，标注内容必须以特定 PRD 逻辑书写，不得虚构页面或占位规则。
