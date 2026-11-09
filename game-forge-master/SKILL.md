@@ -214,7 +214,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | skill | references 内容 |
 |-------|----------------|
 | game-topic-brainstorm | 无 references(复用 game-blueprint 的设计原则) |
-| game-teardown | 3 个拆解手册(12 维逐维/数值反解/合规边界)+ TEARDOWN_MATRIX schema |
+| game-teardown | 5 份拆解手册(12 维逐维/数值反解/状态建模/解空间与难度/合规边界)+ TEARDOWN_MATRIX schema |
 | game-blueprint | 7 个 design-principles-*.md(设计原则) |
 | game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
 | game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |

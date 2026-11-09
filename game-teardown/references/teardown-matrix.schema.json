@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "game-teardown/references/teardown-matrix.schema.json",
-  "$comment": "examples[0] 仅为字段写法的节选（3 条），实际产出的 items 必须 ≥12 条且 12 个维度全部覆盖，open_questions 收录全部 E0/E1 条目。",
+  "$comment": "examples[0] 仅为字段写法的节选（3 条），实际产出的 items 必须 ≥12 条且 12 个维度全部覆盖，open_questions 收录全部 E0/E1 条目，revisions 记录被推翻的假设（首版可为空数组）。",
   "title": "TEARDOWN_MATRIX — 复刻矩阵",
-  "description": "game-teardown 的机读契约。items[] 是唯一事实来源；prohibited 由 class=X 的条目派生，不单独维护。",
+  "description": "game-teardown 的机读契约。items[] 是唯一事实来源；X 清单由 class=X 的条目派生，不单独维护。",
   "type": "object",
   "required": [
     "source_game",
@@ -14,7 +14,8 @@
     "differentiation",
     "mvp",
     "items",
-    "open_questions"
+    "open_questions",
+    "revisions"
   ],
   "additionalProperties": false,
   "properties": {
@@ -45,6 +46,10 @@
       "maximum": 1,
       "description": "达到 E2 及以上的维度数 / 12，需与 GAME_TEARDOWN.md §0 一致；低于 0.6 须在报告首行提示"
     },
+    "sample_coverage": {
+      "type": "string",
+      "description": "样本覆盖（关卡阶段 × 状态）已覆盖格数/15 与缺失格，如 '9/15，缺后期关卡的失败态/重开态'"
+    },
     "differentiation": {
       "type": "string",
       "minLength": 8,
@@ -52,7 +57,7 @@
     },
     "mvp": {
       "type": "object",
-      "required": ["one_liner", "must", "simplified", "placeholder", "deferred"],
+      "required": ["one_liner", "must", "simplified", "placeholder", "deferred", "determinism_checks"],
       "additionalProperties": false,
       "properties": {
         "one_liner": {
@@ -62,7 +67,12 @@
         "must": { "type": "array", "items": { "type": "string" }, "description": "必进：M 且 high 敏感" },
         "simplified": { "type": "array", "items": { "type": "string" }, "description": "简化：M 且 mid/low 敏感" },
         "placeholder": { "type": "array", "items": { "type": "string" }, "description": "占位：S 表现层" },
-        "deferred": { "type": "array", "items": { "type": "string" }, "description": "延后：本期不做" }
+        "deferred": { "type": "array", "items": { "type": "string" }, "description": "延后：本期不做" },
+        "determinism_checks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "确定性验收项：重置 N 次状态一致 / 动画中点击 / 快速连点 / 中途重开，各写一条"
+        }
       }
     },
     "items": {
@@ -76,6 +86,7 @@
           "dimension",
           "name",
           "class",
+          "kind",
           "depth",
           "observability",
           "evidence",
@@ -94,6 +105,11 @@
             "enum": ["M", "S", "X"],
             "description": "M 必须复刻 / S 可替换 / X 禁止复制"
           },
+          "kind": {
+            "type": "string",
+            "enum": ["observed", "inferred", "design"],
+            "description": "陈述类型：observed=我直接看到的（对应【观察】）/ inferred=推断（对应【推断】）/ design=我的方案而非原作（对应【设计】）"
+          },
           "depth": {
             "type": "string",
             "enum": ["L1", "L2", "L3"],
@@ -108,6 +124,11 @@
             "type": "string",
             "enum": ["E0", "E1", "E2", "E3"],
             "description": "E0 猜测 / E1 推断 / E2 采样统计 / E3 实测或公开数据交叉验证"
+          },
+          "falsifier": {
+            "type": "string",
+            "minLength": 6,
+            "description": "什么观测能推翻本结论（如：若观察到 X 则本结论作废）。关键 M 结论必填"
           },
           "source": {
             "type": "string",
@@ -144,6 +165,10 @@
                 "sensitivity": { "const": "high" }
               }
             }
+          },
+          {
+            "if": { "properties": { "kind": { "const": "inferred" } }, "required": ["kind"] },
+            "then": { "required": ["falsifier"] }
           }
         ]
       }
@@ -163,6 +188,22 @@
           "cost": { "type": "string" }
         }
       }
+    },
+    "revisions": {
+      "type": "array",
+      "description": "修正史：被推翻的假设。首版可为空数组，但字段不许缺；每轮修正必须新增一条，不删旧条目",
+      "items": {
+        "type": "object",
+        "required": ["version", "hypothesis", "falsified_by", "corrected_to", "impacts"],
+        "additionalProperties": false,
+        "properties": {
+          "version": { "type": "string", "description": "如 v1→v2" },
+          "hypothesis": { "type": "string", "description": "原假设（一句话）" },
+          "falsified_by": { "type": "string", "description": "被什么推翻：帧号/样本/来源" },
+          "corrected_to": { "type": "string", "description": "修正后的结论" },
+          "impacts": { "type": "string", "description": "连带影响：哪些维度/条目被重估" }
+        }
+      }
     }
   },
   "examples": [
@@ -172,13 +213,15 @@
       "tier": "T1",
       "dimensions_covered": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       "evidence_coverage": 0.75,
+      "sample_coverage": "9/15，缺后期关卡的失败态/重开态",
       "differentiation": "把「限时搬运」改为「潮汐涨落」驱动，压力来源从计时改为环境",
       "mvp": {
         "one_liner": "能验证「识别价值→拆解→回收」循环的最小切片：1 个场景、3 类可拆物、1 条成长线，其余占位",
         "must": ["单次拆解反馈密度", "单局时长 90~120s", "失败零损失重试"],
         "simplified": ["成长线只留 3 级", "敌人只留 1 种"],
         "placeholder": ["全部美术用色块+文字", "音频静音"],
-        "deferred": ["多场景", "成就系统", "排行榜"]
+        "deferred": ["多场景", "成就系统", "排行榜"],
+        "determinism_checks": ["同一关重置 10 次初始状态哈希一致", "动画未播完时点击结果可预测"]
       },
       "items": [
         {
@@ -186,6 +229,7 @@
           "dimension": 2,
           "name": "单局时长",
           "class": "M",
+          "kind": "observed",
           "depth": "L2",
           "observability": "O2",
           "evidence": "E2",
@@ -196,10 +240,26 @@
           "notes": "失败局更短，取成功局区间"
         },
         {
+          "id": "D2-02",
+          "dimension": 2,
+          "name": "失败压力来源：容器容量",
+          "class": "M",
+          "kind": "inferred",
+          "depth": "L2",
+          "observability": "O2",
+          "evidence": "E1",
+          "source": "对照实验 6 次：槽位满时立即失败，未满未失败",
+          "falsifier": "若观察到槽位已满但仍可继续操作（如自动清除），则本结论作废",
+          "sensitivity": "high",
+          "value_or_range": "上限 5 格；单次占 1；同色凑满 3 释放 3 格",
+          "in_mvp": true
+        },
+        {
           "id": "D6-01",
           "dimension": 6,
           "name": "拆解成功的反馈链（顿帧+飘字+音效）",
           "class": "M",
+          "kind": "observed",
           "depth": "L2",
           "observability": "O1",
           "evidence": "E2",
@@ -213,6 +273,7 @@
           "dimension": 7,
           "name": "主角立绘与角色名",
           "class": "X",
+          "kind": "observed",
           "depth": "L1",
           "observability": "O1",
           "evidence": "E3",
@@ -221,6 +282,21 @@
           "value_or_range": "不可复制",
           "in_mvp": false,
           "replacement": "重设剪影语言与命名体系：焊工原型+工具命名法，职能定位保留"
+        },
+        {
+          "id": "D8-01",
+          "dimension": 8,
+          "name": "灰盒用整体下落动画而非刚体物理",
+          "class": "S",
+          "kind": "design",
+          "depth": "L1",
+          "observability": "O3",
+          "evidence": "E1",
+          "source": "行为等效推断：可观测为瞬间位移，无法观测内部实现",
+          "sensitivity": "mid",
+          "value_or_range": "确定性动画 0.3~0.5s",
+          "in_mvp": true,
+          "notes": "原创方案，非原作实现"
         }
       ],
       "open_questions": [
@@ -230,6 +306,15 @@
           "current_evidence": "E1",
           "verify_method": "连续 50 次统计出现间隔上限",
           "cost": "约 40 分钟"
+        }
+      ],
+      "revisions": [
+        {
+          "version": "v1→v2",
+          "hypothesis": "点击螺丝后直接进入同色收集盒",
+          "falsified_by": "第 1 秒画面：暂存槽已有 2 颗橙螺丝，而同色盒子尚未开放",
+          "corrected_to": "开放盒子队列 + 暂存槽两级去向，凑满才回收",
+          "impacts": "维度 3/4/5/12 重估；失败条件改为「暂存满且无合法操作」"
         }
       ]
     }

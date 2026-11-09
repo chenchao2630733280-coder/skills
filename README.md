@@ -74,7 +74,7 @@
 | game-integrate | AI 游戏流水线阶段5：集成构建与浏览器自测，产出可运行构建与验收报告 | `assets/`、`src/`、`index.html`、`docs/ASSET_MANIFEST.json` | `dist/`、`docs/BUILD_REPORT.md`(含数值平衡实测) |
 | game-polish | AI 游戏流水线阶段6(可选)：在可运行游戏上叠加视觉/手感/反馈效果打磨 | `docs/POLISH_REQUEST.md`、可运行工程、`GameConfig.ts`(只读) | `src/effects/` 增量效果代码、`docs/POLISH_REPORT.md` |
 | game-spec | AI 游戏流水线阶段2：由蓝图生成详细 PRD 与技术设计 | `docs/GAME_BLUEPRINT.md` | `docs/PRD.md`、`docs/TECH_DESIGN.md` |
-| game-teardown | AI 游戏流水线阶段0.5(复刻专线)：把参考游戏按 12 维做产品系统逆向拆解，产出三色复刻矩阵/数值模型/灰盒 MVP | 参考游戏(名称/录屏/截图/试玩)、复刻档位 T0~T3 | `docs/GAME_TEARDOWN.md`、`docs/TEARDOWN_MATRIX.json`、`docs/NUMERIC_MODEL.csv` |
+| game-teardown | AI 游戏流水线阶段0.5(复刻专线)：12 维产品系统逆向拆解 + 假设-反例-修正收敛 + 状态建模 + 解空间分析，产出三色复刻矩阵/数值模型/灰盒 MVP | 参考游戏(名称/录屏/截图/试玩)、复刻档位 T0~T3、可选已有拆解稿 | `docs/GAME_TEARDOWN.md`、`docs/TEARDOWN_MATRIX.json`、`docs/NUMERIC_MODEL.csv` |
 | game-topic-brainstorm | AI 游戏流水线阶段0(可选)：从0结构化脑暴选题并用爆款原则验证 | 模糊游戏想法/选题方向、约束偏好 | `docs/TOPIC_PROPOSAL.md` |
 | generate-html-mobile | 任务型移动端静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/mobile/`(common.css、navbar.js、PXX-*.html) |
 | generate-html-pages | 多端静态原型生成路由器，判端并调度 PC/移动端子 skill，汇总构建报告 | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`、`output/site/mobile/`、`output/site/build-report.json` |

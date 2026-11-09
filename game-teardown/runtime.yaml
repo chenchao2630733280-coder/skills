@@ -14,6 +14,10 @@ inputs:
     type: text
     required: false
     description: T0 学习原型 / T1 玩法克隆 / T2 高保真 / T3 商业产品；可附目标平台、工期、必须保留与必须改掉的特征
+  - name: 已有拆解稿
+    type: text
+    required: false
+    description: 用户自带的拆解笔记/复盘文档；提供时走审计路径（提级/补缺/证伪/补测），不重写全文
 outputs:
   - path: docs/GAME_TEARDOWN.md
     type: file
@@ -25,6 +29,9 @@ outputs:
     type: file
     description: 数值模型表（参数/区间/公式/证据/来源/敏感度），可直接 Excel 调参
 degrade:
+  - trigger: 用户已提供拆解稿/复盘记录
+    action: 走审计路径——提级(kind+E)、补缺(12 维)、证伪(falsifier)、补测(待验证清单)，输出固定 3 份产物且保留用户原文脉络
+    target: docs/GAME_TEARDOWN.md
   - trigger: 仅凭游戏名称、无录屏/截图/试玩材料
     action: 降为结构级拆解（Pass A + 结构 L1），所有数值标 E0/E1 进待验证清单，报告首行标注证据覆盖不足
     target: docs/GAME_TEARDOWN.md
