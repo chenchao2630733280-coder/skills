@@ -93,7 +93,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 - 阶段 6(game-polish):**可选**,在可玩游戏基础上叠加效果,不改玩法
 - **质量门 Gate 0~3:必走**,由 game-quality-gate 介入,FAIL 时硬阻断回原阶段修复;**复刻专线额外必走 Gate 0.5**(拆解门,在蓝图之前,FAIL 不进蓝图)
 - **质量门 Gate 4:实跑门**,内置于 game-integrate,沿用其现有裁剪规则
-- **人工确认点 1~5:强制暂停**,每阶段 Gate PASS 后用 AskUserQuestion 确认,不允许自动进入下一阶段(见 §九.1)
+- **人工确认点 0.5 与 1~5:强制暂停**(0.5 仅复刻专线),每阶段 Gate PASS 后用 AskUserQuestion 确认,不允许自动进入下一阶段(见 §九.1)
 
 **关键约束**:每阶段产物的路径与文件名固定,下游 skill 必须按固定路径读取上游产物,不允许自定义路径。
 **workflow-runtime 驱动(可选)**:本流水线可由 `workflow-runtime` skill 编译为 `workflow.yaml` 自动驱动执行,详见 §七 末尾说明。
@@ -300,7 +300,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 **不允许跳步**:即使某阶段被裁剪,也必须产出对应的占位文档(如音频裁剪也要写一个最小 AUDIO_SPEC.md 标注"全部静音占位"),且**质量门不可跳过**(裁剪阶段跑 Gate 时,占位文档通过即可)。
 **阶段 0 / 0.5 / 6 例外**:game-topic-brainstorm、game-teardown 和 game-polish 被跳过时**不产出占位文档**(它们是可选增量,无占位概念)。
-**人工确认不可跳过**:确认点 1~5 是强制暂停点,即使用户此前已表达"全流程执行",也必须在每个确认点等待用户明确选择后才继续。
+**人工确认不可跳过**:确认点 1~5 是强制暂停点(复刻专线另加确认点 0.5),即使用户此前已表达"全流程执行",也必须在每个确认点等待用户明确选择后才继续。
 
 **可选:产出 workflow.yaml 交 workflow-runtime 驱动执行**
 
@@ -365,7 +365,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 - 遇到选择(如引擎、裁剪)用 AskUserQuestion 确认,不擅自决定
 - 全流程不依赖任何可视化编辑器,所有产物纯文本/二进制资源
 
-### 9.1 人工确认机制(强制,见 §七 确认点 1~5)
+### 9.1 人工确认机制(强制,见 §七 确认点 0.5 与 1~6)
 
 每个阶段(阶段 1~5)完成且对应质量门 PASS 后,**必须暂停流水线**,用 AskUserQuestion 向用户确认下一步。**不允许自动连续执行下一阶段**,即使用户在启动时说过"全流程跑完"或类似话术。
 

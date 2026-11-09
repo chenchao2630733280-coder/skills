@@ -147,6 +147,9 @@ python scripts/compile_workflow.py validate --input workflow.yaml
   "⏸ 人工确认点"模式、"**并行**调用"模式、"FAIL 则回 N"模式,转为 workflow.yaml 步骤。
   脚本识别基本模式并产出框架;`confirm.next` 与 `back_to.target` 的精确绑定由 AI 在本 SKILL.md
   引导下完成(脚本标 `__TODO__` 占位)。
+  - **阶段号与确认点号支持小数**(如复刻专线 `0.5`),`回 0.5` 会绑定为 `__TODO_stage_0.5__`
+  - **同行多产物用 `+` 续接**(如"产出 A.md + B.json")会被全部收集;用"或"并列的可选产物不自动收集,需 AI 补
+  - 暂停点选项**只在文案含"终止/结束/完成/跳过"时**自动绑 `__end__`,回退类选项留给 AI 绑定
 - `compile-from-tasktree`:把 task-tree 的 tasks 转为 workflow steps,`depends_on` 转为 `next`,
   `parallel_with` 转为 step 的 `parallel_with`(双向绑定)。
 - `validate`:校验 workflow.yaml 字段符合 schema(用 PyYAML 解析,引用 `references/workflow-yaml-schema.md`)。

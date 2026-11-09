@@ -85,7 +85,7 @@ game-polish (可选)
 | 0.5.5 | 差异点存在 | `differentiation` 非空(空 = 换皮) | `G05-NO-DIFFERENTIATION` |
 | 0.5.6 | 推断可证伪 | 所有 `kind=inferred` 条目 `falsifier` 非空 | `G05-NO-FALSIFIER` |
 | 0.5.7 | 数值挂接 | CSV 每行 `matrix_id` 都能在 MATRIX items 中找到;`in_mvp=true` 且为数值型的条目 `evidence ≥E2` | `G05-CSV-ORPHAN` |
-| 0.5.8 | 覆盖率如实 | `evidence_coverage` 与报告 §0 一致;<0.6 时报告首行有 ⚠️ 标注(未标注才 FAIL) | `G05-COVERAGE-DISHONEST` |
+| 0.5.8 | 覆盖率如实 | `evidence_coverage` 与报告头部"证据覆盖:N/12"一致;<0.6 时报告首行有 ⚠️ 标注(未标注才 FAIL) | `G05-COVERAGE-DISHONEST` |
 | 0.5.9 | 修正史存在 | 报告含"修正史"章节且 MATRIX 含 `revisions` 字段(首版可为空) | `G05-NO-REVISION-LOG` |
 
 **裁剪**:T0/T1 档位 0.5.3 允许存在"按档位裁剪"标注的维度,但**0.5.4 / 0.5.5 / 0.5.6 / 0.5.9 任何档位不可裁剪**。
@@ -111,7 +111,7 @@ game-polish (可选)
 | 0.5 | 一句话定义 | ≤ 30 字 | `G0-DEFINITION-TOO-LONG` |
 | 0.6 | 玩家动机 | 蓝图 §4.5 三行(自主/胜任/关联)齐全且主导动机已选 | `G0-MOTIVATION-MISSING` |
 | 0.7 | 复刻:定义两半(条件) | **仅复刻项目**(存在 `docs/GAME_TEARDOWN.md`):一句话定义含"复刻基底 + 原创差异点"两半;只写"做一个像 XX 的游戏"判 FAIL | `G0-CLONE-DEFINITION-ONE-SIDED` |
-| 0.8 | 复刻:M 项进蓝图(条件) | **仅复刻项目**:`in_mvp=true` 的 M 项,每条都能在蓝图 §5 机制清单找到(按名称或 `matrix_id` 标注) | `G0-CLONE-M-NOT-IN-BLUEPRINT` |
+| 0.8 | 复刻:M 项进蓝图(条件) | **仅复刻项目**:`in_mvp=true` 的 M 项,每条都能在蓝图 §5 机制清单找到,且 `来源` 列标注其 `matrix_id`(如 `D2-01`);无 ID 可标的条目才按名称匹配 | `G0-CLONE-M-NOT-IN-BLUEPRINT` |
 | 0.9 | 复刻:X 项隔离(条件) | **仅复刻项目**:蓝图 §6"不做"含 X 清单的替代说明;蓝图任何章节不引用原作专名/角色名 | `G0-CLONE-X-IN-BLUEPRINT` |
 
 ### 3.3 输出格式

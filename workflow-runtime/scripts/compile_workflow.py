@@ -41,18 +41,21 @@ DEFAULT_MAX_RETRIES = 3
 # 编排总纲执行顺序的模式识别正则
 # 章节头:如 "## 七、执行顺序" / "## 八、执行顺序"
 RE_SECTION = re.compile(r"^##\s+([七八九十]+|[0-9]+)、?执行顺序")
-# 暂停点:"⏸ **人工确认点 N**" 或 "⏸ **人工确认点 N（可选 Tool）**"(数字后可有括号注解)
-RE_PAUSE = re.compile(r"⏸\s*\*\*人工确认点\s*(\d+)[^*]*\*\*")
+# 阶段号:允许整数与小数(如 0 / 0.5 / 1),用于 stage_id_map 与 back_to 绑定
+RE_STAGE_NO = r"(\d+(?:\.\d+)?)"
+# 暂停点:"⏸ **人工确认点 N**" 或 "⏸ **人工确认点 N（可选 Tool）**"(N 可含小数,数字后可有括号注解)
+RE_PAUSE = re.compile(r"⏸\s*\*\*人工确认点\s*" + RE_STAGE_NO + r"[^*]*\*\*")
 # 调用 skill:"调用 `xxx`"  (可能多个,如 "调用 `game-asset-forge` 和 `game-code-forge`")
 RE_SKILL = re.compile(r"调用\s+`([^`]+)`")
 # 并行同伴 skill:"和 `xxx`" / "与 `xxx`"(并行行中跟在首个 skill 后的同伴)
 RE_COMPANION = re.compile(r"(?:和|与)\s*`([^`]+)`")
-# 产出:"产出 `docs/xxx.md`"
+# 产出:"产出 `docs/xxx.md`";同行续接产物写作 "`a` + `b` + `c`"
 RE_OUTPUTS = re.compile(r"产出\s+`([^`]+)`")
+RE_OUTPUT_EXTRA = re.compile(r"\+\s*`([^`]+)`")
 # 并行:"**并行**调用"
 RE_PARALLEL = re.compile(r"\*\*并行\*\*\s*调用")
-# 回退:"FAIL 则回 N 修复"
-RE_BACK_TO = re.compile(r"FAIL\s*则\s*回\s*(\d+)")
+# 回退:"FAIL 则回 N 修复"(N 可含小数,如复刻专线的 "回 0.5 补拆")
+RE_BACK_TO = re.compile(r"FAIL\s*则\s*回\s*" + RE_STAGE_NO)
 # 可选标记:"(可选)" / "（可选）" / "（可选 Tool）"(可选后可跟说明)
 RE_OPTIONAL = re.compile(r"[（(]可选[^）)]*[）)]")
 
@@ -263,6 +266,15 @@ def _extract_section(text, section_name):
     return "\n".join(lines[start:end])
 
 
+def _is_terminal_label(label):
+    """判断暂停点选项文案是否语义上“结束流程”。
+
+    仅这类选项绑定 __end__;像“回退修复构建问题”这种以回退为主的选项必须留给 AI
+    绑定回退目标,不能因为排在最后就被当成终止。
+    """
+    return any(kw in label for kw in ("终止", "结束", "完成", "跳过", "不进入"))
+
+
 def _parse_pause_options(text):
     """从暂停点文本中提取 AskUserQuestion 选项。
 
@@ -309,13 +321,16 @@ def compile_from_master(master_path, section_name, source_label):
         if not line_stripped:
             continue
 
-        # 识别阶段号(行首数字. 或 "0. " / "1. " 等)
-        stage_match = re.match(r"^(\d+)\.\s", line_stripped)
+        # 识别阶段号(行首数字. 或小数如 "0.5 ")
+        stage_match = re.match(r"^" + RE_STAGE_NO + r"\.\s", line_stripped)
 
         # 暂停点
-        if RE_PAUSE.search(line_stripped):
+        pause_match = RE_PAUSE.search(line_stripped)
+        if pause_match:
             pause_counter += 1
             pid = "pause%d" % pause_counter
+            # title 用原文编号(如 0.5),不回退为计数器,避免与确认点编号错位
+            pause_label = pause_match.group(1)
             opt_labels = _parse_pause_options(line_stripped)
             options = []
             for label in opt_labels:
@@ -328,14 +343,16 @@ def compile_from_master(master_path, section_name, source_label):
                     {"label": "终止流水线", "next": "__end__"},
                 ]
             else:
-                # 最后一个选项默认为终止
-                options[-1]["next"] = "__end__"
+                # 仅对语义上“结束”的选项置 __end__,不再无条件把最后一项当终止
+                for opt in options:
+                    if _is_terminal_label(opt["label"]):
+                        opt["next"] = "__end__"
             steps.append({
                 "id": pid,
                 "type": "pause",
-                "title": "人工确认点 %d" % pause_counter,
+                "title": "人工确认点 %s" % pause_label,
                 "confirm": {
-                    "question": RE_PAUSE.search(line_stripped).group(0)
+                    "question": pause_match.group(0)
                     .replace("⏸ ", "").replace("**", "").strip(),
                     "options": options,
                 },
@@ -350,6 +367,10 @@ def compile_from_master(master_path, section_name, source_label):
         is_parallel = bool(RE_PARALLEL.search(line_stripped))
         is_optional = bool(RE_OPTIONAL.search(line_stripped))
         outputs_found = RE_OUTPUTS.findall(line_stripped)
+        # 同行续接产物:"产出 `a` + `b` + `c`",补全被 RE_OUTPUTS 漏掉的多产物
+        for extra in RE_OUTPUT_EXTRA.findall(line_stripped):
+            if extra not in outputs_found:
+                outputs_found.append(extra)
         # 并行行中"和 `path`"模式的补充识别(如 "分别产出 `assets/` 和 `src/`")
         # 仅识别像路径的产物(含 / 或 .),避免把同伴 skill 名误当产物路径
         if is_parallel:
