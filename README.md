@@ -73,6 +73,7 @@
 | game-forge-master | AI 游戏生成总纲调度中枢(引擎选择/阶段裁剪/串联下游)，本身不产出文件 | 用户一句话游戏需求 | 调度下游各阶段产物(固定路径)，本 skill 不直接产出业务文件 |
 | game-integrate | AI 游戏流水线阶段5：集成构建与浏览器自测，产出可运行构建与验收报告 | `assets/`、`src/`、`index.html`、`docs/ASSET_MANIFEST.json` | `dist/`、`docs/BUILD_REPORT.md`(含数值平衡实测) |
 | game-polish | AI 游戏流水线阶段6(可选)：在可运行游戏上叠加视觉/手感/反馈效果打磨 | `docs/POLISH_REQUEST.md`、可运行工程、`GameConfig.ts`(只读) | `src/effects/` 增量效果代码、`docs/POLISH_REPORT.md` |
+| game-quality-gate | AI 游戏流水线跨阶段质量门(Gate 0.5 拆解门[复刻专线]+ Gate 0~3，契约校验+实跑预检，FAIL 硬阻断) | 各阶段产物(蓝图/PRD/美术/资源代码；复刻项目另含拆解三产物) | `docs/GATE_0_5_REPORT.md`(复刻)、`docs/GATE_[0-3]_REPORT.md` |
 | game-spec | AI 游戏流水线阶段2：由蓝图生成详细 PRD 与技术设计 | `docs/GAME_BLUEPRINT.md` | `docs/PRD.md`、`docs/TECH_DESIGN.md` |
 | game-teardown | AI 游戏流水线阶段0.5(复刻专线)：12 维产品系统逆向拆解 + 假设-反例-修正收敛 + 状态建模 + 解空间分析，产出三色复刻矩阵/数值模型/灰盒 MVP | 参考游戏(名称/录屏/截图/试玩)、复刻档位 T0~T3、可选已有拆解稿 | `docs/GAME_TEARDOWN.md`、`docs/TEARDOWN_MATRIX.json`、`docs/NUMERIC_MODEL.csv` |
 | game-topic-brainstorm | AI 游戏流水线阶段0(可选)：从0结构化脑暴选题并用爆款原则验证 | 模糊游戏想法/选题方向、约束偏好 | `docs/TOPIC_PROPOSAL.md` |
@@ -356,6 +357,7 @@ generate-portal            → output/site/index.html (演示门户,独占)
 - [game-code-forge](./game-code-forge/SKILL.md)
 - [game-integrate](./game-integrate/SKILL.md)
 - [game-polish](./game-polish/SKILL.md)
+- [game-quality-gate](./game-quality-gate/SKILL.md)
 
 **产品交付流水线**
 - [product-pipeline-master](./product-pipeline-master/SKILL.md)

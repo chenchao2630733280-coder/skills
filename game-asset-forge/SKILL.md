@@ -1,6 +1,6 @@
 ---
 name: "game-asset-forge"
-description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执行 AI 生图、图集打包、音频占位,产出 assets/ 目录。当被 game-forge-master 调度到本阶段,或用户要'生成游戏美术资源/切图打包'时调用。"
+description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执行 AI 生图、图集打包、音频占位,产出 assets/ 目录。复刻模式下生图 prompt 禁含原作专名/角色名/商标。当被 game-forge-master 调度到本阶段,或用户要'生成游戏美术资源/切图打包'时调用。"
 ---
 
 # Game Asset Forge — 资源锻造

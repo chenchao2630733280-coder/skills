@@ -33,7 +33,7 @@ description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(�
 (复刻专线,仅当存在拆解产物)
 game-teardown
     ↓
-[Gate 0.5] 拆解门 ────────────────────────── L1 + L2(拆解产物完整性 + 蓝图/矩阵一致性)
+[Gate 0.5] 拆解门 ────────────────────────── L1(拆解产物自身完整性 + 假设可证伪性)
     ↓
 game-blueprint
     ↓
@@ -60,7 +60,7 @@ game-polish (可选)
 
 | 检查点 | 时机 | 层 | 检查内容 | 输出 |
 |---|---|---|---|---|
-| Gate 0.5 拆解门 | game-teardown 后(仅复刻专线) | L1+L2 | 拆解产物完整性 + 假设可证伪性 + M 项被蓝图消费 | `docs/GATE_0_5_REPORT.md` |
+| Gate 0.5 拆解门 | game-teardown 后(仅复刻专线) | L1 | 拆解产物完整性 + 假设可证伪性 | `docs/GATE_0_5_REPORT.md` |
 | Gate 0 蓝图门 | game-blueprint 后 | L1 | 蓝图字段完整性 / 引擎选择合理性 / 范围可行 | `docs/GATE_0_REPORT.md` |
 | Gate 1 规格门 | game-spec 后 | L1+L2 | PRD 节点树完整性 + TECH_DESIGN 与 PRD 引擎/目录一致 | `docs/GATE_1_REPORT.md` |
 | Gate 2 美术门 | game-art-spec 后 | L1+L2 | manifest 字段 + manifest 的 UI asset 与 PRD 节点树 1:1 对齐 | `docs/GATE_2_REPORT.md` |
@@ -72,9 +72,9 @@ game-polish (可选)
 
 **触发条件**:项目存在 `docs/GAME_TEARDOWN.md` 即必跑;不存在则整条跳过(非复刻项目)。
 
-**输入**:`docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`(尚未产出蓝图时,只跑 L1)
+**输入**:`docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`
 
-**L1 静态检查**(拆解产物自身):
+**L1 静态检查**(拆解产物自身;本门运行时蓝图尚未产出,**只查拆解,不查下游**——下游消费检查在 Gate 0/1/2/3):
 
 | # | 检查项 | 判据 | 失败码 |
 |---|---|---|---|
@@ -84,19 +84,14 @@ game-polish (可选)
 | 0.5.4 | X 项全有替代 | 所有 `class=X` 条目 `replacement` 非空 | `G05-X-NO-REPLACEMENT` |
 | 0.5.5 | 差异点存在 | `differentiation` 非空(空 = 换皮) | `G05-NO-DIFFERENTIATION` |
 | 0.5.6 | 推断可证伪 | 所有 `kind=inferred` 条目 `falsifier` 非空 | `G05-NO-FALSIFIER` |
-| 0.5.7 | 数值挂接 | CSV 每行 `matrix_id` 都能在 MATRIX items 中找到;进蓝图的数值(蓝图引用的)全部 ≥E2 | `G05-CSV-ORPHAN` |
+| 0.5.7 | 数值挂接 | CSV 每行 `matrix_id` 都能在 MATRIX items 中找到;`in_mvp=true` 且为数值型的条目 `evidence ≥E2` | `G05-CSV-ORPHAN` |
 | 0.5.8 | 覆盖率如实 | `evidence_coverage` 与报告 §0 一致;<0.6 时报告首行有 ⚠️ 标注(未标注才 FAIL) | `G05-COVERAGE-DISHONEST` |
+| 0.5.9 | 修正史存在 | 报告含"修正史"章节且 MATRIX 含 `revisions` 字段(首版可为空) | `G05-NO-REVISION-LOG` |
 
-**L2 契约检查**(蓝图已产出时追加):
-
-| # | 检查项 | 判据 | 失败码 |
-|---|---|---|---|
-| 0.5.9 | M 项落地 | `in_mvp=true` 的 M 项,每条都能在蓝图 §5 机制清单找到(按名称或 `matrix_id` 标注) | `G05-M-NOT-IN-BLUEPRINT` |
-| 0.5.10 | X 项隔离 | 蓝图 §6"不做"包含 X 清单的替代说明;蓝图任何章节不得引用原作专名/角色名 | `G05-X-IN-BLUEPRINT` |
-| 0.5.11 | 修正史存在 | 报告含"修正史"章节且 MATRIX 含 `revisions` 字段(首版可为空) | `G05-NO-REVISION-LOG` |
-
-**裁剪**:T0/T1 档位 0.5.3 允许存在"按档位裁剪"标注的维度,但**0.5.4 / 0.5.5 / 0.5.6 任何档位不可裁剪**。
+**裁剪**:T0/T1 档位 0.5.3 允许存在"按档位裁剪"标注的维度,但**0.5.4 / 0.5.5 / 0.5.6 / 0.5.9 任何档位不可裁剪**。
 **回退**:FAIL → 回 `game-teardown` 修复(补拆/补 falsifier/补替代),**不进蓝图**。
+
+**拆解产物被下游消费的检查**不在本门,分别落在:Gate 0(0.7~0.9,M/X 消费进蓝图)、Gate 1(1.17~1.18,数值/状态机进 PRD)、Gate 2(2.15,X 隔离进 manifest)、Gate 3(3.27,参数落地进代码)、Gate 4(game-integrate §10.4,数值区间与确定性)。
 
 ---
 
@@ -115,6 +110,9 @@ game-polish (可选)
 | 0.4 | 范围可行 | 核心机制 ≤ 8 项 | `G0-SCOPE-OVER` |
 | 0.5 | 一句话定义 | ≤ 30 字 | `G0-DEFINITION-TOO-LONG` |
 | 0.6 | 玩家动机 | 蓝图 §4.5 三行(自主/胜任/关联)齐全且主导动机已选 | `G0-MOTIVATION-MISSING` |
+| 0.7 | 复刻:定义两半(条件) | **仅复刻项目**(存在 `docs/GAME_TEARDOWN.md`):一句话定义含"复刻基底 + 原创差异点"两半;只写"做一个像 XX 的游戏"判 FAIL | `G0-CLONE-DEFINITION-ONE-SIDED` |
+| 0.8 | 复刻:M 项进蓝图(条件) | **仅复刻项目**:`in_mvp=true` 的 M 项,每条都能在蓝图 §5 机制清单找到(按名称或 `matrix_id` 标注) | `G0-CLONE-M-NOT-IN-BLUEPRINT` |
+| 0.9 | 复刻:X 项隔离(条件) | **仅复刻项目**:蓝图 §6"不做"含 X 清单的替代说明;蓝图任何章节不引用原作专名/角色名 | `G0-CLONE-X-IN-BLUEPRINT` |
 
 ### 3.3 输出格式
 
@@ -172,6 +170,8 @@ game-polish (可选)
 | 1.14 | PRD 状态机 ↔ TECH_DESIGN 类设计 | PRD 每个状态在 TECH_DESIGN 有对应状态字段/枚举/方法 | `G1-STATE-MACHINE-MISMATCH` |
 | 1.15 | PRD 实体清单 ↔ TECH_DESIGN 类清单 | PRD 中定义的实体(角色/敌人/道具)在 TECH_DESIGN 有对应类 | `G1-ENTITY-CLASS-MISMATCH` |
 | 1.16 | PRD 系统边界 ↔ TECH_DESIGN 类边界 | PRD §5"边界"列的"不做"项在 TECH_DESIGN 类设计中无对应实现(防越界) | `G1-SYSTEM-BOUNDARY-VIOLATED` |
+| 1.17 | 复刻:数值来源(条件) | **仅复刻项目**:PRD §2 数值表每行带 `来源(matrix_id)` 与证据等级列;数值与 `docs/NUMERIC_MODEL.csv` 一致,无自编行 | `G1-CLONE-NUMBER-FABRICATED` |
+| 1.18 | 复刻:M 项/状态机落地(条件) | **仅复刻项目**:`in_mvp` 的 M 项全部在 PRD §5/§2 出现;§6 状态机按对象/容器/场景三套拆,`visible`/`removable` 为两字段 | `G1-CLONE-M-NOT-IN-PRD` |
 
 > **核心价值**:1.9~1.16 把原本要拖到 Gate 4 数值平衡实测才暴露的"数值/关卡/状态机/系统边界不一致"提前到规格阶段。MDA 保证"机制-体验"因果链显式;心流保证"物理可玩≠心理好玩";系统边界防止范围蔓延到代码层。
 
@@ -209,6 +209,7 @@ game-polish (可选)
 | 2.12 | manifest effect asset ↔ PRD 特效清单 | manifest 中 category=effect 的 asset 与 PRD 定义的特效事件对齐 | `G2-EFFECT-MISMATCH` |
 | 2.13 | manifest audio asset ↔ AUDIO_SPEC 事件映射表 | manifest 中 category=audio 的 asset 与 AUDIO_SPEC §2.5 SFX 事件映射表对齐(每个事件 ID 有对应 audio asset,每个 asset 被至少一个事件引用) | `G2-AUDIO-EVENT-MISMATCH` |
 | 2.14 | ART_SPEC 风格基线声明(条件) | **仅当 PRD/TECH_DESIGN 命中已收录风格基线时检查** ART_SPEC 顶部有声明;未命中基线时跳过 | `G2-BASELINE-DECLARATION-MISSING` |
+| 2.15 | 复刻:X 项隔离 + 风格坐标(条件) | **仅复刻项目**:manifest 无任何对应 `class=X` 条目的资源(按名称/语义匹配);ART_SPEC 有 `X→替代` 标注且调板/比例对齐 GAME_TEARDOWN §7 风格坐标系 | `G2-CLONE-X-IN-MANIFEST` |
 
 > **核心价值**:Gate 2 是防止"布局调整后 manifest 与 PRD 脱节"的关键。若 PRD 节点树新增按钮但 manifest 没对应 asset,会在本门暴露,不会等到 game-integrate 才发现"代码引用了不存在的资源"。2.10~2.13 把校验范围从单一 UI 类扩展到全 5 类 asset(role/bg/effect/audio),覆盖所有跨阶段契约。
 
@@ -265,6 +266,7 @@ game-polish (可选)
 | 3.6 | 代码 UI 节点 ↔ PRD 节点树 | 代码中创建的 UI 节点与 PRD 节点树 1:1 对齐 | `G3-CODE-UI-NODE-MISMATCH` | ERROR |
 | 3.7 | 代码资源引用 ↔ manifest | 代码中引用的资源 id 都能在 manifest 找到 | `G3-CODE-REF-MISSING` | ERROR |
 | 3.8 | manifest contentHash 一致 | assets/ 下文件与 manifest contentHash 一致(内容指纹校验) | `G3-CONTENTHASH-MISMATCH` | ERROR |
+| 3.27 | 复刻:参数落地(条件) | **仅复刻项目**:`GameConfig` 类配置文件字段名与 CSV `parameter` 列同名;抽查 high 敏感参数在业务代码中无硬编码字面量(只允许出现在 config) | `G3-CLONE-PARAM-HARDCODED` | ERROR |
 
 > **引擎特定 L2 检查(3.9+)**:按 PRD/TECH_DESIGN 的引擎字段读取对应 references 文件执行,检查项编号与失败码见各文件:
 >
@@ -308,7 +310,7 @@ game-polish (可选)
 
 ## 七、报告输出
 
-每个 Gate 产出 `docs/GATE_{N}_REPORT.md`,格式统一见 §3.3。
+每个 Gate 产出 `docs/GATE_{N}_REPORT.md`,格式统一见 §3.3。Gate 0.5 例外,固定为 `docs/GATE_0_5_REPORT.md`(下划线避免与 Gate 0~3 的 {N} 模式混淆)。
 
 **阻断规则**:
 - Gate 报告结论为 `FAIL` → game-forge-master 不允许进入下一阶段
@@ -349,6 +351,7 @@ game-forge-master §七执行顺序修订为:
 
 | 失败层级 | 阻断行为 | 回退到 |
 |---|---|---|
+| Gate 0.5 FAIL(仅复刻专线) | **硬阻断**,**不进蓝图** | game-teardown 补拆(补 falsifier/补替代/补数值)后重跑 Gate 0.5 |
 | Gate 0/1/2 FAIL | **硬阻断**,不允许进入下一阶段 | 原产出 skill 修复后重跑 Gate |
 | Gate 3 L1/L2 FAIL | **硬阻断** | game-asset-forge / game-code-forge 修复后重跑 Gate 3 |
 | Gate 3 L3 typecheck/Godot check FAIL | **硬阻断**,返回错误日志 | game-code-forge 接手修复(沿用其自身 typecheck 修复策略,≤3 轮)后重跑 Gate 3 |
@@ -367,7 +370,7 @@ game-forge-master §七执行顺序修订为:
 本 skill 自身的质量检查:
 
 - [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;复刻项目含 Gate 0.5)
-- [ ] (复刻项目)Gate 0.5 的 L1 8 项 + L2 3 项都执行过,FAIL 已阻断回 game-teardown
+- [ ] (复刻项目)Gate 0.5 的 L1 9 项都执行过,FAIL 已阻断回 game-teardown;Gate 0/1/2/3 的复刻条件检查(0.7~0.9/1.17~1.18/2.15/3.27)未遗漏
 - [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`
 - [ ] 报告含失败码 / 详情 / 修复建议三要素
 - [ ] FAIL 时有阻断,无"默认通过"

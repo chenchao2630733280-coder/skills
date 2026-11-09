@@ -526,7 +526,7 @@ AI 做逆向拆解最大的失败不是拆不全，而是**把推断写成事实
 
 结构见 `references/teardown-matrix.schema.json`。要点：
 
-- 顶层含 `source_game`、`tier`、`evidence_coverage`、`dimensions_covered`、`differentiation`、`mvp`、`open_questions`、`revisions`
+- 顶层含 `source_game`、`tier`、`evidence_coverage`、`sample_coverage`、`dimensions_covered`、`differentiation`、`mvp`、`items`、`open_questions`、`revisions`
 - `items[]` 每条含：`id`、`dimension`（1~12）、`name`、`class`（M/S/X）、`kind`（observed/inferred/design）、`depth`（L1~L3）、`observability`（O1~O3）、`evidence`（E0~E3）、`falsifier`、`source`、`sensitivity`、`value_or_range`、`in_mvp`、`replacement`（X 必填）
 - JSON 必须可被 `ConvertFrom-Json` 解析（工作台校验项）
 
@@ -580,7 +580,7 @@ N003,D2-03,level_duration,95~130,s,,E2,"12局逐局计时",high,"取成功局区
 | `game-code-forge` | `NUMERIC_MODEL.csv` + §9 + `MATRIX`(判定基准) | 参数外置配置、状态模型实现 | 数值不得硬编码；四维状态分离；重置确定性 |
 | `game-integrate` | `NUMERIC_MODEL.csv` + `MATRIX`(high 敏感项) | Gate 4 附加验收 | 数值区间核对 + 重置确定性回归 |
 | `game-polish` | §6 反馈清单 + 敏感度 high 项 | 打磨不得偏离原作手感 | 反馈总时长偏离 ≤±20%，时序结构不变 |
-| `game-quality-gate` | 三份产物全部 | Gate 0.5 拆解门 + 后续 M 项落地追踪 | 见 `game-quality-gate` §二 |
+| `game-quality-gate` | 三份产物全部 | Gate 0.5 拆解门(L1) + Gate 0/1/2/3 的复刻条件检查(M 项落地/X 隔离/数值来源/参数落地) | 拆解 FAIL 不进蓝图;下游漏挂 M 项逐门拦截 |
 
 **禁止**：本 skill 直接写 `docs/GAME_BLUEPRINT.md`；蓝图必须由 `game-blueprint` 产出，保证单一写入方。
 

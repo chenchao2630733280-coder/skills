@@ -277,7 +277,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
    - **调用 `game-quality-gate` Gate 0.5 拆解门**,产出 `docs/GATE_0_5_REPORT.md`;FAIL 则回 0.5 补拆,**不进蓝图**
    - ⏸ **人工确认点 0.5**:Gate 0.5 PASS 后,简报"档位 / 证据覆盖 N/12 / 决定性变量 / X 项替代情况 / 灰盒 MVP 一句话",AskUserQuestion 询问"进入蓝图 / 重新拆解 / 终止"
 1. 调用 `game-blueprint`,产出 `docs/GAME_BLUEPRINT.md`
-   - 复刻模式下蓝图**必须**读取 `docs/GAME_TEARDOWN.md` §0 摘要,并按 `game-teardown` §十一 交接映射填写,不得跳章
+   - 复刻模式下蓝图**必须**读取 `docs/GAME_TEARDOWN.md` §0 摘要,并按 `game-teardown` §15.1 交接映射填写,不得跳章
    - **调用 `game-quality-gate` Gate 0 蓝图门**,产出 `docs/GATE_0_REPORT.md`;FAIL 则回 1 修复
    - ⏸ **人工确认点 1**:Gate 0 PASS 后,简报蓝图摘要,AskUserQuestion 询问"进入规格设计 / 回退修改蓝图 / 终止流水线"
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`

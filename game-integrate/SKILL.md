@@ -1,6 +1,6 @@
 ---
 name: "game-integrate"
-description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export-release 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
+description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export-release 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。复刻模式在 Gate 4 追加数值区间核对与重置确定性回归。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
 ---
 
 # 游戏集成与构建

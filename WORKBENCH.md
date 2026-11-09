@@ -291,6 +291,19 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 
 ## 变更记录
 
+### 2026-11-09 复刻专线第四批：接线审查修复（commit 待记）
+
+- **审查发现的时序缺陷（最重要）**：Gate 0.5 的 L2 检查（M 项进蓝图 / X 隔离）引用蓝图，但按 master 流程 Gate 0.5 跑在蓝图**之前**——这些检查永远不会在正确时机执行。修复：**Gate 0.5 收敛为纯 L1（9 项，只查拆解产物自身）**，下游消费检查下沉到对应 Gate：
+  - Gate 0 新增 0.7~0.9（复刻条件）：一句话定义两半 / M 项进蓝图 / X 项隔离
+  - Gate 1 新增 1.17~1.18：PRD 数值表带 matrix_id 且与 CSV 一致 / M 项落地 + 状态机三套
+  - Gate 2 新增 2.15：manifest 无 X 项 + ART_SPEC 风格坐标对齐 §7
+  - Gate 3 新增 3.27：GameConfig 字段名与 CSV parameter 同名 + high 敏感参数无硬编码
+  - Gate 4 沿用 game-integrate §10.4（数值区间 + 确定性回归）
+- **过期引用清理**：game-forge-master §七 的 "game-teardown §十一 交接映射" → §15.1（v2 重排后未同步）。
+- **契约补齐**：teardown SKILL §14.2 顶层字段清单补 `sample_coverage`；§15.2 quality-gate 行改为新分工；quality-gate §七 注明 Gate 0.5 报告文件名为 `GATE_0_5_REPORT.md`（不套 {N} 模式）。
+- **索引补齐**：README 完整技能清单与 §五 链接列表补 `game-quality-gate` 行（历史遗留缺失）；game-asset-forge / game-polish / game-integrate 的 description 补复刻模式触发词（路由完整）。
+- **教训**：跨 skill 声明"会被某 Gate 判 FAIL"时，必须当场在 Gate 的检查表里加对应项——否则就是下游 skill 的"自我声明"，质量门根本不查（和 quality-gate 立项时批判的问题同构：自检宽松无阻断权）。
+
 ### 2026-11-09 复刻专线全链路接线审查（第三批）
 
 - **审查结论**：前两批只接了一根线——`game-teardown` 三份产物中只有 `GAME_TEARDOWN.md` §0 被 `game-blueprint` 消费；`TEARDOWN_MATRIX.json` 与 `NUMERIC_MODEL.csv` **无任何下游读取**，下游 7 个 skill 的输入契约全部不知道复刻模式存在。
