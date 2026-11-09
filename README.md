@@ -206,6 +206,11 @@
    - typecheck 失败 → 降级 strict:false
    - 失败项汇总到 `docs/ASSET_ISSUES.md` 和 `docs/BUILD_REPORT.md`，供人工后补。
 4. **固定路径契约**：所有 skill 必须按固定路径读写，不允许自定义。详见 game-forge-master 的「产物路径总表」。
+5. **复刻专线的消费链**（存在 `docs/GAME_TEARDOWN.md` 时自动激活）：
+   - 拆解产物三份 → **Gate 0.5 拆解门**（X 项必须有替代、推断必须有证伪条件，FAIL 不进蓝图）
+   - `TEARDOWN_MATRIX.json` 的条目 ID（如 `D4-03`）是**全链路追踪键**：蓝图 §5 标注 → PRD 数值表/状态机标注 → CSV `matrix_id` 回指 → Gate 机检"M 项是否落地"
+   - 下游各阶段按固定分工消费：`game-spec` 取数值与三套状态机、`game-art-spec` 取风格坐标系且 X 项禁入 manifest、`game-asset-forge` 生图 prompt 禁原作专名、`game-code-forge` 参数外置对齐 CSV、`game-integrate` 在 Gate 4 加数值区间核对与确定性回归、`game-polish` 以原作反馈节奏为基线（偏离 ≤±20%）
+   - 详细消费表见 `game-teardown/SKILL.md` §15.2
 
 ### 3.5 产物路径总表
 
@@ -216,6 +221,7 @@
 │   ├── GAME_TEARDOWN.md         # [0.5] 产出(复刻专线,可选)
 │   ├── TEARDOWN_MATRIX.json     # [0.5] 产出(三色矩阵: 必须复刻/可替换/禁止复制)
 │   ├── NUMERIC_MODEL.csv        # [0.5] 产出(数值模型,可直接 Excel 调参)
+│   ├── GATE_0_5_REPORT.md       # [0.5 后] Gate 0.5 拆解门报告(复刻专线)
 │   ├── GAME_BLUEPRINT.md       # [1] 产出
 │   ├── PRD.md                  # [2] 产出
 │   ├── TECH_DESIGN.md          # [2] 产出

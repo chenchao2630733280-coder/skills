@@ -532,17 +532,25 @@ AI 做逆向拆解最大的失败不是拆不全，而是**把推断写成事实
 
 ### 14.3 `docs/NUMERIC_MODEL.csv`
 
-列固定：`id,parameter,value_or_range,unit,formula,evidence,source,sensitivity,notes`
+列固定：`id,matrix_id,parameter,value_or_range,unit,formula,evidence,source,sensitivity,notes`
 
+- `matrix_id` 回指 `TEARDOWN_MATRIX.json` 的条目 ID（如 `D4-03`），**每个数值参数必须挂到一条矩阵条目上**，孤立的参数说明它没被拆解支撑
 - `value_or_range` 用区间写法（`1.2~1.5`），单点值需 E3
 - 一行一个参数，不合并单元格
 - 可直接拖进 Excel/Sheets 做敏感度表
+
+```csv
+id,matrix_id,parameter,value_or_range,unit,formula,evidence,source,sensitivity,notes
+N001,D4-01,base_hp,100~120,hp,,E2,"录屏第1关3次均值",high,"第1关小怪"
+N002,D4-02,damage_formula,atk*k-def*m,formula,k=1.0/m=0.5,E1,"控制变量实测6点拟合",high,"回测误差18%,待补样本"
+N003,D2-03,level_duration,95~130,s,,E2,"12局逐局计时",high,"取成功局区间"
+```
 
 ---
 
 ## 十五、与下游的交接（硬契约）
 
-`game-blueprint` 读取本 skill 产物后按下表填空，不得跳过：
+### 15.1 蓝图映射（`game-blueprint` 按此填空，不得跳过）
 
 | 拆解结论 | 落到蓝图章节 |
 |---|---|
@@ -557,6 +565,22 @@ AI 做逆向拆解最大的失败不是拆不全，而是**把推断写成事实
 | 灰盒 MVP + 确定性验收 | §10 阶段裁剪建议 |
 | 合规风险 | §9 风险表（法律项）+ 报告 §11 |
 | `NUMERIC_MODEL.csv` | 交给 `game-spec` 落 PRD 数值表（蓝图只写"见 CSV"） |
+
+**追溯 ID 贯穿全链路**（复刻专线能跑通的关键）：`TEARDOWN_MATRIX.json` 的 `items[].id`（如 `D4-03`）是**唯一追踪键**。
+蓝图 §5 机制清单标注 `(M/D4-03)`，PRD 数值表 / 关卡表标注 `← D4-03`，CSV 用 `matrix_id` 列回指。Gate 0.5 与 Gate 1 用这个 ID 做机检：**`in_mvp` 的 M 项若在任何下游产物中找不到引用，即视为"拆了但没落地"**。
+
+### 15.2 下游消费表（谁读什么、干什么）
+
+| 阶段 | 读哪份/哪节 | 用来做什么 | 硬约束 |
+|---|---|---|---|
+| `game-blueprint` | §0 摘要 + `MATRIX` | 收敛成一页纸，定范围与机制清单 | M 项全部进 §5；X 项全部进 §6"不做" |
+| `game-spec` | §2/§3/§5/§6 + `MATRIX`(M 项 + 状态建模) + `NUMERIC_MODEL.csv` | PRD 数值表/关卡表/状态机，TECH_DESIGN 状态模型 | 数值**只能**来自 CSV 且保留 `matrix_id`；状态机按对象/容器/场景三套拆 |
+| `game-art-spec` | §7 风格坐标系 + `MATRIX`(S/X) | 风格基线匹配、资源清单 | X 项禁止进 `ASSET_MANIFEST`；按 `replacement` 设计原创替代 |
+| `game-asset-forge` | `MATRIX` 的 X 清单（只读） | 生图时的负面参照 | prompt 不得含原作游戏名/角色名/商标/专有术语 |
+| `game-code-forge` | `NUMERIC_MODEL.csv` + §9 + `MATRIX`(判定基准) | 参数外置配置、状态模型实现 | 数值不得硬编码；四维状态分离；重置确定性 |
+| `game-integrate` | `NUMERIC_MODEL.csv` + `MATRIX`(high 敏感项) | Gate 4 附加验收 | 数值区间核对 + 重置确定性回归 |
+| `game-polish` | §6 反馈清单 + 敏感度 high 项 | 打磨不得偏离原作手感 | 反馈总时长偏离 ≤±20%，时序结构不变 |
+| `game-quality-gate` | 三份产物全部 | Gate 0.5 拆解门 + 后续 M 项落地追踪 | 见 `game-quality-gate` §二 |
 
 **禁止**：本 skill 直接写 `docs/GAME_BLUEPRINT.md`；蓝图必须由 `game-blueprint` 产出，保证单一写入方。
 

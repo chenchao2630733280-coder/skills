@@ -93,14 +93,15 @@ C. 单局收益
 ## 五、CSV 模型结构（固定列）
 
 ```csv
-id,parameter,value_or_range,unit,formula,evidence,source,sensitivity,notes
-N001,base_hp,100~120,hp,,E2,"录屏第1关3次均值",high,"第1关小怪"
-N002,damage_formula,atk*k-def*m,formula,"k=1.0,m=0.5",E1,"控制变量实测6点拟合",high,"回测误差18%,待补样本"
-N003,crit_rate,0.15~0.25,ratio,,E2,"50次攻击统计",mid,
-N004,levelup_exp,lv^2*80,exp,,E1,"公开wiki+实测2点",mid,"仅验证到lv12"
+id,matrix_id,parameter,value_or_range,unit,formula,evidence,source,sensitivity,notes
+N001,D4-01,base_hp,100~120,hp,,E2,"录屏第1关3次均值",high,"第1关小怪"
+N002,D4-02,damage_formula,atk*k-def*m,formula,"k=1.0,m=0.5",E1,"控制变量实测6点拟合",high,"回测误差18%,待补样本"
+N003,D4-05,crit_rate,0.15~0.25,ratio,,E2,"50次攻击统计",mid,
+N004,D5-02,levelup_exp,lv^2*80,exp,,E1,"公开wiki+实测2点",mid,"仅验证到lv12"
 ```
 
 约束：
+- `matrix_id` 回指 `TEARDOWN_MATRIX.json` 条目（如 `D4-01`）；**孤立参数说明它没被拆解支撑**，必须补拆或删除
 - 一行一个参数；`value_or_range` 用 `a~b`，单点值必须 E3 并在 `notes` 说明
 - `formula` 列只写形式，不写具体数值（数值放 `value_or_range`）
 - `source` 必须可复查：帧号 / 样本数 / 链接 / 实测次数

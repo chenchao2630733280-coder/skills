@@ -19,6 +19,7 @@ description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 as
 - `docs/ASSET_MANIFEST.json`(校验资源完整性)
 - `docs/ASSET_ISSUES.md`(如有,了解已知问题)
 - `docs/GATE_3_REPORT.md`(如有,game-quality-gate 产出的前置门报告;若 Gate 3 L3 typecheck 已 PASS 则本 skill 跳过 typecheck,避免重复执行)
+- **复刻模式附加**(存在 `docs/GAME_TEARDOWN.md` 时必读):`docs/NUMERIC_MODEL.csv`(数值区间核对)+ `docs/TEARDOWN_MATRIX.json`(high 敏感项),见 §10.4
 
 **Godot 4 工程输入**(引擎为 Godot 4 时):
 - `project.godot`:工程配置文件(校验存在性)
@@ -454,4 +455,31 @@ BUILD_REPORT.md 必须包含一节:
 - 障碍正常生成: [✓/✗] (obstacles>=1)
 - 跳跃可越过障碍: [✓/✗] (手动测试或跳跃高度 H > 障碍高度)
 - 结论: [可玩/需调参]
+```
+
+### 10.4 复刻模式附加验收(存在 `docs/NUMERIC_MODEL.csv` 时必做)
+
+Gate 4 在复刻模式下追加两组检查,不通过按 FAIL 处理(不走软降级,因为"像不像"是复刻的验收本体):
+
+**A. 数值区间核对(对 high 敏感项逐条)**
+
+| CSV id | matrix_id | parameter | 原作区间 | 实测值 | 落在区间 |
+|---|---|---|---|---|---|
+| N003 | D2-01 | level_duration | 95~130s | {实测} | [✓/✗] |
+
+- 只核对 `sensitivity=high` 的行;mid/low 允许偏离(低敏感项偏离正是差异化)
+- 实测方法与 §10.2 相同(浏览器自测 + 计时);E0/E1 的区间参数标 `待验证` 不判 FAIL
+
+**B. 确定性回归**
+
+- 同一关重置 **10 次**:初始布局、容器状态、可交互对象集合**逐次一致**(可截图对比或状态序列化比对)
+- 动画播放中点击、连续快速点击 5 次、中途重开:逻辑结果可预测,无重复收集/计数漂移
+- 任一不一致 → FAIL,回 `game-code-forge` 修(通常是派生状态存了副本、动画回调改规则、事件重复绑定三类)
+
+BUILD_REPORT.md 追加:
+```
+## 复刻验收
+- 数值区间核对: [N/N 项落在原作区间]
+- 确定性回归: [重置 10 次一致 / 不一致(附差异)]
+- 反馈节奏抽查: [high 项反馈总时长偏离 ≤±20%]
 ```

@@ -1,6 +1,6 @@
 ---
 name: "game-spec"
-description: "AI 游戏生成流水线阶段 2。读取游戏蓝图,生成详细 PRD(玩法/数值/UI/关卡/状态机)和 TECH_DESIGN(目录/模块/类设计/接口契约)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏 PRD/技术设计'时调用。"
+description: "AI 游戏生成流水线阶段 2。读取游戏蓝图,生成详细 PRD(玩法/数值/UI/关卡/状态机)和 TECH_DESIGN(目录/模块/类设计/接口契约)。存在 docs/GAME_TEARDOWN.md 时进入复刻模式:数值取自 NUMERIC_MODEL.csv、状态机按对象/容器/场景三套拆、M 项逐条落地。当被 game-forge-master 调度到本阶段,或用户要'生成游戏 PRD/技术设计'时调用。"
 ---
 
 # Game Spec — 游戏规格设计
@@ -15,6 +15,17 @@ description: "AI 游戏生成流水线阶段 2。读取游戏蓝图,生成详细
 
 **输入**:
 - `docs/GAME_BLUEPRINT.md`(必读)
+
+**复刻模式附加输入**(存在 `docs/GAME_TEARDOWN.md` 时**必读**,否则视为漏读上游):
+- `docs/GAME_TEARDOWN.md`(§2 循环 / §3 系统 / §5 关卡 / §6 交互 / §9 工具链)
+- `docs/TEARDOWN_MATRIX.json`(M 项清单、状态建模线索、判定基准)
+- `docs/NUMERIC_MODEL.csv`(数值唯一来源)
+
+**复刻模式四条硬规则**:
+1. **数值只能来自 CSV**：PRD §2 数值表的每一行必须带 `来源` 列标注 `matrix_id`（如 `D4-03`），**禁止自行编造或"合理估计"**；CSV 里没有的参数，说明拆解缺失 → 回 `game-teardown` 补拆，不许现编。
+2. **E 等级随行**：PRD 数值表保留 `证据` 列（E2/E3 才可写成确定值，E0/E1 写成区间并标"待验证"）。
+3. **状态机拆三套**：PRD §6 必须分别给出对象态（单位/螺丝/卡）、容器态（槽位/盒子/资源）、场景态（关卡/回合），且 `visible` 与 `removable` 是两个字段（详见 `../game-teardown/references/state-modeling.md`）。
+4. **M 项必须落地**：`MATRIX` 中 `in_mvp=true` 的 M 项，每项都要在 PRD §5 系统清单或 §2 数值表出现并标注 `matrix_id`；漏项会被 Gate 1 判 FAIL。
 
 **输出**(固定路径,2 份文档):
 - `docs/PRD.md`
@@ -64,6 +75,8 @@ description: "AI 游戏生成流水线阶段 2。读取游戏蓝图,生成详细
 ### 2.1 核心数值表
 | 参数 | 默认值 | 范围 | 说明 |
 |---|---|---|---|
+
+> **复刻模式**:本表追加 `来源(matrix_id)` 与 `证据(E2/E3)` 两列;数值一律取自 `docs/NUMERIC_MODEL.csv`,不得自行编造;CSV 缺失的参数回 `game-teardown` 补拆。
 
 ### 2.2 概率表
 {掉落/抽奖/彩蛋等概率}
@@ -226,6 +239,8 @@ Boot → Home → Game → (Result/Lottery/Revive) → Home
 | 当前状态 | 事件 | 目标状态 | 副作用 |
 |---|---|---|---|
 
+> **复刻模式**:①按对象态/容器态/场景态**三张表**分别产出,不用一张表混写;②"副作用"列必须写到三层(改了谁、谁跟着变、谁再判定),这是代码阶段状态不同步的主要来源;③`visible`/`removable` 必须是两个字段,禁止用渲染层号推导可交互。
+
 ## 7. 音效清单
 | ID | 触发点 | 时长 | 风格 | 循环 |
 |---|---|---|---|---|
@@ -373,6 +388,14 @@ Canvas
 ### 5. 数值与配置分离
 所有数值(速度/概率/上限)必须抽到配置对象,不写在代码逻辑里。PRD 的"数值设计"章节直接对应代码 `config/GameConfig.ts`。
 
+> **复刻模式**:配置字段名与 `docs/NUMERIC_MODEL.csv` 的 `parameter` 列**同名**,并在注释里保留 `matrix_id`;这样改一个参数只需改 CSV 对应行 + 重新生成配置,不需要在代码里搜数字。字段名不一致会让 Gate 3 的"数值硬编码检查"无法机检。
+
+### 6. 复刻模式的状态模型落点
+TECH_DESIGN 必须为 `MATRIX` 里 `class=M` 的状态类条目给出对应类/字段设计,并明确三件事:
+- **四维分离**:`belongsTo` / `renderOrder` / `blocksWhat` / `removable` 各自独立
+- **派生不存副本**:`remaining*` / `progress` / `available*` 由权威状态计算,字段不存在于存档
+- **事务边界**:一次操作在一次事务内改完权威状态再发事件,动画/音效只订阅事件
+
 ---
 
 ## 五、交互约定
@@ -391,6 +414,8 @@ PRD:
 - [ ] 难度曲线有数值
 - [ ] UI 节点树可被代码翻译
 - [ ] 状态机覆盖所有场景切换
+- [ ] (复刻模式)数值表每行都带 `matrix_id` 与证据等级,无一行为自编
+- [ ] (复刻模式)`in_mvp` 的 M 项全部在 PRD 中出现,漏项为 0
 
 TECH_DESIGN:
 - [ ] 引擎与蓝图一致
@@ -399,4 +424,5 @@ TECH_DESIGN:
 - [ ] 帧动画表与 PRD 玩法对应
 - [ ] 接口契约(如有)字段完整
 - [ ] 无 any 滥用
+- [ ] (复刻模式)配置字段名与 CSV `parameter` 同名,状态类四维分离,派生状态未入库
 - [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

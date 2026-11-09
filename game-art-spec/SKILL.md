@@ -1,6 +1,6 @@
 ---
 name: "game-art-spec"
-description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产出美术规范、ASSET_MANIFEST.json 资源清单(机读)和音频规范。当被 game-forge-master 调度到本阶段,或用户要'生成美术规范/资源清单'时调用。"
+description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产出美术规范、ASSET_MANIFEST.json 资源清单(机读)和音频规范。存在 docs/GAME_TEARDOWN.md 时进入复刻模式:风格坐标系取自拆解 §7,X 项禁止进 manifest 并按 replacement 原创替代。当被 game-forge-master 调度到本阶段,或用户要'生成美术规范/资源清单'时调用。"
 ---
 
 # Game Art Spec — 美术规范与资源清单
@@ -14,6 +14,15 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 **输入**(必读):
 - `docs/PRD.md`(取 UI 节点树、玩法机制、音效清单)
 - `docs/TECH_DESIGN.md`(取帧动画表、配置结构)
+
+**复刻模式附加输入**(存在 `docs/GAME_TEARDOWN.md` 时**必读**):
+- `docs/GAME_TEARDOWN.md` §7(风格坐标系:色相/明度/饱和/比例/线宽/镜头——表现层虽全标 S,但坐标参数是复刻依据)
+- `docs/TEARDOWN_MATRIX.json`(S/X 分类与 `replacement` 替代方案)
+
+**复刻模式三条硬规则**:
+1. **风格取向以 §7 风格坐标系为准**,不自行发明;坐标系没写的维度才自由发挥,并记入差异化说明
+2. **X 项禁止进入 `ASSET_MANIFEST.json`**:不得为原作专有角色/标识/关卡/文案生成或引用任何资源;按该条目的 `replacement` 设计原创替代,并在 ART_SPEC 标注 `X→替代:...`
+3. **S 项是差异化主战场**:可自由发挥,但每个 S 资源在 ART_SPEC 里标一句"与原作的差异点",供 Gate 2 与换皮自检复核
 
 **输出**(固定路径,3 份产物):
 - `docs/ART_SPEC.md`(人读,美术约束 + 生图 prompt 模板)
@@ -441,4 +450,6 @@ ART_SPEC.md 末尾追加"已知风险"章节,标注哪些资源可能生图困�
 - [ ] predecessorId 仅在 id 变更时填入,否则为 null
 - [ ] ART_SPEC.md 末尾标注已知风险(高频坑:AI 生图返回 jpg)
 - [ ] ART_SPEC.md 末尾有"变更记录"章节(布局调整时追加,首次生成可留空占位)
+- [ ] (复刻模式)manifest 中无任何 X 项资源;X→替代条目在 ART_SPEC 有标注
+- [ ] (复刻模式)风格坐标系已按 GAME_TEARDOWN §7 逐维落到调板/比例/线宽
 - [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

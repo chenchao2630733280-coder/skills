@@ -1,6 +1,6 @@
 ---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js 六引擎)。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js 六引擎)。存在 docs/GAME_TEARDOWN.md 时进入复刻模式:参数外置对齐 NUMERIC_MODEL.csv、四维状态分离、事务式状态更新、重置确定性。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -16,6 +16,18 @@ description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_M
 - `docs/PRD.md`(取玩法/UI/状态机)
 - `docs/TECH_DESIGN.md`(取目录/模块/类设计)
 - `docs/ASSET_MANIFEST.json`(取资源 ID 与路径映射)
+
+**复刻模式附加输入**(存在 `docs/GAME_TEARDOWN.md` 时**必读**):
+- `docs/NUMERIC_MODEL.csv`(参数唯一来源)
+- `docs/TEARDOWN_MATRIX.json`(判定基准、状态建模条目)
+
+**复刻模式五条实现约束**:
+1. **参数外置**:所有数值进配置对象,字段名与 CSV `parameter` 同名,注释保留 `matrix_id`;代码里出现魔法数字即违反本条
+2. **四维状态分离**:`belongsTo` / `renderOrder` / `blocksWhat` / `removable` 各自独立字段;禁止用渲染层号推导可交互(详见 `../game-teardown/references/state-modeling.md`)
+3. **派生不存副本**:`remaining*` / `progress` / `available*` 一律实时计算,不得持久化
+4. **事务式状态更新**:一次操作在事务内改完权威状态再发事件;动画/音效只订阅事件,**禁止在动画回调里改规则**
+5. **判定基准按 MATRIX 实现**:遮挡/命中用矩阵 `value_or_range` 里声明的基准(中心点/碰撞区/多边形/人工配置),不得自行换基准——换基准 = 换手感
+6. **确定性**:随机只用于表现参数;同一关重置 N 次逻辑结果一致(供 game-integrate Gate 4 回归)
 
 **输出**(固定路径):
 - `package.json`、`tsconfig.json`、`vite.config.ts`、`index.html`
@@ -346,6 +358,8 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - [ ] Sprite/Body 偏移安全(见 十三)
 - [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十四)
 - [ ] UI 自定义容器(Panel/RustButton 等)已显式 `parent.add(panel)`,未被高 depth 蒙层遮挡(见 十七)
+- [ ] (复刻模式)数值零硬编码,GameConfig 字段名与 CSV `parameter` 同名
+- [ ] (复刻模式)四维状态分离、派生态未持久化、规则未写在动画回调里、重置确定性可过
 - [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)
 
 ---

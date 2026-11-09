@@ -19,6 +19,11 @@ description: "AI 游戏生成流水线阶段 4a。读取 ASSET_MANIFEST.json,执
 - `docs/ASSET_MANIFEST.json`
 - `docs/ART_SPEC.md`(取颜色调板、风格策略)
 
+**复刻模式合规约束**(存在 `docs/TEARDOWN_MATRIX.json` 时生效):
+- 生图 prompt **不得出现**原作游戏名、角色名、商标、专有术语(包括作为"参考风格"提及)
+- `MATRIX` 的 X 清单只作负面参照:那些是"必须绕开的方向",不是"要靠近的方向"
+- 原创替代方向以 `ART_SPEC` 的 `X→替代` 标注为准
+
 **输出**(固定路径):
 - `assets/role/{role}/{state}_{frame:03}.png`
 - `assets/ui/{page}/{element}.png`

@@ -44,6 +44,9 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 (含参考对象/要复刻?) ──是──→ game-teardown → docs/GAME_TEARDOWN.md
        │ 否                                  + docs/TEARDOWN_MATRIX.json
        │                                     + docs/NUMERIC_MODEL.csv
+       │                                        ↓
+       │                            [Gate 0.5] 拆解门 → docs/GATE_0_5_REPORT.md
+       │                                        ↓ (FAIL 则回 0.5 修复)
        ↓ ←─────────────────────────────────────┘
 [本 skill] 引擎选择 + 阶段裁剪
        ↓
@@ -88,7 +91,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 - 阶段 0.5(game-teardown):**可选(复刻专线)**,需求含参考对象时调用;与阶段 0 互斥
 - 阶段 1-5(蓝图→规格→美术→资源/代码→集成):**必走**,产出可玩游戏
 - 阶段 6(game-polish):**可选**,在可玩游戏基础上叠加效果,不改玩法
-- **质量门 Gate 0~3:必走**,由 game-quality-gate 介入,FAIL 时硬阻断回原阶段修复
+- **质量门 Gate 0~3:必走**,由 game-quality-gate 介入,FAIL 时硬阻断回原阶段修复;**复刻专线额外必走 Gate 0.5**(拆解门,在蓝图之前,FAIL 不进蓝图)
 - **质量门 Gate 4:实跑门**,内置于 game-integrate,沿用其现有裁剪规则
 - **人工确认点 1~5:强制暂停**,每阶段 Gate PASS 后用 AskUserQuestion 确认,不允许自动进入下一阶段(见 §九.1)
 
@@ -240,6 +243,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 | 失败场景 | 阻断行为 | 回退到 |
 |---|---|---|
+| Gate 0.5 FAIL(拆解产物缺/X 无替代/推断无 falsifier/M 项未落地) | **硬阻断**,**不进蓝图** | game-teardown 补拆后重跑 Gate 0.5 |
 | Gate 0/1/2 FAIL(静态/契约) | **硬阻断**,不允许进入下一阶段 | 对应阶段 skill 修复后重跑 Gate |
 | Gate 3 L1/L2 FAIL(文件缺失/契约不符) | **硬阻断** | game-asset-forge / game-code-forge 修复后重跑 Gate 3 |
 | Gate 3 L3 typecheck/Godot check FAIL | **硬阻断**,返回错误日志 | game-code-forge 接手修复(沿用其自身 typecheck 修复策略,≤3 轮)后重跑 Gate 3 |
@@ -270,7 +274,8 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 0. **(可选)** 若需求模糊或用户要脑暴选题,调用 `game-topic-brainstorm`,产出 `docs/TOPIC_PROPOSAL.md`,用户确认推荐方案后进入下一步
 0.5 **(可选·复刻专线)** 若需求含参考对象(点名游戏/录屏截图/"做个像 XX 的"),调用 `game-teardown`,产出 `docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`
    - 与步骤 0 互斥;档位 T0~T3 与材料一次性问清(AskUserQuestion 1 轮)
-   - ⏸ **人工确认点 0.5**:简报"档位 / 证据覆盖 N/12 / 决定性变量 / X 项替代情况 / 灰盒 MVP 一句话",AskUserQuestion 询问"进入蓝图 / 重新拆解 / 终止"
+   - **调用 `game-quality-gate` Gate 0.5 拆解门**,产出 `docs/GATE_0_5_REPORT.md`;FAIL 则回 0.5 补拆,**不进蓝图**
+   - ⏸ **人工确认点 0.5**:Gate 0.5 PASS 后,简报"档位 / 证据覆盖 N/12 / 决定性变量 / X 项替代情况 / 灰盒 MVP 一句话",AskUserQuestion 询问"进入蓝图 / 重新拆解 / 终止"
 1. 调用 `game-blueprint`,产出 `docs/GAME_BLUEPRINT.md`
    - 复刻模式下蓝图**必须**读取 `docs/GAME_TEARDOWN.md` §0 摘要,并按 `game-teardown` §十一 交接映射填写,不得跳章
    - **调用 `game-quality-gate` Gate 0 蓝图门**,产出 `docs/GATE_0_REPORT.md`;FAIL 则回 1 修复
@@ -319,6 +324,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 复刻拆解报告(可选) | `docs/GAME_TEARDOWN.md` | game-teardown |
 | 复刻矩阵(可选) | `docs/TEARDOWN_MATRIX.json` | game-teardown |
 | 数值模型(可选) | `docs/NUMERIC_MODEL.csv` | game-teardown |
+| 拆解门报告(可选) | `docs/GATE_0_5_REPORT.md` | game-quality-gate(仅复刻专线) |
 | 蓝图 | `docs/GAME_BLUEPRINT.md` | game-blueprint |
 | PRD | `docs/PRD.md` | game-spec |
 | 技术设计 | `docs/TECH_DESIGN.md` | game-spec |

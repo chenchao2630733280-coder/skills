@@ -291,6 +291,23 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 
 ## 变更记录
 
+### 2026-11-09 复刻专线全链路接线审查（第三批）
+
+- **审查结论**：前两批只接了一根线——`game-teardown` 三份产物中只有 `GAME_TEARDOWN.md` §0 被 `game-blueprint` 消费；`TEARDOWN_MATRIX.json` 与 `NUMERIC_MODEL.csv` **无任何下游读取**，下游 7 个 skill 的输入契约全部不知道复刻模式存在。
+- **本批把三份产物接到每一个下游阶段**：
+  | 阶段 | 新增消费 | 硬约束 |
+  |---|---|---|
+  | game-spec | TEARDOWN §2/3/5/6 + MATRIX + CSV | 数值只能来自 CSV 且带 `matrix_id`；状态机拆对象/容器/场景三套 |
+  | game-art-spec | TEARDOWN §7 风格坐标系 + S/X | X 项禁入 ASSET_MANIFEST，按 replacement 原创 |
+  | game-asset-forge | MATRIX X 清单（负面参照） | 生图 prompt 禁原作专名/角色名/商标 |
+  | game-code-forge | CSV + 判定基准 | 参数零硬编码且字段名对齐 CSV；四维状态分离；事务式更新；重置确定性 |
+  | game-integrate | CSV + high 敏感项 | Gate 4 追加：数值区间核对 + 重置 10 次确定性回归（§10.4） |
+  | game-polish | TEARDOWN §6 反馈清单 | 反馈总时长偏离 ≤±20%，时序结构不变 |
+  | game-quality-gate | 三份产物全部 | **新增 Gate 0.5 拆解门**（L1 8 项 + L2 3 项，FAIL 不进蓝图） |
+- **追溯 ID 契约**：MATRIX `items[].id`（如 `D4-03`）为全链路追踪键；CSV 新增 `matrix_id` 列（10 列），孤立参数视为未拆解支撑；`in_mvp` 的 M 项在蓝图/PRD 中找不到引用即 Gate FAIL——"拆了但没落地"从此可机检。
+- **Gate 0.5 检查要点**：三产物齐全可解析 / 12 维覆盖（T0/T1 可裁剪但须标注）/ X 全有 replacement（任何档位不可裁）/ 推断全有 falsifier / 差异点非空 / CSV 无孤儿参数 / 覆盖率如实 / M 项被蓝图消费 / X 项未泄漏进蓝图 / 修正史存在。
+- **同步**：game-forge-master（流程图/执行顺序/硬阻断表/路径表新增 GATE_0_5_REPORT.md）、各下游 skill 的 description 与质量清单各加复刻模式条目、quality-gate runtime.yaml 新增 Gate 0.5 输出、README §3.4 新增"复刻专线消费链"设计点。
+
 ### 2026-11-09 game-teardown 沉淀《打个螺丝》四步实拆复盘（skill v2）
 
 - **输入**：用户真实的四步拆解过程（步骤一 定位与循环 → 步骤二 研发规格 → 步骤三 修正三个机制 → 步骤四 单帧逆向成数据）。最大价值不是"拆得全"，而是**记录了一次范式修正**：v1 的"螺丝直接进盒/板件随螺丝消失/层级决定可交互"被第 1 秒与第 55 秒画面逐个推翻。

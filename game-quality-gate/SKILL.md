@@ -1,6 +1,6 @@
 ---
 name: "game-quality-gate"
-description: "AI 游戏生成流水线的跨阶段质量门。在 4 个关键节点(规格后/美术后/资源代码后/集成前)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/实跑验证游戏产物'时调用。"
+description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/美术后/资源代码后)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/实跑验证游戏产物'时调用。"
 ---
 
 # 游戏流水线质量门
@@ -23,13 +23,18 @@ description: "AI 游戏生成流水线的跨阶段质量门。在 4 个关键节
 
 **只读原则**:本 skill 不修改任何产物文件,只读 + 校验 + 输出报告。FAIL 即返回失败清单与修复建议,**修复由原产出 skill 重跑完成**,本 skill 不接管修复职责(避免职责越界与"自审自修"的伦理风险)。
 
-**质量门范围**:本 skill 只管 **Gate 0~3**(规格/美术/资源代码/集成前)。**Gate 4 实跑门**(typecheck+构建+浏览器自测+数值平衡)是 game-integrate 的内置最终验收,不属于本 skill 阻断体系,本 skill 仅在 §七引用其 `docs/BUILD_REPORT.md` 作为最终判定参考。
+**质量门范围**:本 skill 只管 **Gate 0.5~3**(0.5 拆解门[仅复刻专线]/0 蓝图/1 规格/2 美术/3 产物)。**Gate 4 实跑门**(typecheck+构建+浏览器自测+数值平衡)是 game-integrate 的内置最终验收,不属于本 skill 阻断体系,本 skill 仅在 §七引用其 `docs/BUILD_REPORT.md` 作为最终判定参考。
 
 ---
 
-## 二、四个检查点
+## 二、五个检查点
 
 ```
+(复刻专线,仅当存在拆解产物)
+game-teardown
+    ↓
+[Gate 0.5] 拆解门 ────────────────────────── L1 + L2(拆解产物完整性 + 蓝图/矩阵一致性)
+    ↓
 game-blueprint
     ↓
 [Gate 0] 蓝图门 ──────────────────────────── L1 静态
@@ -48,19 +53,50 @@ game-art-spec
     ↓
 [Gate 3] 产物门 ──────────────────────────── L1 + L2 + L3 预检
     ↓
-game-integrate (内含 Gate 4 实跑门,由其自检)
+game-integrate (内含 Gate 4 实跑门,由其自检;复刻模式含数值区间核对 + 确定性回归)
     ↓
 game-polish (可选)
 ```
 
 | 检查点 | 时机 | 层 | 检查内容 | 输出 |
 |---|---|---|---|---|
+| Gate 0.5 拆解门 | game-teardown 后(仅复刻专线) | L1+L2 | 拆解产物完整性 + 假设可证伪性 + M 项被蓝图消费 | `docs/GATE_0_5_REPORT.md` |
 | Gate 0 蓝图门 | game-blueprint 后 | L1 | 蓝图字段完整性 / 引擎选择合理性 / 范围可行 | `docs/GATE_0_REPORT.md` |
 | Gate 1 规格门 | game-spec 后 | L1+L2 | PRD 节点树完整性 + TECH_DESIGN 与 PRD 引擎/目录一致 | `docs/GATE_1_REPORT.md` |
 | Gate 2 美术门 | game-art-spec 后 | L1+L2 | manifest 字段 + manifest 的 UI asset 与 PRD 节点树 1:1 对齐 | `docs/GATE_2_REPORT.md` |
 | Gate 3 产物门 | game-asset-forge + game-code-forge 后 | L1+L2+L3 | manifest ↔ 实际文件 + 代码 UI 节点 ↔ PRD 节点树 + typecheck 预检 | `docs/GATE_3_REPORT.md` |
 
-**Gate 4 实跑门**已由 game-integrate 内置(typecheck + 构建 + 浏览器自测 + 数值平衡),本 skill 不重复,只引用其 `docs/BUILD_REPORT.md` 作为最终判定依据。
+**Gate 4 实跑门**已由 game-integrate 内置(typecheck + 构建 + 浏览器自测 + 数值平衡;复刻模式追加数值区间核对与确定性回归,见 game-integrate §10.4),本 skill 不重复,只引用其 `docs/BUILD_REPORT.md` 作为最终判定依据。
+
+### 2.1 Gate 0.5 拆解门(仅复刻专线)
+
+**触发条件**:项目存在 `docs/GAME_TEARDOWN.md` 即必跑;不存在则整条跳过(非复刻项目)。
+
+**输入**:`docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`(尚未产出蓝图时,只跑 L1)
+
+**L1 静态检查**(拆解产物自身):
+
+| # | 检查项 | 判据 | 失败码 |
+|---|---|---|---|
+| 0.5.1 | 三份产物齐全 | TEARDOWN.md / MATRIX.json / CSV 都存在且非空 | `G05-ARTIFACT-MISSING` |
+| 0.5.2 | MATRIX 可解析 | JSON 可解析且过 `../game-teardown/references/teardown-matrix.schema.json` 约束 | `G05-MATRIX-INVALID` |
+| 0.5.3 | 12 维覆盖 | `dimensions_covered` 为 1~12 全集 | `G05-DIMENSION-GAP` |
+| 0.5.4 | X 项全有替代 | 所有 `class=X` 条目 `replacement` 非空 | `G05-X-NO-REPLACEMENT` |
+| 0.5.5 | 差异点存在 | `differentiation` 非空(空 = 换皮) | `G05-NO-DIFFERENTIATION` |
+| 0.5.6 | 推断可证伪 | 所有 `kind=inferred` 条目 `falsifier` 非空 | `G05-NO-FALSIFIER` |
+| 0.5.7 | 数值挂接 | CSV 每行 `matrix_id` 都能在 MATRIX items 中找到;进蓝图的数值(蓝图引用的)全部 ≥E2 | `G05-CSV-ORPHAN` |
+| 0.5.8 | 覆盖率如实 | `evidence_coverage` 与报告 §0 一致;<0.6 时报告首行有 ⚠️ 标注(未标注才 FAIL) | `G05-COVERAGE-DISHONEST` |
+
+**L2 契约检查**(蓝图已产出时追加):
+
+| # | 检查项 | 判据 | 失败码 |
+|---|---|---|---|
+| 0.5.9 | M 项落地 | `in_mvp=true` 的 M 项,每条都能在蓝图 §5 机制清单找到(按名称或 `matrix_id` 标注) | `G05-M-NOT-IN-BLUEPRINT` |
+| 0.5.10 | X 项隔离 | 蓝图 §6"不做"包含 X 清单的替代说明;蓝图任何章节不得引用原作专名/角色名 | `G05-X-IN-BLUEPRINT` |
+| 0.5.11 | 修正史存在 | 报告含"修正史"章节且 MATRIX 含 `revisions` 字段(首版可为空) | `G05-NO-REVISION-LOG` |
+
+**裁剪**:T0/T1 档位 0.5.3 允许存在"按档位裁剪"标注的维度,但**0.5.4 / 0.5.5 / 0.5.6 任何档位不可裁剪**。
+**回退**:FAIL → 回 `game-teardown` 修复(补拆/补 falsifier/补替代),**不进蓝图**。
 
 ---
 
@@ -280,8 +316,8 @@ game-polish (可选)
 - 修复后重跑本 Gate,直到 PASS 才放行
 
 **报告归档**:
-- 4 份 Gate 报告随项目保留,作为质量追溯依据
-- game-integrate 的 `docs/BUILD_REPORT.md` 应引用 Gate 0~3 报告的结论
+- 复刻项目为 5 份 Gate 报告(0.5/0/1/2/3),非复刻项目为 4 份(0/1/2/3),随项目保留,作为质量追溯依据
+- game-integrate 的 `docs/BUILD_REPORT.md` 应引用 Gate 0~3 报告的结论(复刻项目含 0.5)
 
 ---
 
@@ -292,7 +328,9 @@ game-polish (可选)
 game-forge-master §七执行顺序修订为:
 
 ```
-0. (可选) game-topic-brainstorm
+0.   (可选) game-topic-brainstorm
+0.5  (可选·复刻专线) game-teardown
+     → [Gate 0.5] 拆解门(失败则回到 0.5 修复,不进蓝图)
 1. game-blueprint
    → [Gate 0] 蓝图门(失败则回到 1 修复)
 2. game-spec
@@ -301,7 +339,7 @@ game-forge-master §七执行顺序修订为:
    → [Gate 2] 美术门(失败则回到 3 修复)
 4. game-asset-forge + game-code-forge(并行)
    → [Gate 3] 产物门(失败则回到 4 修复)
-5. game-integrate(内含 Gate 4 实跑门)
+5. game-integrate(内含 Gate 4 实跑门;复刻模式含数值区间核对 + 确定性回归)
 6. (可选) game-polish
 ```
 
@@ -328,7 +366,8 @@ game-forge-master §七执行顺序修订为:
 
 本 skill 自身的质量检查:
 
-- [ ] 4 个 Gate 的检查项无遗漏(对照本 skill §三~§六)
+- [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;复刻项目含 Gate 0.5)
+- [ ] (复刻项目)Gate 0.5 的 L1 8 项 + L2 3 项都执行过,FAIL 已阻断回 game-teardown
 - [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`
 - [ ] 报告含失败码 / 详情 / 修复建议三要素
 - [ ] FAIL 时有阻断,无"默认通过"
