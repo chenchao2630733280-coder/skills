@@ -1,0 +1,36 @@
+# runtime.yaml — game-teardown
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 900
+retry:
+  max: 2
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: 参考游戏标识
+    type: text
+    required: true
+    description: 参考游戏名称 / 录屏 / 截图 / 试玩记录，至少一种；仅有名称时按公开资料做结构级拆解并标注证据覆盖
+  - name: 复刻档位与约束
+    type: text
+    required: false
+    description: T0 学习原型 / T1 玩法克隆 / T2 高保真 / T3 商业产品；可附目标平台、工期、必须保留与必须改掉的特征
+outputs:
+  - path: docs/GAME_TEARDOWN.md
+    type: file
+    description: 12 维产品系统拆解报告（含循环图、三色判定、证据分级、敏感度排序、合规与灰盒 MVP）
+  - path: docs/TEARDOWN_MATRIX.json
+    type: file
+    description: 机读复刻矩阵（M/S/X + 证据等级 + 可观测性 + 敏感度 + MVP 归属 + X 项替代方案）
+  - path: docs/NUMERIC_MODEL.csv
+    type: file
+    description: 数值模型表（参数/区间/公式/证据/来源/敏感度），可直接 Excel 调参
+degrade:
+  - trigger: 仅凭游戏名称、无录屏/截图/试玩材料
+    action: 降为结构级拆解（Pass A + 结构 L1），所有数值标 E0/E1 进待验证清单，报告首行标注证据覆盖不足
+    target: docs/GAME_TEARDOWN.md
+  - trigger: 关键数值无法观测（O3，如掉落权重、匹配、付费算法）
+    action: 改写成"行为等效设计"，禁止虚构原作实现；矩阵 observability 标 O3
+    target: docs/TEARDOWN_MATRIX.json
+  - trigger: 用户要求跳过拆解直接做
+    action: 降到 T0 深度，仅保留 Pass A + 敏感度 Top3，其余章节写"按档位裁剪"并保留档位说明，不留 TODO
+    target: docs/GAME_TEARDOWN.md

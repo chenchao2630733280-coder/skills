@@ -24,6 +24,8 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
 
 **阶段 0 路由**:若用户需求模糊(如"做个小游戏"但未明确核心玩法),或明确要"脑暴选题/找点子",先调用 `game-topic-brainstorm` 产出 `docs/TOPIC_PROPOSAL.md`,用户确认推荐方案后再进入阶段 1。
 
+**阶段 0.5 路由(复刻专线)**:若用户需求**含明确参考对象**(点名某款游戏 / 给录屏截图要求"按这个做" / 要求"复刻、对标、拆解竞品"),先调用 `game-teardown` 产出 `docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`,再进入阶段 1。**复刻专线与选题脑暴互斥**,不要同时走。
+
 **不要**在以下场景调用:
 - 用户只是问"游戏怎么做"(纯咨询,用对话回答即可)
 - 用户要修改已有游戏的某一处代码(直接用 Edit/Write)
@@ -38,6 +40,10 @@ description: "AI 生成游戏的通用编排总纲。包含引擎选择决策树
        ↓
 (需求模糊?) ──是──→ game-topic-brainstorm → docs/TOPIC_PROPOSAL.md
        │ 否                                    ↓
+       ↓ ←─────────────────────────────────────┘
+(含参考对象/要复刻?) ──是──→ game-teardown → docs/GAME_TEARDOWN.md
+       │ 否                                  + docs/TEARDOWN_MATRIX.json
+       │                                     + docs/NUMERIC_MODEL.csv
        ↓ ←─────────────────────────────────────┘
 [本 skill] 引擎选择 + 阶段裁剪
        ↓
@@ -79,6 +85,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 **阶段性质**:
 - 阶段 0(game-topic-brainstorm):**可选**,用户需求模糊或要脑暴选题时调用
+- 阶段 0.5(game-teardown):**可选(复刻专线)**,需求含参考对象时调用;与阶段 0 互斥
 - 阶段 1-5(蓝图→规格→美术→资源/代码→集成):**必走**,产出可玩游戏
 - 阶段 6(game-polish):**可选**,在可玩游戏基础上叠加效果,不改玩法
 - **质量门 Gate 0~3:必走**,由 game-quality-gate 介入,FAIL 时硬阻断回原阶段修复
@@ -171,6 +178,17 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | ★★★★ 复杂 | 多场景 + 帧动画 + 弹窗 + 网络 + 任务 | 全流程,音频走 AI 生成 |
 | ★★★★★ 极复杂 | 多场景 + 多角色 + 多动画 + 后端 + 商业化 | 全流程 + 建议人工 review |
 
+**阶段 0.5(game-teardown)的深度裁剪**(按复刻档位,与上表复杂度无关):
+
+| 复刻档位 | 拆解范围 |
+|---|---|
+| T0 学习原型 | 仅 Pass A(循环+规则 L1)+ 敏感度 Top3;数值只写区间 |
+| T1 玩法克隆 | Pass A + Pass B(数值 L2/内容 L1)+ Pass C 的反馈清单 |
+| T2 高保真复刻 | 全 4 个 Pass,关键项到 L3,交互到状态机级 |
+| T3 商业产品 | T2 + 维度 12(运营与商业化)+ 合规风险评级 |
+
+裁剪结果写入 `docs/GAME_TEARDOWN.md` §0 的"证据覆盖"行,并在蓝图 §10 标注。
+
 **阶段 6(game-polish)的裁剪规则**(独立判断,不依赖上表复杂度):
 
 | 触发条件 | 是否执行 polish |
@@ -195,6 +213,8 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 | skill | references 内容 |
 |-------|----------------|
+| game-topic-brainstorm | 无 references(复用 game-blueprint 的设计原则) |
+| game-teardown | 3 个拆解手册(12 维逐维/数值反解/合规边界)+ TEARDOWN_MATRIX schema |
 | game-blueprint | 7 个 design-principles-*.md(设计原则) |
 | game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
 | game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |
@@ -204,7 +224,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | game-polish | asset-fix-recipes.md + overlay-spec.md |
 | game-quality-gate | 5 个 engine-checks-*.md(六引擎质量检查) |
 
-**跨 skill 引用**:game-topic-brainstorm 引用 `../game-blueprint/references/` 下的设计原则;两总纲引用 `../workflow-runtime/references/execution-semantics.md`。
+**跨 skill 引用**:game-topic-brainstorm 引用 `../game-blueprint/references/` 下的设计原则;game-blueprint 在复刻模式读取 game-teardown 的 `docs/GAME_TEARDOWN.md` §0 摘要;两总纲引用 `../workflow-runtime/references/execution-semantics.md`。
 
 下游 skill 生成产物时,按引擎和阶段读取自身 references 目录中的模板文件。
 
@@ -248,7 +268,11 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 调用本 skill 后,必须按以下顺序执行下游 skill 与质量门。**每个阶段完成后必须暂停,用 AskUserQuestion 向用户确认后再进入下一阶段**(见 §九 确认规则):
 
 0. **(可选)** 若需求模糊或用户要脑暴选题,调用 `game-topic-brainstorm`,产出 `docs/TOPIC_PROPOSAL.md`,用户确认推荐方案后进入下一步
+0.5 **(可选·复刻专线)** 若需求含参考对象(点名游戏/录屏截图/"做个像 XX 的"),调用 `game-teardown`,产出 `docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv`
+   - 与步骤 0 互斥;档位 T0~T3 与材料一次性问清(AskUserQuestion 1 轮)
+   - ⏸ **人工确认点 0.5**:简报"档位 / 证据覆盖 N/12 / 决定性变量 / X 项替代情况 / 灰盒 MVP 一句话",AskUserQuestion 询问"进入蓝图 / 重新拆解 / 终止"
 1. 调用 `game-blueprint`,产出 `docs/GAME_BLUEPRINT.md`
+   - 复刻模式下蓝图**必须**读取 `docs/GAME_TEARDOWN.md` §0 摘要,并按 `game-teardown` §十一 交接映射填写,不得跳章
    - **调用 `game-quality-gate` Gate 0 蓝图门**,产出 `docs/GATE_0_REPORT.md`;FAIL 则回 1 修复
    - ⏸ **人工确认点 1**:Gate 0 PASS 后,简报蓝图摘要,AskUserQuestion 询问"进入规格设计 / 回退修改蓝图 / 终止流水线"
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
@@ -270,7 +294,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 6. (可选)若阶段 6 未被裁剪且用户确认进入,调用 `game-polish`,读取可运行工程 + `docs/POLISH_REQUEST.md`(如有),产出 `src/effects/` 增量 + `docs/POLISH_REPORT.md`
 
 **不允许跳步**:即使某阶段被裁剪,也必须产出对应的占位文档(如音频裁剪也要写一个最小 AUDIO_SPEC.md 标注"全部静音占位"),且**质量门不可跳过**(裁剪阶段跑 Gate 时,占位文档通过即可)。
-**阶段 0 和 6 例外**:game-topic-brainstorm 和 game-polish 被跳过时**不产出占位文档**(它们是可选增量,无占位概念)。
+**阶段 0 / 0.5 / 6 例外**:game-topic-brainstorm、game-teardown 和 game-polish 被跳过时**不产出占位文档**(它们是可选增量,无占位概念)。
 **人工确认不可跳过**:确认点 1~5 是强制暂停点,即使用户此前已表达"全流程执行",也必须在每个确认点等待用户明确选择后才继续。
 
 **可选:产出 workflow.yaml 交 workflow-runtime 驱动执行**
@@ -292,6 +316,9 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 产物 | 路径 | 由哪个 skill 产出 |
 |---|---|---|
 | 选题方案(可选) | `docs/TOPIC_PROPOSAL.md` | game-topic-brainstorm |
+| 复刻拆解报告(可选) | `docs/GAME_TEARDOWN.md` | game-teardown |
+| 复刻矩阵(可选) | `docs/TEARDOWN_MATRIX.json` | game-teardown |
+| 数值模型(可选) | `docs/NUMERIC_MODEL.csv` | game-teardown |
 | 蓝图 | `docs/GAME_BLUEPRINT.md` | game-blueprint |
 | PRD | `docs/PRD.md` | game-spec |
 | 技术设计 | `docs/TECH_DESIGN.md` | game-spec |
@@ -350,6 +377,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 
 **例外**:
 - 阶段 0(脑暴)本身可选,用户确认推荐方案即进入阶段 1,不另设确认点
+- 阶段 0.5(复刻拆解)有独立确认点 0.5:拆解质量直接决定后续"像不像",必须让用户看档位、证据覆盖与 MVP 范围后再进蓝图
 - 阶段 6(polish)是可选增量,由确认点 5 的用户选择决定是否进入,进入后不再设确认点(直接执行到底)
 - 质量门 FAIL 时无需确认,直接回退修复(修复后重跑 Gate,Gate PASS 再走确认点)
 - 确认点 6（可选 Tool）是**可选**的：即使用户在确认点 5 选了"流水线完成",也可在产物已落地后单独触发 Tool 操作;反之,确认点 6 默认不强制出现,仅在用户明确要"提交/部署"时触发

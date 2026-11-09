@@ -45,9 +45,11 @@ screenshot-operation-manual  截图操作手册（DOCX/PDF/Markdown）
 【总编排】
 game-forge-master            调度中枢：引擎选择（Phaser 3 / Pixi.js / 纯Canvas / Godot 4 / Unity / Three.js）+ 阶段裁剪 + 失败回退
         ↓
-game-topic-brainstorm        阶段0（可选）：游戏选题脑暴
+game-topic-brainstorm        阶段0（可选）：游戏选题脑暴（无参考对象时）
         ↓
-game-blueprint               阶段1：一页纸游戏蓝图（类型/平台/引擎/玩法/范围）
+game-teardown                阶段0.5（可选·复刻专线）：12 维产品系统逆向拆解 → 复刻矩阵 + 数值模型 + 灰盒 MVP
+        ↓                         （与阶段0互斥：有参考对象走此路，无参考对象走选题脑暴）
+game-blueprint               阶段1：一页纸游戏蓝图（类型/平台/引擎/玩法/范围；存在拆解产物时进复刻模式）
         ↓
 game-spec                    阶段2：详细 PRD + 技术设计
         ↓
@@ -288,6 +290,20 @@ powershell -File _shared/validate.ps1
 Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `references/` 并改回本地引用路径，详见 `_shared/README.md` 第 5 条。
 
 ## 变更记录
+
+### 2026-11-09 新增 game-teardown（游戏复刻拆解·阶段0.5）
+
+- **背景**：原游戏流水线只支持"从 0 设计"，用户给参考游戏/录屏时只能靠 `game-blueprint` 顺手参考，拆解深度全凭自觉，典型后果是"只拆画面和玩法"——做出来看着像、玩着不像。
+- **新增 skill**：`game-teardown`（SKILL.md + runtime.yaml + 4 份 references），把参考游戏当**产品系统**逆向，12 维：定位 / 循环 / 规则 / 数值 / 内容 / 交互 / 表现 / 技术 / 工具链 / 测试 / 合规 / 商业化。
+- **四个原创机制（不止是清单化你的 12 条）**：
+  1. **复刻档位 × 拆解深度**：T0 学习原型 / T1 玩法克隆 / T2 高保真 / T3 商业产品，对应 L1 结构 / L2 区间 / L3 公式三级深度——**档位决定拆多深**，避免对 T0 也做公式级拆解。
+  2. **三色判定 M/S/X**：M 必须复刻（去掉就不像）、S 可替换（表现层，差异化主战场）、X 禁止复制（受保护表达，**必须给替代方案**，空即 Gate FAIL）。
+  3. **证据分级 E0~E3 + 可观测性 O1~O3**：进蓝图的数值必须 ≥E2，O3 只写"行为等效设计"，每条数值必须带可复查 source（帧号/样本数/链接）——堵住 AI"把推断写成事实"这个最大失效模式。
+  4. **敏感度排序**：拆完再收一刀，只挑 3~5 个决定"像不像"的变量，MVP 只保 high 项，low 项允许大改并**顺势变成差异化锚点**（同时降低换皮混淆风险）。
+- **产物 3 份**：`docs/GAME_TEARDOWN.md`（12 维报告，14 章固定结构）+ `docs/TEARDOWN_MATRIX.json`（机读三色矩阵，含 dimensions_covered 全 12 维校验、X 项 replacement 条件必填、L3 仅限 high 敏感） + `docs/NUMERIC_MODEL.csv`（9 列固定，可直接 Excel 调参）。
+- **references**：`teardown-dimensions.md`（12 维逐维观察点/方法/记录字段/三色倾向/常见坑）、`numeric-reverse-engineering.md`（帧测/控制变量/区间采样/公式族反解 + 公式族假设库 + 样本量下限 + 7 个陷阱）、`legal-clone-boundary.md`（思想表达二分 / 三档清单 / 换皮混淆 5 条自检 / 8 类合法替代手法 / 发布前 checklist）、`teardown-matrix.schema.json`。
+- **流水线接线**：`game-forge-master` 新增阶段 0.5 路由（与阶段 0 互斥）、深度裁剪表、确认点 0.5、产物路径 3 行；`game-blueprint` 新增"§三.0 复刻模式"（交接映射 8 行 + 3 条硬约束 + description 触发词）；`game-topic-brainstorm` 新增复刻分支路由与判据。
+- **校验**：`_shared/validate.ps1` 全绿（新增 JSON 可解析、references 路径可达、frontmatter 双引号、runtime.yaml schema）。
 
 ### 2026-09-30 新增 opportunity-screening 个人商业机会评估方法论 skill
 - 独立方法论 skill（不属于任何交付流水线）：四层漏斗 `底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议`

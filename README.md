@@ -11,6 +11,7 @@
 ### 1. AI 游戏生成流水线（game-*）
 由一句话需求端到端生成可运行游戏工程，纯文本产物、零编辑器依赖。
 `game-forge-master`(调度) → `game-blueprint` → `game-spec` → `game-art-spec` → (`game-asset-forge` ∥ `game-code-forge`) → `game-integrate` → `game-polish`(可选)
+**复刻专线（可选，与选题脑暴互斥）**：需求含参考游戏时，先由 `game-teardown` 做 12 维产品系统拆解（复刻矩阵 + 数值模型 + 灰盒 MVP），再进 `game-blueprint`。
 详见 [第三节](#三ai-游戏生成流水线详情)。
 
 ### 2. 产品交付流水线（product-pipeline / system-prd / implement-* / generate-*）
@@ -39,6 +40,8 @@
 - `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
 - `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
 - `opportunity-screening`：**个人/小团队商业机会的筛选与自身适配评估方法论**。四层漏斗（商业底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议），核心判据为「市场价值与个人可达性必须分开评估，获客门槛不可靠努力弥补」。含确定性评分脚本与实盘案例标定。
+- `content-difficulty-gate`：**内容难度定级门**。把"这关太难/太简单"变成可复算的分数与判据——三策略求解器定口径（无脑必输 + 拟真必赢）、静态压力分定排序（容量 × (1+陷阱)）、旋钮实测表定调参方向。适用于关卡包、题库、课程章节等一切"由易到难"的内容序列。
+- `procedural-art-forge`：**程序化美术的可辨识度交付纪律**。画稿是代码而非位图，用「原语库 + 配方脚本 + 三级校验（字符图→PNG 预览→实机截图）」产出可复算画稿，并以五条可辨识度纪律验收（粒度预算/同色隔离/背景色不当前景/线宽≥2/前景不抢中景）。
 
 ### 7. AI Agent 体系层（2026-08-06 升级）
 - **Tool 层**：`tool-git-ops` / `tool-ci-ops` / `tool-deploy-ops` / `tool-db-ops` / `tool-monitor-ops`——封装 Git/CI/部署/DB/监控操作,默认只读优先,变更类需用户确认。
@@ -71,6 +74,8 @@
 | game-integrate | AI 游戏流水线阶段5：集成构建与浏览器自测，产出可运行构建与验收报告 | `assets/`、`src/`、`index.html`、`docs/ASSET_MANIFEST.json` | `dist/`、`docs/BUILD_REPORT.md`(含数值平衡实测) |
 | game-polish | AI 游戏流水线阶段6(可选)：在可运行游戏上叠加视觉/手感/反馈效果打磨 | `docs/POLISH_REQUEST.md`、可运行工程、`GameConfig.ts`(只读) | `src/effects/` 增量效果代码、`docs/POLISH_REPORT.md` |
 | game-spec | AI 游戏流水线阶段2：由蓝图生成详细 PRD 与技术设计 | `docs/GAME_BLUEPRINT.md` | `docs/PRD.md`、`docs/TECH_DESIGN.md` |
+| game-teardown | AI 游戏流水线阶段0.5(复刻专线)：把参考游戏按 12 维做产品系统逆向拆解，产出三色复刻矩阵/数值模型/灰盒 MVP | 参考游戏(名称/录屏/截图/试玩)、复刻档位 T0~T3 | `docs/GAME_TEARDOWN.md`、`docs/TEARDOWN_MATRIX.json`、`docs/NUMERIC_MODEL.csv` |
+| game-topic-brainstorm | AI 游戏流水线阶段0(可选)：从0结构化脑暴选题并用爆款原则验证 | 模糊游戏想法/选题方向、约束偏好 | `docs/TOPIC_PROPOSAL.md` |
 | generate-html-mobile | 任务型移动端静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/mobile/`(common.css、navbar.js、PXX-*.html) |
 | generate-html-pages | 多端静态原型生成路由器，判端并调度 PC/移动端子 skill，汇总构建报告 | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`、`output/site/mobile/`、`output/site/build-report.json` |
 | generate-html-pc-admin | PC 管理后台静态 HTML 原型页面生成器(generate-html-pages 子 skill) | 系统 PRD、页面原型文档、UI 规范、上游 JSON 工件 | `output/site/pc/`(common.css、sidebar.js、PXX-*.html) |
@@ -105,6 +110,8 @@
 | code-review | 代码审查(4 维度:正确性/安全性/性能/可维护性,只读不写) | git diff / PR 链接 | code-review-report.md + code-review-report.json |
 | debug-fix | 调试修复(定位根因 + 修复,最多重试 3 轮) | 错误日志 + 堆栈 + 复现步骤 | debug-report.md(根因 + 修复方案 + diff) |
 | diff-reviewer | 变更审查(后置审查 diff 的风险变更,只读不写) | 变更前后的路径或 git diff | diff-review-report.md(风险变更清单 + 建议) |
+| content-difficulty-gate | 内容难度定级门(三策略求解器定口径 + 压力分定排序 + 旋钮实测表) | 内容包 JSON + 求解器 | docs/DIFFICULTY_DESIGN.md + 压力分排序表 + 判定矩阵 |
+| procedural-art-forge | 程序化美术可辨识度纪律(原语库 + 配方脚本 + 三级校验) | 画稿配方 + 配色表 | 画稿脚本 + 预览 PNG + 实机验收图 |
 | failure-casebook | 失败案例库(自动记录失败码 + 修复方法,保留 90 天) | skill 名 + 失败码 + 原因 + 修复方法 | failure-casebook.json(索引) + 案例文件 |
 | guardrail | 安全护栏(前置拦截:敏感路径保护 + 操作分级) | 目标路径 + 操作类型 | guardrail-report.json(检查结果 + 风险级别) |
 | project-knowledge-base | 项目知识库(团队规范/ADR/历史事故/代码规范) | 知识分类 + 查询关键词 | knowledge-base.json(索引) + 各知识文件 |
@@ -130,13 +137,14 @@
 
 ## 三、AI 游戏生成流水线（详情）
 
-通过 8 个 skill 串联成一条流水线，让 AI 基于一句话需求端到端生成可一键运行的游戏工程。所有产物纯文本/二进制资源，**零编辑器依赖**。可选阶段 6 在可玩游戏基础上叠加视觉效果打磨。
+通过 9 个 skill 串联成一条流水线，让 AI 基于一句话需求端到端生成可一键运行的游戏工程。所有产物纯文本/二进制资源，**零编辑器依赖**。可选阶段 6 在可玩游戏基础上叠加视觉效果打磨；可选阶段 0.5 在复刻需求下先做产品系统拆解。
 
 ### 3.1 Skill 清单
 
 | 序号 | Skill 名 | 职责 | 输入 | 输出 |
 |---|---|---|---|---|
 | 0 | game-forge-master | 总纲/调度/引擎决策树/失败回退 | 用户一句话需求 | 调度下游 skill |
+| 0.5 | game-teardown(可选·复刻专线) | 12 维产品系统逆向拆解 + 三色复刻矩阵 + 数值模型 + 灰盒 MVP | 参考游戏材料、复刻档位 | `docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv` |
 | 1 | game-blueprint | 游戏蓝图(类型/平台/引擎/范围) | 一句话需求 | `docs/GAME_BLUEPRINT.md` |
 | 2 | game-spec | PRD + 技术设计 | 蓝图 | `docs/PRD.md` + `docs/TECH_DESIGN.md` |
 | 3 | game-art-spec | 美术规范 + 资源清单 + 音频规范 | PRD + TECH_DESIGN | `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md` |
@@ -152,6 +160,8 @@
        ↓
 [0] game-forge-master(调度)
        ↓ 引擎选择 + 阶段裁剪
+[0.5] game-teardown(可选·复刻专线) → GAME_TEARDOWN.md + TEARDOWN_MATRIX.json + NUMERIC_MODEL.csv
+       ↓
 [1] game-blueprint       → docs/GAME_BLUEPRINT.md
        ↓
 [2] game-spec            → docs/PRD.md + docs/TECH_DESIGN.md
@@ -173,6 +183,7 @@
 
 - **完整流程(推荐)**：直接说「用 AI 生成一个游戏：…」或「按流水线生成游戏工程」，总纲 skill 自动调度后续阶段。
 - **单阶段调用**：跳过总纲直接调用某阶段 skill（适用于已有部分产物的增量生成）：
+  - 「复刻/对标/拆解某款游戏」「按这个录屏做一个」→ game-teardown
   - 「生成游戏蓝图」→ game-blueprint
   - 「生成游戏 PRD」→ game-spec
   - 「生成美术规范」→ game-art-spec
@@ -201,6 +212,10 @@
 ```
 {项目根}/
 ├── docs/
+│   ├── TOPIC_PROPOSAL.md        # [0] 产出(可选)
+│   ├── GAME_TEARDOWN.md         # [0.5] 产出(复刻专线,可选)
+│   ├── TEARDOWN_MATRIX.json     # [0.5] 产出(三色矩阵: 必须复刻/可替换/禁止复制)
+│   ├── NUMERIC_MODEL.csv        # [0.5] 产出(数值模型,可直接 Excel 调参)
 │   ├── GAME_BLUEPRINT.md       # [1] 产出
 │   ├── PRD.md                  # [2] 产出
 │   ├── TECH_DESIGN.md          # [2] 产出
@@ -326,6 +341,8 @@ generate-portal            → output/site/index.html (演示门户,独占)
 
 **AI 游戏生成流水线**
 - [game-forge-master](./game-forge-master/SKILL.md)
+- [game-topic-brainstorm](./game-topic-brainstorm/SKILL.md)
+- [game-teardown](./game-teardown/SKILL.md)
 - [game-blueprint](./game-blueprint/SKILL.md)
 - [game-spec](./game-spec/SKILL.md)
 - [game-art-spec](./game-art-spec/SKILL.md)

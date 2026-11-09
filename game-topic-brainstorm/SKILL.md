@@ -21,6 +21,7 @@ description: "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprin
 - game-forge-master 调度到选题阶段
 
 **不要**在以下场景调用:
+- 用户要**复刻/对标/拆解某款已有游戏**(点名游戏、给录屏截图) → 走 `game-teardown`(阶段 0.5 复刻专线),不要在此脑暴替代方案
 - 用户已有明确玩法需求(直接走 game-blueprint)
 - 用户要修改已有游戏(直接 Edit/Write)
 - 纯咨询"游戏怎么做"(用对话回答)
@@ -244,7 +245,7 @@ description: "AI 游戏生成流水线阶段 0(选题脑暴)。在 game-blueprin
 ## 七、与其他 skill 的关系
 
 ```
-[本 skill] 选题脑暴
+[本 skill] 选题脑暴(无参考对象)
     ↓ 产出
 docs/TOPIC_PROPOSAL.md
     ↓ 供消费
@@ -254,6 +255,18 @@ docs/GAME_BLUEPRINT.md
     ↓ 继续
 game-spec → game-art-spec → ...
 ```
+
+**复刻分支(与本 skill 互斥)**:
+
+```
+用户点名参考游戏/给录屏 → game-teardown(阶段 0.5)
+    ↓ 产出
+docs/GAME_TEARDOWN.md + docs/TEARDOWN_MATRIX.json + docs/NUMERIC_MODEL.csv
+    ↓ 供消费
+game-blueprint(复刻模式) → ...
+```
+
+**判据**:有参考对象走 teardown,无参考对象走脑暴;两者**不要串联**,否则会一边拆原作一边发散新玩法,结论互相打架。
 
 **关键约束**:
 - 本 skill 不生成蓝图(职责边界)

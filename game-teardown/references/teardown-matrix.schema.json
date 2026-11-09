@@ -1,0 +1,237 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "game-teardown/references/teardown-matrix.schema.json",
+  "$comment": "examples[0] 仅为字段写法的节选（3 条），实际产出的 items 必须 ≥12 条且 12 个维度全部覆盖，open_questions 收录全部 E0/E1 条目。",
+  "title": "TEARDOWN_MATRIX — 复刻矩阵",
+  "description": "game-teardown 的机读契约。items[] 是唯一事实来源；prohibited 由 class=X 的条目派生，不单独维护。",
+  "type": "object",
+  "required": [
+    "source_game",
+    "teardown_date",
+    "tier",
+    "dimensions_covered",
+    "evidence_coverage",
+    "differentiation",
+    "mvp",
+    "items",
+    "open_questions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "source_game": {
+      "type": "string",
+      "description": "参考游戏名称（可含版本号）"
+    },
+    "teardown_date": {
+      "type": "string",
+      "description": "拆解日期 YYYY-MM-DD"
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["T0", "T1", "T2", "T3"],
+      "description": "复刻档位：T0 学习原型 / T1 玩法克隆 / T2 高保真 / T3 商业产品"
+    },
+    "dimensions_covered": {
+      "type": "array",
+      "description": "已拆解的维度编号（1~12），必须 12 个全部出现",
+      "items": { "type": "integer", "minimum": 1, "maximum": 12 },
+      "minItems": 12,
+      "maxItems": 12,
+      "uniqueItems": true
+    },
+    "evidence_coverage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "达到 E2 及以上的维度数 / 12，需与 GAME_TEARDOWN.md §0 一致；低于 0.6 须在报告首行提示"
+    },
+    "differentiation": {
+      "type": "string",
+      "minLength": 8,
+      "description": "至少 1 个原创差异点（一句话），空则视为换皮，Gate FAIL"
+    },
+    "mvp": {
+      "type": "object",
+      "required": ["one_liner", "must", "simplified", "placeholder", "deferred"],
+      "additionalProperties": false,
+      "properties": {
+        "one_liner": {
+          "type": "string",
+          "description": "灰盒 MVP 一句话定义：能验证核心循环的最小可玩切片"
+        },
+        "must": { "type": "array", "items": { "type": "string" }, "description": "必进：M 且 high 敏感" },
+        "simplified": { "type": "array", "items": { "type": "string" }, "description": "简化：M 且 mid/low 敏感" },
+        "placeholder": { "type": "array", "items": { "type": "string" }, "description": "占位：S 表现层" },
+        "deferred": { "type": "array", "items": { "type": "string" }, "description": "延后：本期不做" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "minItems": 12,
+      "description": "拆解条目，每条一个独立结论",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "dimension",
+          "name",
+          "class",
+          "depth",
+          "observability",
+          "evidence",
+          "source",
+          "sensitivity",
+          "value_or_range",
+          "in_mvp"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^D([1-9]|1[0-2])-[0-9]{2,}$", "description": "如 D4-01（维度4第1条）" },
+          "dimension": { "type": "integer", "minimum": 1, "maximum": 12 },
+          "name": { "type": "string", "minLength": 2 },
+          "class": {
+            "type": "string",
+            "enum": ["M", "S", "X"],
+            "description": "M 必须复刻 / S 可替换 / X 禁止复制"
+          },
+          "depth": {
+            "type": "string",
+            "enum": ["L1", "L2", "L3"],
+            "description": "L1 结构级 / L2 区间级 / L3 公式级；L3 仅用于 high 敏感且 O1~O2 的条目"
+          },
+          "observability": {
+            "type": "string",
+            "enum": ["O1", "O2", "O3"],
+            "description": "O1 直接可见 / O2 可统计推断 / O3 不可观测（只写行为等效设计）"
+          },
+          "evidence": {
+            "type": "string",
+            "enum": ["E0", "E1", "E2", "E3"],
+            "description": "E0 猜测 / E1 推断 / E2 采样统计 / E3 实测或公开数据交叉验证"
+          },
+          "source": {
+            "type": "string",
+            "minLength": 3,
+            "description": "可复查来源：帧号区间 / 样本局数 / 链接 / 实测次数；无来源不得填写"
+          },
+          "sensitivity": {
+            "type": "string",
+            "enum": ["high", "mid", "low"],
+            "description": "对「像不像」的影响：high 必进 MVP 且贴原作；low 允许大改（可作差异化）"
+          },
+          "value_or_range": {
+            "type": "string",
+            "description": "取值或区间（如 1.2~1.5 / 20%~30% / 结构描述）；单点精确值需 E3"
+          },
+          "in_mvp": { "type": "boolean" },
+          "replacement": {
+            "type": "string",
+            "minLength": 4,
+            "description": "X 项必填：合法替代手法（保功能与节奏，换符号与表达）"
+          },
+          "notes": { "type": "string" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "class": { "const": "X" } }, "required": ["class"] },
+            "then": { "required": ["replacement"] }
+          },
+          {
+            "if": { "properties": { "depth": { "const": "L3" } }, "required": ["depth"] },
+            "then": {
+              "properties": {
+                "observability": { "enum": ["O1", "O2"] },
+                "sensitivity": { "const": "high" }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "description": "待验证清单：所有 E0/E1 结论必须在此登记，禁止只留在正文",
+      "items": {
+        "type": "object",
+        "required": ["item_id", "question", "current_evidence", "verify_method"],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": { "type": "string" },
+          "question": { "type": "string" },
+          "current_evidence": { "type": "string", "enum": ["E0", "E1"] },
+          "verify_method": { "type": "string" },
+          "cost": { "type": "string" }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "source_game": "参考游戏（示例）v1.2",
+      "teardown_date": "2026-11-09",
+      "tier": "T1",
+      "dimensions_covered": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "evidence_coverage": 0.75,
+      "differentiation": "把「限时搬运」改为「潮汐涨落」驱动，压力来源从计时改为环境",
+      "mvp": {
+        "one_liner": "能验证「识别价值→拆解→回收」循环的最小切片：1 个场景、3 类可拆物、1 条成长线，其余占位",
+        "must": ["单次拆解反馈密度", "单局时长 90~120s", "失败零损失重试"],
+        "simplified": ["成长线只留 3 级", "敌人只留 1 种"],
+        "placeholder": ["全部美术用色块+文字", "音频静音"],
+        "deferred": ["多场景", "成就系统", "排行榜"]
+      },
+      "items": [
+        {
+          "id": "D2-01",
+          "dimension": 2,
+          "name": "单局时长",
+          "class": "M",
+          "depth": "L2",
+          "observability": "O2",
+          "evidence": "E2",
+          "source": "录屏 12 局，逐局计时（帧号 00:00~02:10）",
+          "sensitivity": "high",
+          "value_or_range": "95~130s",
+          "in_mvp": true,
+          "notes": "失败局更短，取成功局区间"
+        },
+        {
+          "id": "D6-01",
+          "dimension": 6,
+          "name": "拆解成功的反馈链（顿帧+飘字+音效）",
+          "class": "M",
+          "depth": "L2",
+          "observability": "O1",
+          "evidence": "E2",
+          "source": "录屏逐帧：闪白 3 帧、飘字 1.2s、音效 180ms",
+          "sensitivity": "high",
+          "value_or_range": "三段式，总时长 0.8~1.2s",
+          "in_mvp": true
+        },
+        {
+          "id": "D7-01",
+          "dimension": 7,
+          "name": "主角立绘与角色名",
+          "class": "X",
+          "depth": "L1",
+          "observability": "O1",
+          "evidence": "E3",
+          "source": "原作截图（受保护表达）",
+          "sensitivity": "low",
+          "value_or_range": "不可复制",
+          "in_mvp": false,
+          "replacement": "重设剪影语言与命名体系：焊工原型+工具命名法，职能定位保留"
+        }
+      ],
+      "open_questions": [
+        {
+          "item_id": "D4-03",
+          "question": "稀有物掉落是否为保底机制",
+          "current_evidence": "E1",
+          "verify_method": "连续 50 次统计出现间隔上限",
+          "cost": "约 40 分钟"
+        }
+      ]
+    }
+  ]
+}
