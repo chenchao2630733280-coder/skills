@@ -406,6 +406,7 @@ npm run build
 - [ ] 已知问题全部列出
 - [ ] 截图至少 1 张
 - [ ] **数值平衡实测通过**(见 十)
+- [ ] (关卡制)**关卡目标带核对**已完成,偏差 ≥15% 的关卡已判定是"模型偏"还是"目标偏"(见 10.5)
 
 ---
 
@@ -483,3 +484,17 @@ BUILD_REPORT.md 追加:
 - 确定性回归: [重置 10 次一致 / 不一致(附差异)]
 - 反馈节奏抽查: [high 项反馈总时长偏离 ≤±20%]
 ```
+
+### 10.5 关卡目标带核对(存在 `config/levels.json` 时必做)
+阶段 2.5 已定下每关目标首通率,这里是"难度设计 → 真实表现"的闭环收口点。
+**输入**:`config/levels.json`(`target_win`/`pred_win`)+ `docs/DIFFICULTY_REVIEW.json` + 实跑通关率(样本 <30 次/关标 `DATA_GAP`,不下判断)。
+
+| 情形 | 判定 |
+|---|---|
+| `|实际 − target_win|` < 15% | 通过 |
+| ≥15% 且 `|实际 − pred_win|` 也大 | **先怀疑模型**(spread/θ 未校准),不要先调关卡 |
+| ≥15% 但 `|实际 − pred_win|` 小 | 模型准、目标偏了 → 回 `game-level-design` 复核目标带 |
+| 实际 < `target_win × 0.5` | 阻断级卡点,标 `BLOCKER_SUSPECT`,回阶段 2.5 重评 |
+
+BUILD_REPORT.md 追加:`## 关卡目标带核对` + 逐关表(`level_id/target_win/pred_win/实测/偏差/判定`)+ `卡点嫌疑` + `模型校准建议` 两行。
+**跳过条件**:无 `config/levels.json`(单局制被裁剪)→ 整节跳过,注明 `LEVEL_BALANCE_SKIPPED`,不算 FAIL。

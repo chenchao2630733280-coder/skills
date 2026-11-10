@@ -1,0 +1,57 @@
+{
+  "match3": {
+    "primary_models": [
+      "resource_budget",
+      "search_space",
+      "mechanic_load",
+      "randomness"
+    ],
+    "must_check": [
+      "solver_feasibility",
+      "seed_variance",
+      "objective_progress_on_fail",
+      "moves_remaining_on_win"
+    ]
+  },
+  "merge": {
+    "primary_models": [
+      "resource_budget",
+      "production_economy",
+      "board_space",
+      "stochastic_yield"
+    ],
+    "must_check": [
+      "energy_per_order",
+      "generator_wait_p90",
+      "board_occupancy_p90",
+      "deadlock_rate"
+    ]
+  },
+  "time_management": {
+    "primary_models": [
+      "queue_pressure",
+      "service_rate",
+      "task_switching",
+      "reaction_window"
+    ],
+    "must_check": [
+      "arrival_rate",
+      "service_rate",
+      "queue_length_p90",
+      "timeout_rate"
+    ]
+  },
+  "puzzle": {
+    "primary_models": [
+      "search_space",
+      "planning_depth",
+      "rule_load"
+    ],
+    "must_check": [
+      "solver_status",
+      "branching_factor",
+      "solution_depth",
+      "hint_usage"
+    ]
+  }
+}

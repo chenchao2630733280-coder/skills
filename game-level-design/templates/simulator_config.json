@@ -1,0 +1,30 @@
+{
+  "simulator_version": "0.1.0",
+  "level_id": "LEVEL_ID",
+  "seed_count": 1000,
+  "policies": [
+    "random",
+    "heuristic",
+    "strong"
+  ],
+  "profiles": [
+    "novice",
+    "regular",
+    "skilled"
+  ],
+  "metrics": [
+    "win_rate",
+    "turns_p50",
+    "remaining_resource_p50",
+    "fail_reason_distribution",
+    "deadlock_rate"
+  ],
+  "regression_seed_set": [
+    11,
+    23,
+    47,
+    89,
+    131
+  ],
+  "notes": "Replace placeholder policies and seed count based on runtime budget and confidence needs."
+}

@@ -1,0 +1,2735 @@
+{
+  "campaign": {
+    "campaign_id": "demo_match3_saga",
+    "genre": "match3",
+    "version": "3.0.0-demo",
+    "data_source": "synthetic（示例数据，非真实项目）",
+    "levels": 16,
+    "segments": {
+      "novice": {
+        "theta": -0.9,
+        "theta_sd": 0.45
+      },
+      "regular": {
+        "theta": 0.0,
+        "theta_sd": 0.5
+      },
+      "skilled": {
+        "theta": 0.95,
+        "theta_sd": 0.45
+      }
+    },
+    "ref_segment": "regular",
+    "spread": 4.0
+  },
+  "curve": [
+    {
+      "index": 1,
+      "level_id": "L01",
+      "phase": "教学",
+      "shape": "ramp",
+      "target_win": 0.86,
+      "target_score": 0.0462,
+      "new_mechanics": "基础交换",
+      "tag": "TUTORIAL"
+    },
+    {
+      "index": 2,
+      "level_id": "L02",
+      "phase": "教学",
+      "shape": "ramp",
+      "target_win": 0.84,
+      "target_score": 0.0854,
+      "new_mechanics": "",
+      "tag": "TUTORIAL"
+    },
+    {
+      "index": 3,
+      "level_id": "L03",
+      "phase": "教学",
+      "shape": "ramp",
+      "target_win": 0.78,
+      "target_score": 0.1836,
+      "new_mechanics": "木箱",
+      "tag": "TUTORIAL"
+    },
+    {
+      "index": 4,
+      "level_id": "L04",
+      "phase": "教学",
+      "shape": "ramp",
+      "target_win": 0.74,
+      "target_score": 0.2385,
+      "new_mechanics": "双目标",
+      "tag": "TUTORIAL"
+    },
+    {
+      "index": 5,
+      "level_id": "L05",
+      "phase": "练习",
+      "shape": "ramp",
+      "target_win": 0.72,
+      "target_score": 0.2639,
+      "new_mechanics": "",
+      "tag": "PRACTICE"
+    },
+    {
+      "index": 6,
+      "level_id": "L06",
+      "phase": "练习",
+      "shape": "ramp",
+      "target_win": 0.7,
+      "target_score": 0.2882,
+      "new_mechanics": "",
+      "tag": "PRACTICE"
+    },
+    {
+      "index": 7,
+      "level_id": "L07",
+      "phase": "练习",
+      "shape": "ramp",
+      "target_win": 0.64,
+      "target_score": 0.3562,
+      "new_mechanics": "",
+      "tag": "PRACTICE"
+    },
+    {
+      "index": 8,
+      "level_id": "L08",
+      "phase": "练习",
+      "shape": "ramp",
+      "target_win": 0.6,
+      "target_score": 0.3986,
+      "new_mechanics": "",
+      "tag": "PRACTICE"
+    },
+    {
+      "index": 9,
+      "level_id": "L09",
+      "phase": "组合",
+      "shape": "spike",
+      "target_win": 0.62,
+      "target_score": 0.3776,
+      "new_mechanics": "冰块, 传送带",
+      "tag": "CHALLENGE"
+    },
+    {
+      "index": 10,
+      "level_id": "L10",
+      "phase": "组合",
+      "shape": "spike",
+      "target_win": 0.5933,
+      "target_score": 0.4056,
+      "new_mechanics": "",
+      "tag": "STANDARD"
+    },
+    {
+      "index": 11,
+      "level_id": "L11",
+      "phase": "组合",
+      "shape": "spike",
+      "target_win": 0.4226,
+      "target_score": 0.5781,
+      "new_mechanics": "",
+      "tag": "CHALLENGE"
+    },
+    {
+      "index": 12,
+      "level_id": "L12",
+      "phase": "组合",
+      "shape": "spike",
+      "target_win": 0.4776,
+      "target_score": 0.5224,
+      "new_mechanics": "",
+      "tag": "CHALLENGE"
+    },
+    {
+      "index": 13,
+      "level_id": "L13",
+      "phase": "考核",
+      "shape": "ramp",
+      "target_win": 0.55,
+      "target_score": 0.4498,
+      "new_mechanics": "",
+      "tag": "STANDARD"
+    },
+    {
+      "index": 14,
+      "level_id": "L14",
+      "phase": "考核",
+      "shape": "ramp",
+      "target_win": 0.5267,
+      "target_score": 0.4733,
+      "new_mechanics": "",
+      "tag": "STANDARD"
+    },
+    {
+      "index": 15,
+      "level_id": "L15",
+      "phase": "考核",
+      "shape": "ramp",
+      "target_win": 0.4633,
+      "target_score": 0.5367,
+      "new_mechanics": "",
+      "tag": "STANDARD"
+    },
+    {
+      "index": 16,
+      "level_id": "L16",
+      "phase": "考核",
+      "shape": "ramp",
+      "target_win": 0.42,
+      "target_score": 0.5807,
+      "new_mechanics": "黑洞",
+      "tag": "BOSS"
+    }
+  ],
+  "levels": [
+    {
+      "index": 1,
+      "level_id": "L01",
+      "score": 0.055,
+      "features": {
+        "resource_pressure": 0.0,
+        "mechanic_load": 0.0,
+        "strategy_depth": 0.0,
+        "randomness": 0.3333,
+        "operation_pressure": 0.1667,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.1
+      },
+      "pred_win": 0.8557,
+      "target_win": 0.86,
+      "pred_by_segment": {
+        "novice": 0.7068,
+        "regular": 0.8557,
+        "skilled": 0.9388
+      }
+    },
+    {
+      "index": 2,
+      "level_id": "L02",
+      "score": 0.0594,
+      "features": {
+        "resource_pressure": 0.0095,
+        "mechanic_load": 0.0,
+        "strategy_depth": 0.0,
+        "randomness": 0.3333,
+        "operation_pressure": 0.1667,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.15
+      },
+      "pred_win": 0.8535,
+      "target_win": 0.84,
+      "pred_by_segment": {
+        "novice": 0.7032,
+        "regular": 0.8535,
+        "skilled": 0.9378
+      }
+    },
+    {
+      "index": 3,
+      "level_id": "L03",
+      "score": 0.1185,
+      "features": {
+        "resource_pressure": 0.0635,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.0,
+        "randomness": 0.3333,
+        "operation_pressure": 0.25,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.2
+      },
+      "pred_win": 0.8214,
+      "target_win": 0.78,
+      "pred_by_segment": {
+        "novice": 0.6516,
+        "regular": 0.8214,
+        "skilled": 0.9224
+      }
+    },
+    {
+      "index": 4,
+      "level_id": "L04",
+      "score": 0.1956,
+      "features": {
+        "resource_pressure": 0.1032,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.3333,
+        "randomness": 0.3333,
+        "operation_pressure": 0.25,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.25
+      },
+      "pred_win": 0.7716,
+      "target_win": 0.74,
+      "pred_by_segment": {
+        "novice": 0.5787,
+        "regular": 0.7716,
+        "skilled": 0.8973
+      }
+    },
+    {
+      "index": 5,
+      "level_id": "L05",
+      "score": 0.2175,
+      "features": {
+        "resource_pressure": 0.1636,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.3333,
+        "randomness": 0.3333,
+        "operation_pressure": 0.3333,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.28
+      },
+      "pred_win": 0.7558,
+      "target_win": 0.72,
+      "pred_by_segment": {
+        "novice": 0.5572,
+        "regular": 0.7558,
+        "skilled": 0.8889
+      }
+    },
+    {
+      "index": 6,
+      "level_id": "L06",
+      "score": 0.2201,
+      "features": {
+        "resource_pressure": 0.1739,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.3333,
+        "randomness": 0.3333,
+        "operation_pressure": 0.3333,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.29
+      },
+      "pred_win": 0.7539,
+      "target_win": 0.7,
+      "pred_by_segment": {
+        "novice": 0.5547,
+        "regular": 0.7539,
+        "skilled": 0.8879
+      }
+    },
+    {
+      "index": 7,
+      "level_id": "L07",
+      "score": 0.2227,
+      "features": {
+        "resource_pressure": 0.1843,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.3333,
+        "randomness": 0.3333,
+        "operation_pressure": 0.3333,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.3
+      },
+      "pred_win": 0.752,
+      "target_win": 0.64,
+      "pred_by_segment": {
+        "novice": 0.5521,
+        "regular": 0.752,
+        "skilled": 0.8869
+      }
+    },
+    {
+      "index": 8,
+      "level_id": "L08",
+      "score": 0.2301,
+      "features": {
+        "resource_pressure": 0.2186,
+        "mechanic_load": 0.25,
+        "strategy_depth": 0.3333,
+        "randomness": 0.3333,
+        "operation_pressure": 0.3333,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.31
+      },
+      "pred_win": 0.7465,
+      "target_win": 0.6,
+      "pred_by_segment": {
+        "novice": 0.5448,
+        "regular": 0.7465,
+        "skilled": 0.8839
+      }
+    },
+    {
+      "index": 9,
+      "level_id": "L09",
+      "score": 0.5088,
+      "features": {
+        "resource_pressure": 0.619,
+        "mechanic_load": 0.75,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.5,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.45
+      },
+      "pred_win": 0.4912,
+      "target_win": 0.62,
+      "pred_by_segment": {
+        "novice": 0.2819,
+        "regular": 0.4912,
+        "skilled": 0.714
+      }
+    },
+    {
+      "index": 10,
+      "level_id": "L10",
+      "score": 0.5164,
+      "features": {
+        "resource_pressure": 0.8571,
+        "mechanic_load": 0.5,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.5,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.4
+      },
+      "pred_win": 0.4836,
+      "target_win": 0.5933,
+      "pred_by_segment": {
+        "novice": 0.2757,
+        "regular": 0.4836,
+        "skilled": 0.7077
+      }
+    },
+    {
+      "index": 11,
+      "level_id": "L11",
+      "score": 0.4265,
+      "features": {
+        "resource_pressure": 0.4026,
+        "mechanic_load": 0.5,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.5,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.42
+      },
+      "pred_win": 0.573,
+      "target_win": 0.4226,
+      "pred_by_segment": {
+        "novice": 0.353,
+        "regular": 0.573,
+        "skilled": 0.7762
+      }
+    },
+    {
+      "index": 12,
+      "level_id": "L12",
+      "score": 0.7442,
+      "features": {
+        "resource_pressure": 1.0,
+        "mechanic_load": 1.0,
+        "strategy_depth": 1.0,
+        "randomness": 1.0,
+        "operation_pressure": 0.6667,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.55
+      },
+      "pred_win": 0.2736,
+      "target_win": 0.4776,
+      "pred_by_segment": {
+        "novice": 0.1328,
+        "regular": 0.2736,
+        "skilled": 0.4933
+      }
+    },
+    {
+      "index": 13,
+      "level_id": "L13",
+      "score": 0.4208,
+      "features": {
+        "resource_pressure": 0.4206,
+        "mechanic_load": 0.5,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.4167,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.4
+      },
+      "pred_win": 0.5786,
+      "target_win": 0.55,
+      "pred_by_segment": {
+        "novice": 0.3582,
+        "regular": 0.5786,
+        "skilled": 0.7802
+      }
+    },
+    {
+      "index": 14,
+      "level_id": "L14",
+      "score": 0.5285,
+      "features": {
+        "resource_pressure": 0.7098,
+        "mechanic_load": 0.75,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.5,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.48
+      },
+      "pred_win": 0.4716,
+      "target_win": 0.5267,
+      "pred_by_segment": {
+        "novice": 0.2662,
+        "regular": 0.4716,
+        "skilled": 0.6977
+      }
+    },
+    {
+      "index": 15,
+      "level_id": "L15",
+      "score": 0.4366,
+      "features": {
+        "resource_pressure": 0.4948,
+        "mechanic_load": 0.5,
+        "strategy_depth": 0.6667,
+        "randomness": 0.6667,
+        "operation_pressure": 0.4167,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.42
+      },
+      "pred_win": 0.563,
+      "target_win": 0.4633,
+      "pred_by_segment": {
+        "novice": 0.3438,
+        "regular": 0.563,
+        "skilled": 0.7691
+      }
+    },
+    {
+      "index": 16,
+      "level_id": "L16",
+      "score": 0.7073,
+      "features": {
+        "resource_pressure": 0.8571,
+        "mechanic_load": 1.0,
+        "strategy_depth": 1.0,
+        "randomness": 1.0,
+        "operation_pressure": 0.5833,
+        "time_pressure": 0.0,
+        "space_pressure": 0.0,
+        "goal_complexity": 0.55
+      },
+      "pred_win": 0.3038,
+      "target_win": 0.42,
+      "pred_by_segment": {
+        "novice": 0.1507,
+        "regular": 0.3038,
+        "skilled": 0.5302
+      }
+    }
+  ],
+  "jumps": [
+    {
+      "type": "CLIFF",
+      "index": 9,
+      "level_id": "L09",
+      "severity": "HIGH",
+      "evidence": {
+        "Δ首次通关率": "-0.255",
+        "Δ难度分": "+0.279",
+        "阈值": "0.160"
+      },
+      "detail": "从 L08 到 L09，参考分层首次通关率下降 25.5%，主因维度：机制负荷 +0.50、资源压力 +0.40、策略深度 +0.33"
+    },
+    {
+      "type": "MECHANIC_SPIKE",
+      "index": 9,
+      "level_id": "L09",
+      "severity": "HIGH",
+      "evidence": {
+        "新机制": "冰块、传送带",
+        "Δ首次通关率": "-0.255"
+      },
+      "detail": "L09 首次引入 冰块、传送带 的同时难度上调，玩家还没学会就被考核"
+    },
+    {
+      "type": "CLIFF",
+      "index": 12,
+      "level_id": "L12",
+      "severity": "HIGH",
+      "evidence": {
+        "Δ首次通关率": "-0.299",
+        "Δ难度分": "+0.318",
+        "阈值": "0.160"
+      },
+      "detail": "从 L11 到 L12，参考分层首次通关率下降 29.9%，主因维度：资源压力 +0.60、机制负荷 +0.50、策略深度 +0.33"
+    },
+    {
+      "type": "CLIFF",
+      "index": 16,
+      "level_id": "L16",
+      "severity": "HIGH",
+      "evidence": {
+        "Δ首次通关率": "-0.259",
+        "Δ难度分": "+0.271",
+        "阈值": "0.160"
+      },
+      "detail": "从 L15 到 L16，参考分层首次通关率下降 25.9%，主因维度：机制负荷 +0.50、资源压力 +0.36、策略深度 +0.33"
+    },
+    {
+      "type": "MECHANIC_SPIKE",
+      "index": 16,
+      "level_id": "L16",
+      "severity": "HIGH",
+      "evidence": {
+        "新机制": "黑洞",
+        "Δ首次通关率": "-0.259"
+      },
+      "detail": "L16 首次引入 黑洞 的同时难度上调，玩家还没学会就被考核"
+    },
+    {
+      "type": "PLATEAU",
+      "index": 7,
+      "level_id": "L07",
+      "severity": "WARN",
+      "evidence": {
+        "连续关数": "4",
+        "区间": "L04–L07"
+      },
+      "detail": "连续多关难度几乎不变，可能是数值复制未调，也可能是刻意留白——需人工确认意图"
+    },
+    {
+      "type": "SAWTOOTH",
+      "index": 13,
+      "level_id": "L13",
+      "severity": "WARN",
+      "evidence": {
+        "方向翻转次数": "3",
+        "窗口": "L09–L13"
+      },
+      "detail": "连续 4 次相邻变化反复变号，玩家会觉得难度在随机抖动而不是在推进"
+    },
+    {
+      "type": "DIP",
+      "index": 13,
+      "level_id": "L13",
+      "severity": "INFO",
+      "evidence": {
+        "Δ首次通关率": "+0.305",
+        "Δ难度分": "-0.323"
+      },
+      "detail": "L13 相比上一关骤降难度（首次通关率 +30.5%），若不是刻意安排的缓冲关，会让前面积累的张力泄掉"
+    }
+  ],
+  "simulation": {
+    "L01": {
+      "novice": {
+        "first_try_rate": 0.7022,
+        "clear_rate": 0.8381,
+        "quit_rate": 0.1619,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.07,
+        "batch_p10": 0.6593,
+        "batch_p90": 0.749,
+        "batch_sd": 0.041
+      },
+      "regular": {
+        "first_try_rate": 0.8466,
+        "clear_rate": 0.9247,
+        "quit_rate": 0.0753,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.03,
+        "batch_p10": 0.8192,
+        "batch_p90": 0.8778,
+        "batch_sd": 0.0269
+      },
+      "skilled": {
+        "first_try_rate": 0.9372,
+        "clear_rate": 0.9722,
+        "quit_rate": 0.0278,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.01,
+        "batch_p10": 0.9255,
+        "batch_p90": 0.95,
+        "batch_sd": 0.0112
+      }
+    },
+    "L02": {
+      "novice": {
+        "first_try_rate": 0.6934,
+        "clear_rate": 0.8397,
+        "quit_rate": 0.1603,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.07,
+        "batch_p10": 0.6495,
+        "batch_p90": 0.7378,
+        "batch_sd": 0.0372
+      },
+      "regular": {
+        "first_try_rate": 0.8306,
+        "clear_rate": 0.9141,
+        "quit_rate": 0.0859,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.04,
+        "batch_p10": 0.771,
+        "batch_p90": 0.8758,
+        "batch_sd": 0.0407
+      },
+      "skilled": {
+        "first_try_rate": 0.9337,
+        "clear_rate": 0.9631,
+        "quit_rate": 0.0369,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.01,
+        "batch_p10": 0.9198,
+        "batch_p90": 0.9507,
+        "batch_sd": 0.0137
+      }
+    },
+    "L03": {
+      "novice": {
+        "first_try_rate": 0.6763,
+        "clear_rate": 0.8222,
+        "quit_rate": 0.1778,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.07,
+        "batch_p10": 0.6425,
+        "batch_p90": 0.7272,
+        "batch_sd": 0.0327
+      },
+      "regular": {
+        "first_try_rate": 0.8087,
+        "clear_rate": 0.9009,
+        "quit_rate": 0.0991,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.04,
+        "batch_p10": 0.7685,
+        "batch_p90": 0.853,
+        "batch_sd": 0.036
+      },
+      "skilled": {
+        "first_try_rate": 0.9106,
+        "clear_rate": 0.9591,
+        "quit_rate": 0.0409,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.02,
+        "batch_p10": 0.8828,
+        "batch_p90": 0.944,
+        "batch_sd": 0.0237
+      }
+    },
+    "L04": {
+      "novice": {
+        "first_try_rate": 0.5703,
+        "clear_rate": 0.7416,
+        "quit_rate": 0.2584,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.1,
+        "batch_p10": 0.5038,
+        "batch_p90": 0.6297,
+        "batch_sd": 0.0627
+      },
+      "regular": {
+        "first_try_rate": 0.7422,
+        "clear_rate": 0.8612,
+        "quit_rate": 0.1388,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.707,
+        "batch_p90": 0.7877,
+        "batch_sd": 0.0361
+      },
+      "skilled": {
+        "first_try_rate": 0.8834,
+        "clear_rate": 0.9419,
+        "quit_rate": 0.0581,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.02,
+        "batch_p10": 0.864,
+        "batch_p90": 0.9012,
+        "batch_sd": 0.0269
+      }
+    },
+    "L05": {
+      "novice": {
+        "first_try_rate": 0.585,
+        "clear_rate": 0.7534,
+        "quit_rate": 0.2466,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.09,
+        "batch_p10": 0.5317,
+        "batch_p90": 0.643,
+        "batch_sd": 0.0497
+      },
+      "regular": {
+        "first_try_rate": 0.755,
+        "clear_rate": 0.8762,
+        "quit_rate": 0.1238,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.722,
+        "batch_p90": 0.7865,
+        "batch_sd": 0.0241
+      },
+      "skilled": {
+        "first_try_rate": 0.8822,
+        "clear_rate": 0.9475,
+        "quit_rate": 0.0525,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.03,
+        "batch_p10": 0.848,
+        "batch_p90": 0.9225,
+        "batch_sd": 0.0293
+      }
+    },
+    "L06": {
+      "novice": {
+        "first_try_rate": 0.5447,
+        "clear_rate": 0.7303,
+        "quit_rate": 0.2697,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.11,
+        "batch_p10": 0.4903,
+        "batch_p90": 0.6095,
+        "batch_sd": 0.0446
+      },
+      "regular": {
+        "first_try_rate": 0.7291,
+        "clear_rate": 0.8597,
+        "quit_rate": 0.1403,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.6798,
+        "batch_p90": 0.783,
+        "batch_sd": 0.0444
+      },
+      "skilled": {
+        "first_try_rate": 0.8838,
+        "clear_rate": 0.9456,
+        "quit_rate": 0.0544,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.03,
+        "batch_p10": 0.868,
+        "batch_p90": 0.9083,
+        "batch_sd": 0.0168
+      }
+    },
+    "L07": {
+      "novice": {
+        "first_try_rate": 0.5309,
+        "clear_rate": 0.7303,
+        "quit_rate": 0.2697,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.12,
+        "batch_p10": 0.4968,
+        "batch_p90": 0.5705,
+        "batch_sd": 0.031
+      },
+      "regular": {
+        "first_try_rate": 0.7397,
+        "clear_rate": 0.8603,
+        "quit_rate": 0.1397,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.05,
+        "batch_p10": 0.6798,
+        "batch_p90": 0.811,
+        "batch_sd": 0.0518
+      },
+      "skilled": {
+        "first_try_rate": 0.875,
+        "clear_rate": 0.9384,
+        "quit_rate": 0.0616,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.03,
+        "batch_p10": 0.8582,
+        "batch_p90": 0.8902,
+        "batch_sd": 0.0167
+      }
+    },
+    "L08": {
+      "novice": {
+        "first_try_rate": 0.5319,
+        "clear_rate": 0.7206,
+        "quit_rate": 0.2794,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.11,
+        "batch_p10": 0.4735,
+        "batch_p90": 0.6358,
+        "batch_sd": 0.0699
+      },
+      "regular": {
+        "first_try_rate": 0.7097,
+        "clear_rate": 0.8434,
+        "quit_rate": 0.1566,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.6583,
+        "batch_p90": 0.754,
+        "batch_sd": 0.0408
+      },
+      "skilled": {
+        "first_try_rate": 0.8781,
+        "clear_rate": 0.9431,
+        "quit_rate": 0.0569,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.03,
+        "batch_p10": 0.8585,
+        "batch_p90": 0.8958,
+        "batch_sd": 0.0139
+      }
+    },
+    "L09": {
+      "novice": {
+        "first_try_rate": 0.2378,
+        "clear_rate": 0.4159,
+        "quit_rate": 0.5841,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.22,
+        "batch_p10": 0.185,
+        "batch_p90": 0.298,
+        "batch_sd": 0.0512
+      },
+      "regular": {
+        "first_try_rate": 0.4481,
+        "clear_rate": 0.6303,
+        "quit_rate": 0.3697,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.13,
+        "batch_p10": 0.3295,
+        "batch_p90": 0.5605,
+        "batch_sd": 0.1171
+      },
+      "skilled": {
+        "first_try_rate": 0.7244,
+        "clear_rate": 0.8478,
+        "quit_rate": 0.1522,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.68,
+        "batch_p90": 0.7585,
+        "batch_sd": 0.0336
+      }
+    },
+    "L10": {
+      "novice": {
+        "first_try_rate": 0.3203,
+        "clear_rate": 0.5269,
+        "quit_rate": 0.4731,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.19,
+        "batch_p10": 0.2653,
+        "batch_p90": 0.3598,
+        "batch_sd": 0.0452
+      },
+      "regular": {
+        "first_try_rate": 0.4684,
+        "clear_rate": 0.6675,
+        "quit_rate": 0.3325,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.14,
+        "batch_p10": 0.3372,
+        "batch_p90": 0.5767,
+        "batch_sd": 0.1058
+      },
+      "skilled": {
+        "first_try_rate": 0.6778,
+        "clear_rate": 0.8231,
+        "quit_rate": 0.1769,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.597,
+        "batch_p90": 0.7482,
+        "batch_sd": 0.0714
+      }
+    },
+    "L11": {
+      "novice": {
+        "first_try_rate": 0.3406,
+        "clear_rate": 0.5478,
+        "quit_rate": 0.4522,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.18,
+        "batch_p10": 0.2092,
+        "batch_p90": 0.4567,
+        "batch_sd": 0.1131
+      },
+      "regular": {
+        "first_try_rate": 0.5147,
+        "clear_rate": 0.6925,
+        "quit_rate": 0.3075,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.11,
+        "batch_p10": 0.3735,
+        "batch_p90": 0.6482,
+        "batch_sd": 0.1156
+      },
+      "skilled": {
+        "first_try_rate": 0.7394,
+        "clear_rate": 0.8638,
+        "quit_rate": 0.1362,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.05,
+        "batch_p10": 0.7033,
+        "batch_p90": 0.781,
+        "batch_sd": 0.0387
+      }
+    },
+    "L12": {
+      "novice": {
+        "first_try_rate": 0.1537,
+        "clear_rate": 0.295,
+        "quit_rate": 0.705,
+        "attempts_p50": 1.12,
+        "boosters_per_player": 0.24,
+        "batch_p10": 0.0795,
+        "batch_p90": 0.2423,
+        "batch_sd": 0.0739
+      },
+      "regular": {
+        "first_try_rate": 0.2975,
+        "clear_rate": 0.4934,
+        "quit_rate": 0.5066,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.19,
+        "batch_p10": 0.1967,
+        "batch_p90": 0.4075,
+        "batch_sd": 0.0849
+      },
+      "skilled": {
+        "first_try_rate": 0.4572,
+        "clear_rate": 0.6606,
+        "quit_rate": 0.3394,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.14,
+        "batch_p10": 0.3425,
+        "batch_p90": 0.6258,
+        "batch_sd": 0.1155
+      }
+    },
+    "L13": {
+      "novice": {
+        "first_try_rate": 0.3903,
+        "clear_rate": 0.6053,
+        "quit_rate": 0.3947,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.17,
+        "batch_p10": 0.2848,
+        "batch_p90": 0.51,
+        "batch_sd": 0.0892
+      },
+      "regular": {
+        "first_try_rate": 0.5188,
+        "clear_rate": 0.7022,
+        "quit_rate": 0.2978,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.12,
+        "batch_p10": 0.4025,
+        "batch_p90": 0.6452,
+        "batch_sd": 0.1195
+      },
+      "skilled": {
+        "first_try_rate": 0.7922,
+        "clear_rate": 0.8947,
+        "quit_rate": 0.1053,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.05,
+        "batch_p10": 0.731,
+        "batch_p90": 0.8685,
+        "batch_sd": 0.0563
+      }
+    },
+    "L14": {
+      "novice": {
+        "first_try_rate": 0.2547,
+        "clear_rate": 0.4419,
+        "quit_rate": 0.5581,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.2,
+        "batch_p10": 0.1605,
+        "batch_p90": 0.3642,
+        "batch_sd": 0.1003
+      },
+      "regular": {
+        "first_try_rate": 0.4681,
+        "clear_rate": 0.6675,
+        "quit_rate": 0.3325,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.13,
+        "batch_p10": 0.4355,
+        "batch_p90": 0.4975,
+        "batch_sd": 0.0314
+      },
+      "skilled": {
+        "first_try_rate": 0.7103,
+        "clear_rate": 0.8544,
+        "quit_rate": 0.1456,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.06,
+        "batch_p10": 0.5995,
+        "batch_p90": 0.7877,
+        "batch_sd": 0.0828
+      }
+    },
+    "L15": {
+      "novice": {
+        "first_try_rate": 0.3738,
+        "clear_rate": 0.5713,
+        "quit_rate": 0.4287,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.16,
+        "batch_p10": 0.3193,
+        "batch_p90": 0.4815,
+        "batch_sd": 0.0661
+      },
+      "regular": {
+        "first_try_rate": 0.5566,
+        "clear_rate": 0.7419,
+        "quit_rate": 0.2581,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.11,
+        "batch_p10": 0.441,
+        "batch_p90": 0.6432,
+        "batch_sd": 0.0794
+      },
+      "skilled": {
+        "first_try_rate": 0.7409,
+        "clear_rate": 0.8653,
+        "quit_rate": 0.1347,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.05,
+        "batch_p10": 0.6335,
+        "batch_p90": 0.8277,
+        "batch_sd": 0.0936
+      }
+    },
+    "L16": {
+      "novice": {
+        "first_try_rate": 0.1431,
+        "clear_rate": 0.2913,
+        "quit_rate": 0.7087,
+        "attempts_p50": 1.38,
+        "boosters_per_player": 0.26,
+        "batch_p10": 0.085,
+        "batch_p90": 0.2273,
+        "batch_sd": 0.0591
+      },
+      "regular": {
+        "first_try_rate": 0.3022,
+        "clear_rate": 0.5162,
+        "quit_rate": 0.4838,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.18,
+        "batch_p10": 0.26,
+        "batch_p90": 0.357,
+        "batch_sd": 0.0441
+      },
+      "skilled": {
+        "first_try_rate": 0.5441,
+        "clear_rate": 0.7231,
+        "quit_rate": 0.2769,
+        "attempts_p50": 1.0,
+        "boosters_per_player": 0.11,
+        "batch_p10": 0.342,
+        "batch_p90": 0.6808,
+        "batch_sd": 0.1392
+      }
+    }
+  },
+  "actuals": {
+    "L01": {
+      "n_players": 260,
+      "first_try_rate": 0.8692,
+      "final_clear_rate": 0.9577,
+      "booster_ratio": 0.104,
+      "segments": {
+        "novice": {
+          "n": 84,
+          "first_try_rate": 0.75,
+          "final_clear_rate": 0.8929
+        },
+        "skilled": {
+          "n": 64,
+          "first_try_rate": 0.9688,
+          "final_clear_rate": 0.9844
+        },
+        "regular": {
+          "n": 112,
+          "first_try_rate": 0.9018,
+          "final_clear_rate": 0.9911
+        }
+      }
+    },
+    "L02": {
+      "n_players": 240,
+      "first_try_rate": 0.8375,
+      "final_clear_rate": 0.9208,
+      "booster_ratio": 0.1,
+      "segments": {
+        "regular": {
+          "n": 108,
+          "first_try_rate": 0.8796,
+          "final_clear_rate": 0.963
+        },
+        "skilled": {
+          "n": 66,
+          "first_try_rate": 0.9242,
+          "final_clear_rate": 0.9545
+        },
+        "novice": {
+          "n": 66,
+          "first_try_rate": 0.6818,
+          "final_clear_rate": 0.8182
+        }
+      }
+    },
+    "L03": {
+      "n_players": 230,
+      "first_try_rate": 0.8304,
+      "final_clear_rate": 0.913,
+      "booster_ratio": 0.126,
+      "segments": {
+        "novice": {
+          "n": 78,
+          "first_try_rate": 0.7179,
+          "final_clear_rate": 0.8333
+        },
+        "regular": {
+          "n": 98,
+          "first_try_rate": 0.8571,
+          "final_clear_rate": 0.9388
+        },
+        "skilled": {
+          "n": 54,
+          "first_try_rate": 0.9444,
+          "final_clear_rate": 0.9815
+        }
+      }
+    },
+    "L04": {
+      "n_players": 220,
+      "first_try_rate": 0.7818,
+      "final_clear_rate": 0.9091,
+      "booster_ratio": 0.214,
+      "segments": {
+        "regular": {
+          "n": 101,
+          "first_try_rate": 0.7921,
+          "final_clear_rate": 0.901
+        },
+        "novice": {
+          "n": 64,
+          "first_try_rate": 0.7031,
+          "final_clear_rate": 0.8594
+        },
+        "skilled": {
+          "n": 55,
+          "first_try_rate": 0.8545,
+          "final_clear_rate": 0.9818
+        }
+      }
+    },
+    "L05": {
+      "n_players": 210,
+      "first_try_rate": 0.7143,
+      "final_clear_rate": 0.8238,
+      "booster_ratio": 0.2,
+      "segments": {
+        "skilled": {
+          "n": 41,
+          "first_try_rate": 0.878,
+          "final_clear_rate": 0.9268
+        },
+        "regular": {
+          "n": 111,
+          "first_try_rate": 0.6757,
+          "final_clear_rate": 0.7838
+        },
+        "novice": {
+          "n": 58,
+          "first_try_rate": 0.6724,
+          "final_clear_rate": 0.8276
+        }
+      }
+    },
+    "L06": {
+      "n_players": 200,
+      "first_try_rate": 0.4,
+      "final_clear_rate": 0.665,
+      "booster_ratio": 0.54,
+      "segments": {
+        "novice": {
+          "n": 61,
+          "first_try_rate": 0.2623,
+          "final_clear_rate": 0.5902
+        },
+        "regular": {
+          "n": 91,
+          "first_try_rate": 0.3956,
+          "final_clear_rate": 0.6593
+        },
+        "skilled": {
+          "n": 48,
+          "first_try_rate": 0.5833,
+          "final_clear_rate": 0.7708
+        }
+      }
+    },
+    "L07": {
+      "n_players": 190,
+      "first_try_rate": 0.6947,
+      "final_clear_rate": 0.8474,
+      "booster_ratio": 0.232,
+      "segments": {
+        "novice": {
+          "n": 54,
+          "first_try_rate": 0.463,
+          "final_clear_rate": 0.7407
+        },
+        "skilled": {
+          "n": 53,
+          "first_try_rate": 0.8113,
+          "final_clear_rate": 0.9057
+        },
+        "regular": {
+          "n": 83,
+          "first_try_rate": 0.7711,
+          "final_clear_rate": 0.8795
+        }
+      }
+    },
+    "L08": {
+      "n_players": 180,
+      "first_try_rate": 0.6611,
+      "final_clear_rate": 0.85,
+      "booster_ratio": 0.294,
+      "segments": {
+        "regular": {
+          "n": 80,
+          "first_try_rate": 0.675,
+          "final_clear_rate": 0.8625
+        },
+        "skilled": {
+          "n": 33,
+          "first_try_rate": 0.8182,
+          "final_clear_rate": 0.9394
+        },
+        "novice": {
+          "n": 67,
+          "first_try_rate": 0.5672,
+          "final_clear_rate": 0.791
+        }
+      }
+    },
+    "L09": {
+      "n_players": 180,
+      "first_try_rate": 0.3667,
+      "final_clear_rate": 0.5722,
+      "booster_ratio": 0.511,
+      "segments": {
+        "skilled": {
+          "n": 55,
+          "first_try_rate": 0.6727,
+          "final_clear_rate": 0.7818
+        },
+        "novice": {
+          "n": 46,
+          "first_try_rate": 0.1739,
+          "final_clear_rate": 0.3261
+        },
+        "regular": {
+          "n": 79,
+          "first_try_rate": 0.2658,
+          "final_clear_rate": 0.5696
+        }
+      }
+    },
+    "L10": {
+      "n_players": 140,
+      "first_try_rate": 0.3357,
+      "final_clear_rate": 0.5786,
+      "booster_ratio": 0.586,
+      "segments": {
+        "regular": {
+          "n": 63,
+          "first_try_rate": 0.381,
+          "final_clear_rate": 0.5238
+        },
+        "skilled": {
+          "n": 35,
+          "first_try_rate": 0.3714,
+          "final_clear_rate": 0.7714
+        },
+        "novice": {
+          "n": 42,
+          "first_try_rate": 0.2381,
+          "final_clear_rate": 0.5
+        }
+      }
+    },
+    "L11": {
+      "n_players": 160,
+      "first_try_rate": 0.4688,
+      "final_clear_rate": 0.75,
+      "booster_ratio": 0.406,
+      "segments": {
+        "novice": {
+          "n": 45,
+          "first_try_rate": 0.3778,
+          "final_clear_rate": 0.7333
+        },
+        "regular": {
+          "n": 83,
+          "first_try_rate": 0.4578,
+          "final_clear_rate": 0.7229
+        },
+        "skilled": {
+          "n": 32,
+          "first_try_rate": 0.625,
+          "final_clear_rate": 0.8438
+        }
+      }
+    },
+    "L12": {
+      "n_players": 220,
+      "first_try_rate": 0.1273,
+      "final_clear_rate": 0.3864,
+      "booster_ratio": 0.841,
+      "segments": {
+        "skilled": {
+          "n": 52,
+          "first_try_rate": 0.2308,
+          "final_clear_rate": 0.5962
+        },
+        "regular": {
+          "n": 110,
+          "first_try_rate": 0.1455,
+          "final_clear_rate": 0.4182
+        },
+        "novice": {
+          "n": 58,
+          "first_try_rate": 0.0,
+          "final_clear_rate": 0.1379
+        }
+      }
+    },
+    "L13": {
+      "n_players": 170,
+      "first_try_rate": 0.5824,
+      "final_clear_rate": 0.7412,
+      "booster_ratio": 0.259,
+      "segments": {
+        "skilled": {
+          "n": 50,
+          "first_try_rate": 0.72,
+          "final_clear_rate": 0.82
+        },
+        "regular": {
+          "n": 71,
+          "first_try_rate": 0.5352,
+          "final_clear_rate": 0.7324
+        },
+        "novice": {
+          "n": 49,
+          "first_try_rate": 0.5102,
+          "final_clear_rate": 0.6735
+        }
+      }
+    },
+    "L14": {
+      "n_players": 150,
+      "first_try_rate": 0.46,
+      "final_clear_rate": 0.6467,
+      "booster_ratio": 0.473,
+      "segments": {
+        "regular": {
+          "n": 63,
+          "first_try_rate": 0.4921,
+          "final_clear_rate": 0.619
+        },
+        "novice": {
+          "n": 46,
+          "first_try_rate": 0.3043,
+          "final_clear_rate": 0.587
+        },
+        "skilled": {
+          "n": 41,
+          "first_try_rate": 0.5854,
+          "final_clear_rate": 0.7561
+        }
+      }
+    },
+    "L15": {
+      "n_players": 12,
+      "first_try_rate": 0.75,
+      "final_clear_rate": 0.9167,
+      "booster_ratio": 0.0,
+      "segments": {
+        "regular": {
+          "n": 5,
+          "first_try_rate": 0.6,
+          "final_clear_rate": 1.0
+        },
+        "novice": {
+          "n": 7,
+          "first_try_rate": 0.8571,
+          "final_clear_rate": 0.8571
+        }
+      }
+    },
+    "L16": {
+      "n_players": 90,
+      "first_try_rate": 0.1667,
+      "final_clear_rate": 0.4111,
+      "booster_ratio": 0.644,
+      "segments": {
+        "regular": {
+          "n": 49,
+          "first_try_rate": 0.1224,
+          "final_clear_rate": 0.3469
+        },
+        "novice": {
+          "n": 24,
+          "first_try_rate": 0.1667,
+          "final_clear_rate": 0.3333
+        },
+        "skilled": {
+          "n": 17,
+          "first_try_rate": 0.2941,
+          "final_clear_rate": 0.7059
+        }
+      }
+    }
+  },
+  "diagnostics": [
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 7,
+      "level_id": "L07",
+      "evidence": {
+        "预测首次通关率": "0.752",
+        "阶段目标": "0.640",
+        "偏差": "+0.112"
+      },
+      "detail": "预测偏易：参考分层（regular）首次通关率 75.2%，目标是 64.0%。主要难度来源：策略深度 0.33、机制负荷 0.25、资源压力 0.18",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 8,
+      "level_id": "L08",
+      "evidence": {
+        "预测首次通关率": "0.746",
+        "阶段目标": "0.600",
+        "偏差": "+0.146"
+      },
+      "detail": "预测偏易：参考分层（regular）首次通关率 74.6%，目标是 60.0%。主要难度来源：策略深度 0.33、资源压力 0.22、机制负荷 0.25",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 9,
+      "level_id": "L09",
+      "evidence": {
+        "预测首次通关率": "0.491",
+        "阶段目标": "0.620",
+        "偏差": "-0.129"
+      },
+      "detail": "预测偏难：参考分层（regular）首次通关率 49.1%，目标是 62.0%。主要难度来源：策略深度 0.67、资源压力 0.62、机制负荷 0.75",
+      "meta": {}
+    },
+    {
+      "type": "BLOCKER",
+      "severity": "HIGH",
+      "index": 9,
+      "level_id": "L09",
+      "evidence": {
+        "跳变": "有",
+        "模拟最终通关率": "0.630"
+      },
+      "detail": "既存在难度跳变、模拟通关率又偏低，是最可能产生流失的卡点：先用真实漏斗确认，再考虑拆分或降低单变量",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 10,
+      "level_id": "L10",
+      "evidence": {
+        "预测首次通关率": "0.484",
+        "阶段目标": "0.593",
+        "偏差": "-0.110"
+      },
+      "detail": "预测偏难：参考分层（regular）首次通关率 48.4%，目标是 59.3%。主要难度来源：资源压力 0.86、策略深度 0.67、机制负荷 0.50",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 11,
+      "level_id": "L11",
+      "evidence": {
+        "预测首次通关率": "0.573",
+        "阶段目标": "0.423",
+        "偏差": "+0.150"
+      },
+      "detail": "预测偏易：参考分层（regular）首次通关率 57.3%，目标是 42.3%。主要难度来源：策略深度 0.67、资源压力 0.40、机制负荷 0.50",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 12,
+      "level_id": "L12",
+      "evidence": {
+        "预测首次通关率": "0.274",
+        "阶段目标": "0.478",
+        "偏差": "-0.204"
+      },
+      "detail": "预测偏难：参考分层（regular）首次通关率 27.4%，目标是 47.8%。主要难度来源：资源压力 1.00、策略深度 1.00、机制负荷 1.00",
+      "meta": {}
+    },
+    {
+      "type": "BLOCKER",
+      "severity": "HIGH",
+      "index": 12,
+      "level_id": "L12",
+      "evidence": {
+        "跳变": "有",
+        "模拟最终通关率": "0.493"
+      },
+      "detail": "既存在难度跳变、模拟通关率又偏低，是最可能产生流失的卡点：先用真实漏斗确认，再考虑拆分或降低单变量",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "HIGH",
+      "index": 16,
+      "level_id": "L16",
+      "evidence": {
+        "预测首次通关率": "0.304",
+        "阶段目标": "0.420",
+        "偏差": "-0.116"
+      },
+      "detail": "预测偏难：参考分层（regular）首次通关率 30.4%，目标是 42.0%。主要难度来源：策略深度 1.00、资源压力 0.86、机制负荷 1.00",
+      "meta": {}
+    },
+    {
+      "type": "BLOCKER",
+      "severity": "HIGH",
+      "index": 16,
+      "level_id": "L16",
+      "evidence": {
+        "跳变": "有",
+        "模拟最终通关率": "0.516"
+      },
+      "detail": "既存在难度跳变、模拟通关率又偏低，是最可能产生流失的卡点：先用真实漏斗确认，再考虑拆分或降低单变量",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "WARN",
+      "index": 6,
+      "level_id": "L06",
+      "evidence": {
+        "预测首次通关率": "0.754",
+        "阶段目标": "0.700",
+        "偏差": "+0.054"
+      },
+      "detail": "预测偏易：参考分层（regular）首次通关率 75.4%，目标是 70.0%。主要难度来源：策略深度 0.33、机制负荷 0.25、资源压力 0.17",
+      "meta": {}
+    },
+    {
+      "type": "PRED_ACTUAL_DIVERGENCE",
+      "severity": "WARN",
+      "index": 6,
+      "level_id": "L06",
+      "evidence": {
+        "实际首次通关率": "0.400",
+        "预测": "0.754",
+        "样本量": "200"
+      },
+      "detail": "实际与预测相差 -35.4%（样本 200）：优先怀疑预测模型/特征口径漂移，确认后再动关卡参数，否则会越调越偏",
+      "meta": {}
+    },
+    {
+      "type": "UNSTABLE",
+      "severity": "WARN",
+      "index": 9,
+      "level_id": "L09",
+      "evidence": {
+        "批间标准差": "0.117",
+        "区间": "33.0%–56.0%"
+      },
+      "detail": "不同初始局面（种子）下首次通关率标准差 11.7%（区间 33%–56%），玩家体验会时难时易：先查随机性与种子分布，而不是继续加/减难度",
+      "meta": {}
+    },
+    {
+      "type": "MECHANIC_FIRST_HARD",
+      "severity": "WARN",
+      "index": 9,
+      "level_id": "L09",
+      "evidence": {
+        "新机制": "冰块、传送带",
+        "预测": "0.491",
+        "目标": "0.620"
+      },
+      "detail": "新机制首次出现就低于目标通关率，教学与考核挤在同一关",
+      "meta": {}
+    },
+    {
+      "type": "UNSTABLE",
+      "severity": "WARN",
+      "index": 10,
+      "level_id": "L10",
+      "evidence": {
+        "批间标准差": "0.106",
+        "区间": "33.7%–57.7%"
+      },
+      "detail": "不同初始局面（种子）下首次通关率标准差 10.6%（区间 34%–58%），玩家体验会时难时易：先查随机性与种子分布，而不是继续加/减难度",
+      "meta": {}
+    },
+    {
+      "type": "CONFIG_OUTLIER",
+      "severity": "WARN",
+      "index": 10,
+      "level_id": "L10",
+      "evidence": {
+        "moves": "12",
+        "邻近关卡中位数": "22",
+        "倍数": "0.55"
+      },
+      "detail": "参数 `moves` 与相邻关卡中位数偏离 0.55×，先确认是不是复制关卡后漏改",
+      "meta": {
+        "param": "moves",
+        "local_median": 22.0
+      }
+    },
+    {
+      "type": "UNSTABLE",
+      "severity": "WARN",
+      "index": 11,
+      "level_id": "L11",
+      "evidence": {
+        "批间标准差": "0.116",
+        "区间": "37.4%–64.8%"
+      },
+      "detail": "不同初始局面（种子）下首次通关率标准差 11.6%（区间 37%–65%），玩家体验会时难时易：先查随机性与种子分布，而不是继续加/减难度",
+      "meta": {}
+    },
+    {
+      "type": "OVERLOAD_COGNITIVE",
+      "severity": "WARN",
+      "index": 12,
+      "level_id": "L12",
+      "evidence": {
+        "高负荷维度数": "4",
+        "维度": "资源压力、机制负荷、策略深度、随机性"
+      },
+      "detail": "4 个维度处于高位（资源压力、机制负荷、策略深度、随机性），认知负荷叠加，建议拆成两关或降低其中一个维度",
+      "meta": {}
+    },
+    {
+      "type": "UNSTABLE",
+      "severity": "WARN",
+      "index": 13,
+      "level_id": "L13",
+      "evidence": {
+        "批间标准差": "0.119",
+        "区间": "40.2%–64.5%"
+      },
+      "detail": "不同初始局面（种子）下首次通关率标准差 11.9%（区间 40%–65%），玩家体验会时难时易：先查随机性与种子分布，而不是继续加/减难度",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "WARN",
+      "index": 14,
+      "level_id": "L14",
+      "evidence": {
+        "预测首次通关率": "0.472",
+        "阶段目标": "0.527",
+        "偏差": "-0.055"
+      },
+      "detail": "预测偏难：参考分层（regular）首次通关率 47.2%，目标是 52.7%。主要难度来源：资源压力 0.71、策略深度 0.67、机制负荷 0.75",
+      "meta": {}
+    },
+    {
+      "type": "BAND_MISS",
+      "severity": "WARN",
+      "index": 15,
+      "level_id": "L15",
+      "evidence": {
+        "预测首次通关率": "0.563",
+        "阶段目标": "0.463",
+        "偏差": "+0.100"
+      },
+      "detail": "预测偏易：参考分层（regular）首次通关率 56.3%，目标是 46.3%。主要难度来源：策略深度 0.67、资源压力 0.49、机制负荷 0.50",
+      "meta": {}
+    },
+    {
+      "type": "OVERLOAD_COGNITIVE",
+      "severity": "WARN",
+      "index": 16,
+      "level_id": "L16",
+      "evidence": {
+        "高负荷维度数": "4",
+        "维度": "资源压力、机制负荷、策略深度、随机性"
+      },
+      "detail": "4 个维度处于高位（资源压力、机制负荷、策略深度、随机性），认知负荷叠加，建议拆成两关或降低其中一个维度",
+      "meta": {}
+    },
+    {
+      "type": "MECHANIC_FIRST_HARD",
+      "severity": "WARN",
+      "index": 16,
+      "level_id": "L16",
+      "evidence": {
+        "新机制": "黑洞",
+        "预测": "0.304",
+        "目标": "0.420"
+      },
+      "detail": "新机制首次出现就低于目标通关率，教学与考核挤在同一关",
+      "meta": {}
+    },
+    {
+      "type": "DATA_GAP",
+      "severity": "INFO",
+      "index": 15,
+      "level_id": "L15",
+      "evidence": {
+        "样本量": "12",
+        "最小要求": "30"
+      },
+      "detail": "仅 12 名玩家进入过该关，实际通关率不具备统计意义，先补样本再调参",
+      "meta": {}
+    }
+  ],
+  "recommendations": [
+    {
+      "level_id": "L06",
+      "index": 6,
+      "score": 0.2201,
+      "target_score": 0.2882,
+      "pred_win": 0.7539,
+      "target_win": 0.7,
+      "gap_win": 0.0539,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 18,
+          "delta_abs": -5,
+          "pct_change": -0.2174,
+          "pct_abs": 0.2174,
+          "new_score": 0.2651,
+          "new_win": 0.719,
+          "delta_win": -0.0349,
+          "err": 0.019,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.5099,
+            "regular": 0.719,
+            "skilled": 0.8687
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 17,
+          "delta_abs": -6,
+          "pct_change": -0.2609,
+          "pct_abs": 0.2609,
+          "new_score": 0.2741,
+          "new_win": 0.7117,
+          "delta_win": -0.0422,
+          "err": 0.0117,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.5009,
+            "regular": 0.7117,
+            "skilled": 0.8645
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 1,
+          "to": 2,
+          "delta_abs": 1,
+          "pct_change": 1.0,
+          "pct_abs": 1.0,
+          "new_score": 0.2501,
+          "new_win": 0.731,
+          "delta_win": -0.0229,
+          "err": 0.031,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.5249,
+            "regular": 0.731,
+            "skilled": 0.8754
+          },
+          "side_effects": [
+            "障碍种类数上调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": null
+    },
+    {
+      "level_id": "L07",
+      "index": 7,
+      "score": 0.2227,
+      "target_score": 0.3562,
+      "pred_win": 0.752,
+      "target_win": 0.64,
+      "gap_win": 0.112,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 18,
+          "delta_abs": -5,
+          "pct_change": -0.2174,
+          "pct_abs": 0.2174,
+          "new_score": 0.2677,
+          "new_win": 0.7169,
+          "delta_win": -0.0351,
+          "err": 0.0769,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.5073,
+            "regular": 0.7169,
+            "skilled": 0.8675
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 17,
+          "delta_abs": -6,
+          "pct_change": -0.2609,
+          "pct_abs": 0.2609,
+          "new_score": 0.2767,
+          "new_win": 0.7096,
+          "delta_win": -0.0424,
+          "err": 0.0696,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.4983,
+            "regular": 0.7096,
+            "skilled": 0.8633
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 1,
+          "to": 2,
+          "delta_abs": 1,
+          "pct_change": 1.0,
+          "pct_abs": 1.0,
+          "new_score": 0.2527,
+          "new_win": 0.7289,
+          "delta_win": -0.023,
+          "err": 0.0889,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.5223,
+            "regular": 0.7289,
+            "skilled": 0.8743
+          },
+          "side_effects": [
+            "障碍种类数上调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L08",
+      "index": 8,
+      "score": 0.2301,
+      "target_score": 0.3986,
+      "pred_win": 0.7465,
+      "target_win": 0.6,
+      "gap_win": 0.1465,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 22,
+          "to": 17,
+          "delta_abs": -5,
+          "pct_change": -0.2273,
+          "pct_abs": 0.2273,
+          "new_score": 0.2751,
+          "new_win": 0.7109,
+          "delta_win": -0.0355,
+          "err": 0.1109,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.4999,
+            "regular": 0.7109,
+            "skilled": 0.8641
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 22,
+          "to": 16,
+          "delta_abs": -6,
+          "pct_change": -0.2727,
+          "pct_abs": 0.2727,
+          "new_score": 0.2841,
+          "new_win": 0.7034,
+          "delta_win": -0.043,
+          "err": 0.1034,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.4909,
+            "regular": 0.7034,
+            "skilled": 0.8598
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 1,
+          "to": 2,
+          "delta_abs": 1,
+          "pct_change": 1.0,
+          "pct_abs": 1.0,
+          "new_score": 0.2601,
+          "new_win": 0.7231,
+          "delta_win": -0.0234,
+          "err": 0.1231,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.5149,
+            "regular": 0.7231,
+            "skilled": 0.871
+          },
+          "side_effects": [
+            "障碍种类数上调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L09",
+      "index": 9,
+      "score": 0.5088,
+      "target_score": 0.3776,
+      "pred_win": 0.4912,
+      "target_win": 0.62,
+      "gap_win": -0.1288,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 21,
+          "to": 26,
+          "delta_abs": 5,
+          "pct_change": 0.2381,
+          "pct_abs": 0.2381,
+          "new_score": 0.4638,
+          "new_win": 0.5361,
+          "delta_win": 0.0449,
+          "err": 0.0839,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3197,
+            "regular": 0.5361,
+            "skilled": 0.7493
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 21,
+          "to": 27,
+          "delta_abs": 6,
+          "pct_change": 0.2857,
+          "pct_abs": 0.2857,
+          "new_score": 0.4548,
+          "new_win": 0.5451,
+          "delta_win": 0.0539,
+          "err": 0.0749,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3276,
+            "regular": 0.5451,
+            "skilled": 0.756
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 3,
+          "to": 2,
+          "delta_abs": -1,
+          "pct_change": -0.3333,
+          "pct_abs": 0.3333,
+          "new_score": 0.4788,
+          "new_win": 0.5212,
+          "delta_win": 0.03,
+          "err": 0.0988,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3068,
+            "regular": 0.5212,
+            "skilled": 0.7378
+          },
+          "side_effects": [
+            "障碍种类数下调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [
+        {
+          "param": "colors",
+          "reason": "该关被判定为随机性导致的不稳定，优先处理种子与初始局面"
+        }
+      ],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L10",
+      "index": 10,
+      "score": 0.5164,
+      "target_score": 0.4056,
+      "pred_win": 0.4836,
+      "target_win": 0.5933,
+      "gap_win": -0.1097,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 12,
+          "to": 22,
+          "delta_abs": 10,
+          "pct_change": 0.8333,
+          "pct_abs": 0.8333,
+          "new_score": 0.4264,
+          "new_win": 0.573,
+          "delta_win": 0.0895,
+          "err": 0.0203,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.353,
+            "regular": 0.573,
+            "skilled": 0.7763
+          },
+          "side_effects": [
+            "恢复到相邻关卡水平",
+            "先排除复制关卡漏改，再评估是否需要真正调整"
+          ],
+          "scope": "对齐邻近"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 12,
+          "to": 18,
+          "delta_abs": 6,
+          "pct_change": 0.5,
+          "pct_abs": 0.5,
+          "new_score": 0.4624,
+          "new_win": 0.5375,
+          "delta_win": 0.0539,
+          "err": 0.0558,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3209,
+            "regular": 0.5375,
+            "skilled": 0.7503
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 2,
+          "to": 1,
+          "delta_abs": -1,
+          "pct_change": -0.5,
+          "pct_abs": 0.5,
+          "new_score": 0.4864,
+          "new_win": 0.5136,
+          "delta_win": 0.03,
+          "err": 0.0797,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3003,
+            "regular": 0.5136,
+            "skilled": 0.7319
+          },
+          "side_effects": [
+            "障碍种类数下调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [
+        {
+          "param": "colors",
+          "reason": "该关被判定为随机性导致的不稳定，优先处理种子与初始局面"
+        }
+      ],
+      "escalate": null
+    },
+    {
+      "level_id": "L11",
+      "index": 11,
+      "score": 0.4265,
+      "target_score": 0.5781,
+      "pred_win": 0.573,
+      "target_win": 0.4226,
+      "gap_win": 0.1504,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 22,
+          "to": 17,
+          "delta_abs": -5,
+          "pct_change": -0.2273,
+          "pct_abs": 0.2273,
+          "new_score": 0.4715,
+          "new_win": 0.5284,
+          "delta_win": -0.0445,
+          "err": 0.1058,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.313,
+            "regular": 0.5284,
+            "skilled": 0.7434
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 22,
+          "to": 16,
+          "delta_abs": -6,
+          "pct_change": -0.2727,
+          "pct_abs": 0.2727,
+          "new_score": 0.4805,
+          "new_win": 0.5195,
+          "delta_win": -0.0535,
+          "err": 0.0969,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3053,
+            "regular": 0.5195,
+            "skilled": 0.7365
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 2,
+          "to": 3,
+          "delta_abs": 1,
+          "pct_change": 0.5,
+          "pct_abs": 0.5,
+          "new_score": 0.4565,
+          "new_win": 0.5434,
+          "delta_win": -0.0296,
+          "err": 0.1208,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3261,
+            "regular": 0.5434,
+            "skilled": 0.7547
+          },
+          "side_effects": [
+            "障碍种类数上调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [
+        {
+          "param": "colors",
+          "reason": "该关被判定为随机性导致的不稳定，优先处理种子与初始局面"
+        }
+      ],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L12",
+      "index": 12,
+      "score": 0.7442,
+      "target_score": 0.5224,
+      "pred_win": 0.2736,
+      "target_win": 0.4776,
+      "gap_win": -0.204,
+      "options": [
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 4,
+          "to": 3,
+          "delta_abs": -1,
+          "pct_change": -0.25,
+          "pct_abs": 0.25,
+          "new_score": 0.7142,
+          "new_win": 0.298,
+          "delta_win": 0.0245,
+          "err": 0.1796,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.1472,
+            "regular": 0.298,
+            "skilled": 0.5233
+          },
+          "side_effects": [
+            "障碍种类数下调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 19,
+          "to": 25,
+          "delta_abs": 6,
+          "pct_change": 0.3158,
+          "pct_abs": 0.3158,
+          "new_score": 0.6902,
+          "new_win": 0.3185,
+          "delta_win": 0.0449,
+          "err": 0.1591,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.1597,
+            "regular": 0.3185,
+            "skilled": 0.5472
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L14",
+      "index": 14,
+      "score": 0.5285,
+      "target_score": 0.4733,
+      "pred_win": 0.4716,
+      "target_win": 0.5267,
+      "gap_win": -0.0551,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 21,
+          "to": 26,
+          "delta_abs": 5,
+          "pct_change": 0.2381,
+          "pct_abs": 0.2381,
+          "new_score": 0.4835,
+          "new_win": 0.5165,
+          "delta_win": 0.045,
+          "err": 0.0102,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.3028,
+            "regular": 0.5165,
+            "skilled": 0.7342
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 21,
+          "to": 27,
+          "delta_abs": 6,
+          "pct_change": 0.2857,
+          "pct_abs": 0.2857,
+          "new_score": 0.4745,
+          "new_win": 0.5255,
+          "delta_win": 0.0539,
+          "err": 0.0012,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.3105,
+            "regular": 0.5255,
+            "skilled": 0.7412
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 3,
+          "to": 2,
+          "delta_abs": -1,
+          "pct_change": -0.3333,
+          "pct_abs": 0.3333,
+          "new_score": 0.4985,
+          "new_win": 0.5015,
+          "delta_win": 0.03,
+          "err": 0.0252,
+          "in_band": true,
+          "segment_win": {
+            "novice": 0.2903,
+            "regular": 0.5015,
+            "skilled": 0.7224
+          },
+          "side_effects": [
+            "障碍种类数下调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": null
+    },
+    {
+      "level_id": "L15",
+      "index": 15,
+      "score": 0.4366,
+      "target_score": 0.5367,
+      "pred_win": 0.563,
+      "target_win": 0.4633,
+      "gap_win": 0.0997,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 18,
+          "delta_abs": -5,
+          "pct_change": -0.2174,
+          "pct_abs": 0.2174,
+          "new_score": 0.4816,
+          "new_win": 0.5184,
+          "delta_win": -0.0447,
+          "err": 0.0551,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3044,
+            "regular": 0.5184,
+            "skilled": 0.7356
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 23,
+          "to": 17,
+          "delta_abs": -6,
+          "pct_change": -0.2609,
+          "pct_abs": 0.2609,
+          "new_score": 0.4906,
+          "new_win": 0.5094,
+          "delta_win": -0.0537,
+          "err": 0.0461,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.2968,
+            "regular": 0.5094,
+            "skilled": 0.7286
+          },
+          "side_effects": [
+            "可用步数下调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 2,
+          "to": 3,
+          "delta_abs": 1,
+          "pct_change": 0.5,
+          "pct_abs": 0.5,
+          "new_score": 0.4666,
+          "new_win": 0.5333,
+          "delta_win": -0.0297,
+          "err": 0.07,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.3172,
+            "regular": 0.5333,
+            "skilled": 0.7472
+          },
+          "side_effects": [
+            "障碍种类数上调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    },
+    {
+      "level_id": "L16",
+      "index": 16,
+      "score": 0.7073,
+      "target_score": 0.5807,
+      "pred_win": 0.3038,
+      "target_win": 0.42,
+      "gap_win": -0.1162,
+      "options": [
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 20,
+          "to": 25,
+          "delta_abs": 5,
+          "pct_change": 0.25,
+          "pct_abs": 0.25,
+          "new_score": 0.6623,
+          "new_win": 0.3432,
+          "delta_win": 0.0394,
+          "err": 0.0768,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.1752,
+            "regular": 0.3432,
+            "skilled": 0.5747
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "渐进"
+        },
+        {
+          "param": "moves",
+          "label": "可用步数",
+          "dim": "resource_pressure",
+          "dim_label": "资源压力",
+          "from": 20,
+          "to": 26,
+          "delta_abs": 6,
+          "pct_change": 0.3,
+          "pct_abs": 0.3,
+          "new_score": 0.6533,
+          "new_win": 0.3514,
+          "delta_win": 0.0475,
+          "err": 0.0686,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.1805,
+            "regular": 0.3514,
+            "skilled": 0.5835
+          },
+          "side_effects": [
+            "可用步数上调",
+            "旋钮特性：加步数=减压，但会拉长单局并削弱紧张感"
+          ],
+          "scope": "一步到位"
+        },
+        {
+          "param": "obstacle_kinds",
+          "label": "障碍种类数",
+          "dim": "mechanic_load",
+          "dim_label": "机制负荷",
+          "from": 4,
+          "to": 3,
+          "delta_abs": -1,
+          "pct_change": -0.25,
+          "pct_abs": 0.25,
+          "new_score": 0.6773,
+          "new_win": 0.3298,
+          "delta_win": 0.026,
+          "err": 0.0902,
+          "in_band": false,
+          "segment_win": {
+            "novice": 0.1667,
+            "regular": 0.3298,
+            "skilled": 0.5599
+          },
+          "side_effects": [
+            "障碍种类数下调",
+            "旋钮特性：增加机制数量，教学成本同步上升"
+          ],
+          "scope": "备选"
+        }
+      ],
+      "blocked_knobs": [],
+      "escalate": "单参数在合法范围内无法完全落回目标带：建议分 2–3 轮小步迭代并每轮复评，或复核该关的目标是否与阶段定位冲突"
+    }
+  ],
+  "gate": {
+    "status": "FAIL",
+    "high_count": 10,
+    "blocking_levels": [
+      "L07",
+      "L08",
+      "L09",
+      "L10",
+      "L11",
+      "L12",
+      "L16"
+    ],
+    "rule": "存在 HIGH 级问题时评审不通过；接入 --strict 时进程以非 0 退出。"
+  }
+}

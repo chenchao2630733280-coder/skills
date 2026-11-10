@@ -1,0 +1,2 @@
+level_id,level_version,stage,level_tag,primary_challenge,new_mechanic,design_difficulty,resource_score,mechanic_score,strategy_score,randomness_score,expected_first_win_rate,actual_first_win_rate,final_win_rate,attempts_p50,attempts_p90,duration_p50,booster_use_rate,next_level_continue_rate,player_segment_notes,known_risks,change_proposal,owner,status
+L001,1,示例阶段,STANDARD,资源规划,否,待评估,,,,,,,,,,,,,填写分群结果,填写风险,填写调整,,

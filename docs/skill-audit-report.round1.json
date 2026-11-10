@@ -1,0 +1,359 @@
+{
+  "auditMode": "pipeline",
+  "target": [
+    "C:/Users/26307/.agents/skills/game-forge-master",
+    "C:/Users/26307/.agents/skills/game-quality-gate",
+    "C:/Users/26307/.agents/skills/game-level-design"
+  ],
+  "scopeContext": [
+    "C:/Users/26307/.agents/skills/game-code-forge",
+    "C:/Users/26307/.agents/skills/game-integrate",
+    "C:/Users/26307/.agents/skills/game-teardown"
+  ],
+  "benchmark": null,
+  "dimensions": {
+    "structure": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 0, "info": 2 },
+      "checks": [
+        { "checkId": "1.1", "checkName": "SKILL.md 行数阈值", "passed": true, "evidence": "master 418 / gate 425 / level-design 180，均 <500" },
+        { "checkId": "1.2", "checkName": "references 抽离完整性", "passed": true, "evidence": "level-design 13 个引用文件与 §十 索引一一对应；gate 5 个 engine-checks 均在 §6.3/§6.4 登记" },
+        { "checkId": "1.3", "checkName": "章节编号连续性", "passed": true, "evidence": "master 一~九 / gate 一~九 / level-design 一~十 连续无重号" },
+        { "checkId": "1.4", "checkName": "description 质量", "passed": true, "evidence": "三份均含 what+when，147/149/196 字符，均 ≤200" },
+        { "checkId": "1.5", "checkName": "重复内容检测", "passed": true, "evidence": "无与 _shared 重复的本地拷贝" },
+        { "checkId": "1.6", "checkName": "目录结构规范性", "passed": true, "evidence": "SKILL.md 均在根目录；无 *.bak/*.tmp 残留" }
+      ]
+    },
+    "consistency": {
+      "checked": true,
+      "issueCount": { "critical": 4, "warning": 7, "info": 3 },
+      "checks": [
+        { "checkId": "2.1", "checkName": "产物路径表与实际产物一致", "passed": false, "evidence": "gate SKILL.md:352 的 GATE_{N} 模式未把 2.5 纳入例外" },
+        { "checkId": "2.2", "checkName": "命名规范跨 skill 一致", "passed": true, "evidence": "引擎名 Godot 4 / Phaser 3 / Unity / Three.js / 纯 Canvas 三处一致" },
+        { "checkId": "2.3", "checkName": "CLI 命令对齐", "passed": true, "evidence": "tools/*.py 仅在 level-design 内引用，无跨 skill 命令" },
+        { "checkId": "2.4", "checkName": "JSON 工件消费链", "passed": false, "evidence": "levels.json 字段 score vs difficulty_score；code-forge/integrate 未声明消费" },
+        { "checkId": "2.5", "checkName": "frontmatter 与编排一致", "passed": false, "evidence": "gate description 缺“关卡后”时点；master description 无阶段枚举" },
+        { "checkId": "2.6", "checkName": "跨 skill 引用路径正确", "passed": true, "evidence": "references/13、engine-checks-*、§10.4 均可达；§10.4 存在于 game-integrate:460" }
+      ]
+    },
+    "robustness": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 2, "info": 0 },
+      "checks": [
+        { "checkId": "3.1", "checkName": "失败回退策略表", "passed": true, "evidence": "master §6.1/§6.2 + gate §8.2 覆盖 0.5/0/1/2.5/2/3" },
+        { "checkId": "3.2", "checkName": "降级层级完整性", "passed": false, "evidence": "轻量模式 SIM_SKIPPED 与 gate 2.5.4/2.5.7 必填项未闭环" },
+        { "checkId": "3.3", "checkName": "失败不阻塞原则", "passed": true, "evidence": "资源类软降级保留，质量类硬阻断，边界清晰" },
+        { "checkId": "3.4", "checkName": "错误处理边界", "passed": false, "evidence": "Gate 2.5 的 L2 比较可能无基准（PRD 关卡表未强制可枚举）" },
+        { "checkId": "3.5", "checkName": "占位机制", "passed": true, "evidence": "references/13 §6 定义 LEVEL_PLAN 占位模板" },
+        { "checkId": "3.6", "checkName": "重试上限", "passed": true, "evidence": "runtime.yaml 声明 retry.max=1、backoff fixed，不存在无限重试" }
+      ]
+    },
+    "extensibility": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 1, "info": 0 },
+      "checks": [
+        { "checkId": "4.1", "checkName": "四位一体覆盖", "passed": false, "evidence": "本次新增阶段只更新三处，缺“下游消费登记”" },
+        { "checkId": "4.2", "checkName": "新阶段接入成本", "passed": true, "evidence": "stage 2.5 已形成可复用范式（流程图/裁剪/路径/门禁/refs）" },
+        { "checkId": "4.3", "checkName": "决策树完备度", "passed": true, "evidence": "master §四 阶段 2.5 裁剪表 4 条触发条件覆盖关卡/单局/微调/线上数据" },
+        { "checkId": "4.4", "checkName": "模板索引与产物路径表同步", "passed": true, "evidence": "§五 13 份参考与 references/ 实际 13 文件一致；§八 新增 5 行产物" }
+      ]
+    }
+  },
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "description": "阶段顺序三方打架：game-level-design 的 SKILL.md/README/references-13 仍写“关卡门在美术门之后”，与 game-forge-master、game-quality-gate 的“规格门→关卡门→美术门”冲突，同一条流水线存在两套顺序。",
+      "evidence": {
+        "file": "game-level-design/SKILL.md",
+        "line": 22,
+        "snippet": "game-art-spec → [Gate 2] 美术门 ↓ 【本 skill】game-level-design → [Gate 2.5] 关卡门（另见 README.md:11-15、references/13_pipeline_integration.md:10）"
+      },
+      "suggestion": "以 master §七 为唯一事实源，三处统一为“规格门 → 关卡门 → 美术门 → 产物门”。",
+      "plan": {
+        "steps": [
+          "重画 SKILL.md §一 位置图（第 19-28 行）",
+          "同步 README.md 第 11-15 行",
+          "改 references/13 第 10 行“插在 Gate 1 规格门之后、Gate 2 美术门之前”",
+          "grep 确认无“美术门之后”残留"
+        ],
+        "files": [
+          { "path": "game-level-design/SKILL.md", "action": "modify", "description": "§一 位置图重排" },
+          { "path": "game-level-design/README.md", "action": "modify", "description": "位置图同步" },
+          { "path": "game-level-design/references/13_pipeline_integration.md", "action": "modify", "description": "第 10 行顺序说明" }
+        ],
+        "expectedEffect": "五处文档顺序一致，避免关卡阶段排在美术后导致场景数返工"
+      }
+    },
+    {
+      "id": "ISSUE-002",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "description": "levels.json 字段名不一致：文档要求 score，导出工具与门禁要求 difficulty_score，按文档实现必挂 Gate 2.5 的 G25-03。",
+      "evidence": {
+        "file": "game-level-design/SKILL.md",
+        "line": 120,
+        "snippet": "（level_id/index/tag/params/target_win/score）｜references/13:96 同；gate SKILL.md:116 为 difficulty_score；export_levels.py 输出 difficulty_score"
+      },
+      "suggestion": "两处文档统一改为 difficulty_score，并注明它不是通关率。",
+      "plan": {
+        "steps": [
+          "改 SKILL.md:120、references/13:96 的 score → difficulty_score",
+          "在 references/13 schema 块补“difficulty_score ≠ 通关率，pred_win 才是”",
+          "对 examples 的 levels.json 加键集合断言"
+        ],
+        "files": [
+          { "path": "game-level-design/SKILL.md", "action": "modify", "description": "第 120 行字段名" },
+          { "path": "game-level-design/references/13_pipeline_integration.md", "action": "modify", "description": "第 96 行字段名 + schema 说明" }
+        ],
+        "expectedEffect": "文档/工具/门禁三方字段一致，G25-03 不再误判"
+      }
+    },
+    {
+      "id": "ISSUE-003",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "description": "下游 game-code-forge 未接入 config/levels.json：全文无引用，其目录模板仍把关卡数值放 src/config/LevelConfig.ts，与 Gate 3 的 3.28（禁止内联关卡数值）直接冲突，代码按自身模板产出必挂。",
+      "evidence": {
+        "file": "game-code-forge/SKILL.md",
+        "line": 88,
+        "snippet": "│   └── LevelConfig.ts   # 关卡/数值 ｜对照 game-quality-gate/SKILL.md:308（3.28）"
+      },
+      "suggestion": "补“关卡数据加载”节，按 Web/Godot/Unity 给落地路径，LevelConfig.ts 降级为只读包装。",
+      "plan": {
+        "steps": [
+          "新增“关卡数据加载（存在 config/levels.json 时必读）”节，含三引擎路径表",
+          "目录树注释改为“仅从 config/levels.json 读取，禁止硬编码”",
+          "自检清单追加“src/ 无关卡数值字面量”",
+          "无 levels.json 时回退原模式并注明"
+        ],
+        "files": [
+          { "path": "game-code-forge/SKILL.md", "action": "modify", "description": "新增加载节 + 目录树注释 + 自检项" }
+        ],
+        "expectedEffect": "Gate 3 的 3.28 从必挂变成可过，关卡数值单点维护"
+      }
+    },
+    {
+      "id": "ISSUE-004",
+      "dimension": "consistency",
+      "severity": "CRITICAL",
+      "description": "game-integrate 未声明消费难度目标带：references/13 与 runtime.yaml 均声称 Gate 4 会核对 target_win，但 integrate §十 无任何 DIFFICULTY_REPORT/levels.json 引用，属单边契约。",
+      "evidence": {
+        "file": "game-integrate/SKILL.md",
+        "line": 412,
+        "snippet": "## 十、数值平衡实测(关键踩坑)｜对照 game-level-design/references/13_pipeline_integration.md:86"
+      },
+      "suggestion": "§十 增设 10.5 关卡目标带核对，偏差表纳入 BUILD_REPORT 必填项。",
+      "plan": {
+        "steps": [
+          "新增 10.5 节：读 target_win/pred_win 与实跑通关率逐关比对",
+          "偏差 ≥15% 进 BUILD_REPORT 偏差表并回指 DIFFICULTY_REPORT",
+          "验收清单追加一行；无 levels.json 标 LEVEL_BALANCE_SKIPPED"
+        ],
+        "files": [
+          { "path": "game-integrate/SKILL.md", "action": "modify", "description": "§十 新增 10.5" }
+        ],
+        "expectedEffect": "难度设计到实跑闭环，预测背离在集成阶段收口"
+      }
+    },
+    {
+      "id": "ISSUE-005",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "gate §一 核心机制仍写“三层门禁 × 四个检查点”，与 §二“六个检查点”自相矛盾。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 12, "snippet": "**核心机制**:三层门禁 × 四个检查点。" },
+      "suggestion": "改为“六个检查点（含 Gate 0.5 / 2.5 两个条件门）”。",
+      "plan": { "steps": ["第 12 行替换", "grep 确认无其他“四个检查点”"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "第 12 行" }], "expectedEffect": "描述与检查点数量一致" }
+    },
+    {
+      "id": "ISSUE-006",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "gate description 的检查点时点缺“关卡后”，用户说“校验关卡配置”时不会命中本 skill。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 3, "snippet": "在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/美术后/资源代码后)介入" },
+      "suggestion": "插入“关卡后[Gate 2.5·关卡制]”。",
+      "plan": { "steps": ["description 插入关卡后时点，控制在 200 字符内"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "frontmatter description" }], "expectedEffect": "关卡类关键词能命中门禁 skill" }
+    },
+    {
+      "id": "ISSUE-007",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "报告路径模式 docs/GATE_{N}_REPORT.md 的例外只列 0.5，未列 2.5；§九 checklist 与“Gate 0~3”表述同样漏 2.5，按 {N} 直译会产生 GATE_2.5_REPORT.md 歧义。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 352, "snippet": "Gate 0.5 例外,固定为 docs/GATE_0_5_REPORT.md（另见 :417、:421）" },
+      "suggestion": "例外扩为“小数门 0.5/2.5 一律下划线”。",
+      "plan": { "steps": ["第 352/417 行补 2.5", "第 421 行 Gate 0~3 → 0/0.5/1/2.5/2/3"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "§七 §九 表述" }], "expectedEffect": "报告文件名无歧义" }
+    },
+    {
+      "id": "ISSUE-008",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "报告归档份数“复刻 5 份/非复刻 4 份”及“引用 Gate 0~3 结论”未计入门禁 2.5。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 360, "snippet": "复刻项目为 5 份 Gate 报告(0.5/0/1/2/3),非复刻项目为 4 份(0/1/2/3)" },
+      "suggestion": "改为“基数 4 份 + 条件门（复刻 +0.5、关卡制 +2.5）”。",
+      "plan": { "steps": ["第 360-361 行改为基数+条件门表述"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "§七 报告归档" }], "expectedEffect": "归档数量可随条件推算，不再硬编码" }
+    },
+    {
+      "id": "ISSUE-009",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "Gate 2.5 的 G25-01 判据两处不一致：references/13 要“§0~§6 六节”，门禁要“§0/§1/§2/§3/§5”。",
+      "evidence": { "file": "game-level-design/references/13_pipeline_integration.md", "line": 93, "snippet": "含 §0~§6 六节标题｜对照 game-quality-gate/SKILL.md:114" },
+      "suggestion": "以门禁判据为准，契约文档对齐。",
+      "plan": { "steps": ["改 references/13:93 判据与门禁一致"], "files": [{ "path": "game-level-design/references/13_pipeline_integration.md", "action": "modify", "description": "G25-01 判据" }], "expectedEffect": "契约与门禁同一判据" }
+    },
+    {
+      "id": "ISSUE-010",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "master“阶段 1-5”后枚举 6 个环节，编号与项数不符，且“必走”与下一行“2.5 可裁剪”语义打架。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 96, "snippet": "阶段 1-5(蓝图→规格→关卡难度→美术→资源/代码→集成):**必走**" },
+      "suggestion": "枚举中去掉关卡难度，把可裁剪说明统一到 2.5 那行。",
+      "plan": { "steps": ["第 96 行改为 5 环节枚举 + 指向 2.5"], "files": [{ "path": "game-forge-master/SKILL.md", "action": "modify", "description": "阶段性质" }], "expectedEffect": "阶段可数、语义不冲突" }
+    },
+    {
+      "id": "ISSUE-011",
+      "dimension": "robustness",
+      "severity": "WARNING",
+      "description": "Gate 2.5 的 L2 集合比较依赖“PRD 关卡表逐关可枚举”，但 Gate 1 只校验数量（1.13），PRD 若只写“共 30 关”则 L2 无基准、退化为人工判断。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 123, "snippet": "levels.json 的 level_id 集合与 PRD 关卡表完全相同｜对照 :207（1.13）" },
+      "suggestion": "前置“关卡表可机读”到 Gate 1，或让 2.5.5 在基准缺失时降级为 WARNING。",
+      "plan": { "steps": ["Gate 1 新增 1.19 PRD 关卡表可机读（条件）", "或改 2.5.5 判据并允许 LEVEL_TABLE_MISSING 降级"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "Gate 1 / Gate 2.5 检查项" }], "expectedEffect": "门禁不因上游文档粒度不足而空转" }
+    },
+    {
+      "id": "ISSUE-012",
+      "dimension": "robustness",
+      "severity": "WARNING",
+      "description": "轻量模式 SIM_SKIPPED 与 Gate 2.5 的报告必填项（2.5.4 假设、置信度 / 2.5.7 status=PASS）未定义豁免关系。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 195, "snippet": "关卡数据已存在,只做微调 → 轻量模式(只跑曲线+跳变,标注 SIM_SKIPPED)｜对照 gate :117、:125" },
+      "suggestion": "在 Gate 2.5 增加轻量模式豁免规则。",
+      "plan": { "steps": ["§2.2 追加：SIM_SKIPPED 时 2.5.4 只需“门禁结果”节、status 允许 PASS_LIGHT"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "§2.2 轻量模式豁免" }], "expectedEffect": "轻量模式不再两种解读" }
+    },
+    {
+      "id": "ISSUE-013",
+      "dimension": "extensibility",
+      "severity": "WARNING",
+      "description": "新增阶段的扩展流程缺“下游消费登记”：本次只更新流程图/门禁/产物路径表，导致 ISSUE-003/004 的单边契约；下次加阶段会重犯。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 103, "snippet": "**关键约束**:每阶段产物的路径与文件名固定…（无下游消费登记要求）" },
+      "suggestion": "在 master 增加“阶段新增检查清单”，把下游消费登记设为必做项。",
+      "plan": { "steps": ["§八 末尾新增 7 项检查清单（含⑤下游消费登记）", "skill-auditor 的“四位一体”基准补为第五位"], "files": [{ "path": "game-forge-master/SKILL.md", "action": "modify", "description": "阶段新增检查清单" }, { "path": "skill-auditor/references/audit-extensibility.md", "action": "modify", "description": "补第五位基准特征" }], "expectedEffect": "新阶段接入不再出现单边契约" }
+    },
+    {
+      "id": "ISSUE-014",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "master §五 写“5 个 engine-checks-*.md(六引擎质量检查)”，实际 5 个文件（纯 Canvas 复用 Phaser 的 Web 检查），表述让人以为漏文件。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 245, "snippet": "| game-quality-gate | 5 个 engine-checks-*.md(六引擎质量检查) |" },
+      "suggestion": "写明“5 个专项 + 纯 Canvas 复用 Web 通用检查”。",
+      "plan": { "steps": ["第 245 行补括注"], "files": [{ "path": "game-forge-master/SKILL.md", "action": "modify", "description": "§五 references 索引" }], "expectedEffect": "新增引擎时不会去找不存在的 canvas 文件" }
+    },
+    {
+      "id": "ISSUE-015",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "master 418 行 / gate 425 行，处于 301-500 的“可接受区间”，未超红线但高于 ≤300 推荐值。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 1, "snippet": "wc -l → 418 / 425 / 180" },
+      "suggestion": "后续把 Gate 3 检查表（§6.2-6.4）与 master 引擎决策树（§三）抽到 references。",
+      "plan": { "steps": ["记录待办，非本次范围"], "files": [], "expectedEffect": "激活成本下降" }
+    },
+    {
+      "id": "ISSUE-016",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "game-level-design 的 description 已 196 字符，接近 200 上限，再加内容即超限。",
+      "evidence": { "file": "game-level-design/SKILL.md", "line": 3, "snippet": "196 字符" },
+      "suggestion": "下次修改前先压缩中段能力枚举。",
+      "plan": { "steps": ["记录待办"], "files": [], "expectedEffect": "保留 description 扩展余量" }
+    },
+    {
+      "id": "ISSUE-017",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "references/13 错别字“追加盟卡难度摘要”。",
+      "evidence": { "file": "game-level-design/references/13_pipeline_integration.md", "line": 15, "snippet": "并入**确认点 3** 的简报（追加盟卡难度摘要）" },
+      "suggestion": "改为“追加关卡难度摘要”。",
+      "plan": { "steps": ["第 15 行替换"], "files": [{ "path": "game-level-design/references/13_pipeline_integration.md", "action": "modify", "description": "错别字" }], "expectedEffect": "文案准确" }
+    },
+    {
+      "id": "ISSUE-018",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "master §八 的 docs/GATE_{0..3}_REPORT.md 不覆盖 0.5 / 2.5，虽有单列行但易被当成全集。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 379, "snippet": "| 质量门报告 0~3 | docs/GATE_{0..3}_REPORT.md | game-quality-gate |" },
+      "suggestion": "改为 GATE_{0,1,2,3} 并注明小数门见单列行。",
+      "plan": { "steps": ["第 379 行调整"], "files": [{ "path": "game-forge-master/SKILL.md", "action": "modify", "description": "§八 路径表" }], "expectedEffect": "路径表不被误读为全集" }
+    },
+    {
+      "id": "ISSUE-019",
+      "dimension": "consistency",
+      "severity": "INFO",
+      "description": "Gate 0.5 / 2.5 作为 §2.1/§2.2 塞在总览章，与其他 Gate 独立成章的分类逻辑不一致。",
+      "evidence": { "file": "game-quality-gate/SKILL.md", "line": 78, "snippet": "### 2.1 Gate 0.5 拆解门（另见 :103 2.2 Gate 2.5）" },
+      "suggestion": "可选改为独立章，或在 §二 加显式指引“条件门细则见 §2.1/§2.2”。",
+      "plan": { "steps": ["加一行指引即可，重构可选"], "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "§二 指引" }], "expectedEffect": "查找条件门细则更快" }
+    }
+  ],
+  "summary": { "critical": 4, "warning": 10, "info": 5, "total": 19 },
+  "topSuggestions": [
+    {
+      "rank": 1,
+      "title": "统一阶段顺序（三份文档对齐 master）",
+      "roi": "high",
+      "benefit": { "level": "high", "description": "消除两套顺序，避免关卡阶段排在美术后导致场景/主题数返工" },
+      "cost": { "level": "low", "description": "3 处文本替换，约 10 分钟" },
+      "relatedIssues": ["ISSUE-001"],
+      "quadrant": "quick-win"
+    },
+    {
+      "rank": 2,
+      "title": "字段名与判据对齐（score → difficulty_score）",
+      "roi": "high",
+      "benefit": { "level": "high", "description": "Gate 2.5 的 G25-03 从必误判变为可过" },
+      "cost": { "level": "low", "description": "2 处字段名 + 1 处判据，约 5 分钟" },
+      "relatedIssues": ["ISSUE-002", "ISSUE-009"],
+      "quadrant": "quick-win"
+    },
+    {
+      "rank": 3,
+      "title": "补齐下游接入（code-forge 加载约定 + integrate 目标带核对）",
+      "roi": "high",
+      "benefit": { "level": "high", "description": "Gate 3 的 3.28 从必挂变为可执行，难度闭环真正成立" },
+      "cost": { "level": "medium", "description": "两个下游 skill 各加一节（含三引擎路径），约 30 分钟" },
+      "relatedIssues": ["ISSUE-003", "ISSUE-004", "ISSUE-013"],
+      "quadrant": "major-project"
+    }
+  ],
+  "remediation": {
+    "executedAt": "2026-11-10T15:40:00+08:00",
+    "fixed": [
+      "ISSUE-001", "ISSUE-002", "ISSUE-003", "ISSUE-004",
+      "ISSUE-005", "ISSUE-006", "ISSUE-007", "ISSUE-008", "ISSUE-009",
+      "ISSUE-010", "ISSUE-011", "ISSUE-012", "ISSUE-013", "ISSUE-014",
+      "ISSUE-017", "ISSUE-018", "ISSUE-019"
+    ],
+    "deferred": ["ISSUE-015", "ISSUE-016"],
+    "summary": { "fixed": 17, "deferred": 2, "remainingCritical": 0, "remainingWarning": 0 },
+    "touchedFiles": [
+      "game-level-design/SKILL.md",
+      "game-level-design/README.md",
+      "game-level-design/references/13_pipeline_integration.md",
+      "game-quality-gate/SKILL.md",
+      "game-forge-master/SKILL.md",
+      "game-code-forge/SKILL.md",
+      "game-integrate/SKILL.md",
+      "skill-auditor/SKILL.md",
+      "skill-auditor/references/audit-extensibility.md"
+    ],
+    "verification": {
+      "selftest": "20/20 通过",
+      "templateStrictExit": 0,
+      "demoStrictExit": 1,
+      "exportedLevels": 6,
+      "levelsJsonRequiredFieldsPresent": true,
+      "levelsJsonConsumers": 5,
+      "staleOrderHits": 0
+    }
+  },
+  "generatedAt": "2026-11-10T15:05:24+08:00",
+  "auditorVersion": "skill-auditor v1.0"
+}

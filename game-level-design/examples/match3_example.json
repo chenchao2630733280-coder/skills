@@ -1,0 +1,53 @@
+{
+  "game_type": "match3",
+  "level_id": "M3-042",
+  "purpose": "在已掌握冰块机制后，考验目标规划与步数分配",
+  "parameters": {
+    "moves": 22,
+    "objectives": [
+      {
+        "type": "ice",
+        "count": 18
+      },
+      {
+        "type": "collect",
+        "count": 6
+      }
+    ],
+    "obstacle_types": [
+      "ice",
+      "single_layer_blocker"
+    ],
+    "board_shape_complexity": 0.45,
+    "random_seed_policy": "fixed_for_reproducible_test"
+  },
+  "difficulty_dimensions": {
+    "resource_pressure": 0.62,
+    "mechanic_load": 0.48,
+    "strategy_depth": 0.7,
+    "randomness": 0.35,
+    "操作压力": 0.1
+  },
+  "evaluation_plan": {
+    "primary_metric": "first_try_win_rate",
+    "diagnostics": [
+      "attempts_p50",
+      "remaining_moves_on_win_p50",
+      "objective_progress_on_fail",
+      "booster_user_rate"
+    ],
+    "segments": [
+      "new",
+      "regular",
+      "skilled"
+    ],
+    "guardrails": [
+      "next_level_continue_rate",
+      "fairness_survey"
+    ]
+  },
+  "notes": [
+    "所有维度分数为示例假设，需由关卡评审和实测数据校准。",
+    "不要仅根据一次通关率变化判断难度模型有效。"
+  ]
+}

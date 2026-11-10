@@ -1,0 +1,11 @@
+player_id,level_id,won
+p1,L1,1
+p1,L2,0
+p2,L1,1
+p2,L2,1
+p3,L1,0
+p3,L2,0
+p4,L1,1
+p4,L2,0
+p5,L1,1
+p5,L2,1

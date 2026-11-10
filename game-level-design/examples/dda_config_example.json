@@ -1,0 +1,45 @@
+{
+  "model_version": "dda-prototype-0.1",
+  "policy": "optional_assistance_only",
+  "excluded_modes": [
+    "ranked",
+    "tournament",
+    "leaderboard_competitive"
+  ],
+  "signals": [
+    "recent_failures",
+    "failure_progress",
+    "new_mechanic_confusion",
+    "cooldown_passed"
+  ],
+  "example_rules": [
+    {
+      "id": "near_goal_repeated_failure",
+      "when": {
+        "recent_failures_gte": 2,
+        "failure_progress_p50_gte": 0.8,
+        "cooldown_passed": true
+      },
+      "action": "offer_optional_extra_move_or_hint",
+      "max_trigger_per_level": 1
+    },
+    {
+      "id": "new_mechanic_confusion",
+      "when": {
+        "tutorial_hint_missed": true,
+        "misoperation_rate_gte": 0.25
+      },
+      "action": "show_contextual_rule_hint",
+      "max_trigger_per_level": 1
+    }
+  ],
+  "safeguards": {
+    "never_silently_rig_randomness": true,
+    "never_reduce_base_rewards_for_skilled_players": true,
+    "respect_player_choice": true,
+    "cooldown_required": true,
+    "log_every_trigger": true,
+    "rollback_switch": true
+  },
+  "warning": "阈值均为演示占位值，需依据数据、实验与公平性评估校准。"
+}

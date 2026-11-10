@@ -1,0 +1,4 @@
+metric_name,definition,numerator,denominator,window,segment,guardrail,notes
+first_try_win_rate,首次进入关卡第一次尝试成功的玩家比例,首次尝试成功玩家数,首次进入玩家数,首次进入后固定窗口,玩家能力分层,下一关继续率,玩家级指标
+final_level_completion_rate,观察窗口内完成关卡的玩家比例,完成关卡玩家数,首次进入玩家数,首次进入后7天示例,玩家能力分层,退出率,需处理右删失
+booster_user_rate,至少使用一次道具的玩家比例,使用道具玩家数,进入关卡玩家数,关卡生命周期,道具来源分层,公平感,区分免费/广告/付费

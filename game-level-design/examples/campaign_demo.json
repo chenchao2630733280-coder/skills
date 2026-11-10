@@ -1,0 +1,52 @@
+{
+  "campaign_id": "demo_match3_saga",
+  "genre": "match3",
+  "version": "3.0.0-demo",
+  "data_source": "synthetic（示例数据，非真实项目）",
+  "mapping": {"spread": 4.0, "ref_segment": "regular"},
+  "micro_rhythm": true,
+  "segments": {
+    "novice":  {"theta": -0.9, "theta_sd": 0.45, "target_first_try": 0.68},
+    "regular": {"theta": 0.0,  "theta_sd": 0.50, "target_first_try": 0.52},
+    "skilled": {"theta": 0.95, "theta_sd": 0.45, "target_first_try": 0.38}
+  },
+  "feature_model": {
+    "resource_pressure":  {"kind": "ratio",  "num": "target_amount", "den": "moves", "lo": 70, "hi": 280},
+    "mechanic_load":      {"kind": "linear", "param": "obstacle_kinds", "lo": 0, "hi": 4},
+    "strategy_depth":     {"kind": "linear", "param": "objective_kinds", "lo": 1, "hi": 4},
+    "randomness":         {"kind": "linear", "param": "colors", "lo": 4, "hi": 7},
+    "operation_pressure": {"kind": "linear", "param": "combo_window_sec", "lo": 4, "hi": 16, "invert": true}
+  },
+  "legal_ranges": {
+    "moves": [16, 30],
+    "target_amount": [1200, 7000],
+    "obstacle_kinds": [0, 4],
+    "objective_kinds": [1, 4],
+    "colors": [4, 7],
+    "combo_window_sec": [6, 16]
+  },
+  "phases": [
+    {"name": "教学", "from_index": 1, "to_index": 4,  "shape": "ramp",  "start_win": 0.86, "end_win": 0.74, "mechanics_intro": ["基础交换", "木箱", "双目标"]},
+    {"name": "练习", "from_index": 5, "to_index": 8,  "shape": "ramp",  "start_win": 0.72, "end_win": 0.60, "mechanics_intro": []},
+    {"name": "组合", "from_index": 9, "to_index": 12, "shape": "spike", "start_win": 0.62, "end_win": 0.48, "mechanics_intro": ["冰块", "传送带"]},
+    {"name": "考核", "from_index": 13, "to_index": 16, "shape": "ramp", "start_win": 0.55, "end_win": 0.42, "mechanics_intro": ["黑洞"]}
+  ],
+  "levels": [
+    {"level_id": "L01", "index": 1,  "tag": "TUTORIAL",  "params": {"moves": 26, "target_amount": 1600, "obstacle_kinds": 0, "objective_kinds": 1, "colors": 5, "combo_window_sec": 14}, "features": {"goal_complexity": 0.10}, "new_mechanics": ["基础交换"], "notes": "教学关：只教交换与消除"},
+    {"level_id": "L02", "index": 2,  "tag": "TUTORIAL",  "params": {"moves": 25, "target_amount": 1800, "obstacle_kinds": 0, "objective_kinds": 1, "colors": 5, "combo_window_sec": 14}, "features": {"goal_complexity": 0.15}, "new_mechanics": []},
+    {"level_id": "L03", "index": 3,  "tag": "TUTORIAL",  "params": {"moves": 24, "target_amount": 2000, "obstacle_kinds": 1, "objective_kinds": 1, "colors": 5, "combo_window_sec": 13}, "features": {"goal_complexity": 0.20}, "new_mechanics": ["木箱"], "notes": "引入障碍"},
+    {"level_id": "L04", "index": 4,  "tag": "TUTORIAL",  "params": {"moves": 24, "target_amount": 2200, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "combo_window_sec": 13}, "features": {"goal_complexity": 0.25}, "new_mechanics": ["双目标"], "notes": "引入第二目标"},
+    {"level_id": "L05", "index": 5,  "tag": "PRACTICE",  "params": {"moves": 23, "target_amount": 2400, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "combo_window_sec": 12}, "features": {"goal_complexity": 0.28}, "new_mechanics": []},
+    {"level_id": "L06", "index": 6,  "tag": "PRACTICE",  "params": {"moves": 23, "target_amount": 2450, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "combo_window_sec": 12}, "features": {"goal_complexity": 0.29}, "new_mechanics": []},
+    {"level_id": "L07", "index": 7,  "tag": "PRACTICE",  "params": {"moves": 23, "target_amount": 2500, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "combo_window_sec": 12}, "features": {"goal_complexity": 0.30}, "new_mechanics": []},
+    {"level_id": "L08", "index": 8,  "tag": "PRACTICE",  "params": {"moves": 22, "target_amount": 2550, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "combo_window_sec": 12}, "features": {"goal_complexity": 0.31}, "new_mechanics": []},
+    {"level_id": "L09", "index": 9,  "tag": "CHALLENGE", "params": {"moves": 21, "target_amount": 4200, "obstacle_kinds": 3, "objective_kinds": 3, "colors": 6, "combo_window_sec": 10}, "features": {"goal_complexity": 0.45}, "new_mechanics": ["冰块", "传送带"], "notes": "两个新机制 + 难度抬升，已知风险点"},
+    {"level_id": "L10", "index": 10, "tag": "STANDARD",  "params": {"moves": 12, "target_amount": 3000, "obstacle_kinds": 2, "objective_kinds": 3, "colors": 6, "combo_window_sec": 10}, "features": {"goal_complexity": 0.40}, "new_mechanics": [], "notes": "步数疑似从其他关卡复制后漏改"},
+    {"level_id": "L11", "index": 11, "tag": "CHALLENGE", "params": {"moves": 22, "target_amount": 3400, "obstacle_kinds": 2, "objective_kinds": 3, "colors": 6, "combo_window_sec": 10}, "features": {"goal_complexity": 0.42}, "new_mechanics": []},
+    {"level_id": "L12", "index": 12, "tag": "CHALLENGE", "params": {"moves": 19, "target_amount": 6200, "obstacle_kinds": 4, "objective_kinds": 4, "colors": 7, "combo_window_sec": 8}, "features": {"goal_complexity": 0.55}, "new_mechanics": [], "notes": "阶段末考核，目标量与障碍同时拉满"},
+    {"level_id": "L13", "index": 13, "tag": "STANDARD",  "params": {"moves": 24, "target_amount": 3800, "obstacle_kinds": 2, "objective_kinds": 3, "colors": 6, "combo_window_sec": 11}, "features": {"goal_complexity": 0.40}, "new_mechanics": [], "notes": "考核后的释放关"},
+    {"level_id": "L14", "index": 14, "tag": "STANDARD",  "params": {"moves": 21, "target_amount": 4600, "obstacle_kinds": 3, "objective_kinds": 3, "colors": 6, "combo_window_sec": 10}, "features": {"goal_complexity": 0.48}, "new_mechanics": []},
+    {"level_id": "L15", "index": 15, "tag": "STANDARD",  "params": {"moves": 23, "target_amount": 4000, "obstacle_kinds": 2, "objective_kinds": 3, "colors": 6, "combo_window_sec": 11}, "features": {"goal_complexity": 0.42}, "new_mechanics": []},
+    {"level_id": "L16", "index": 16, "tag": "BOSS",      "params": {"moves": 20, "target_amount": 5000, "obstacle_kinds": 4, "objective_kinds": 4, "colors": 7, "combo_window_sec": 9}, "features": {"goal_complexity": 0.55}, "new_mechanics": ["黑洞"], "notes": "阶段 Boss"}
+  ]
+}

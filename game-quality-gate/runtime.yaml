@@ -14,6 +14,9 @@ outputs:
   - path: docs/GATE_[0-3]_REPORT.md
     type: file
     description: 质量门报告（每次介入产出对应编号一份，glob 表示 0~3 四份），FAIL 时硬阻断并附修复建议
+  - path: docs/GATE_2_5_REPORT.md
+    type: file
+    description: Gate 2.5 关卡门报告（关卡制必走：关卡产物完整性 + levels.json ↔ PRD 关卡表/合法范围一致；FAIL 阻断回 game-level-design）
   - path: docs/GATE_0_5_REPORT.md
     type: file
     description: Gate 0.5 拆解门报告（仅复刻专线：项目存在 docs/GAME_TEARDOWN.md 时必跑；FAIL 阻断回 game-teardown，不进蓝图）

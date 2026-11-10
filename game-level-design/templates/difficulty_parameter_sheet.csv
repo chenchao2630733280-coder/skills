@@ -1,0 +1,5 @@
+parameter_id,parameter_name,dimension,definition,unit,direction,valid_min,valid_max,default_value,interaction_with,telemetry,can_dda,notes
+P001,可用步数,资源约束,玩家每关可执行的有效步数,步,通常减少则变难,,,,目标数量/棋盘复杂度,remaining_moves,false,示例行
+P002,目标数量,目标难度,完成关卡所需目标总量,个,通常增加则变难,,,,步数/目标分布,objective_progress,false,
+P003,障碍耐久,机制复杂度,障碍需要被影响的次数,次,通常增加则变难,,,,特殊棋子效率,obstacle_damage,false,
+P004,随机产出率,随机性,关键资源/棋子的生成概率,概率,需结合分布判断,0,1,,资源压力,random_seed/resource_change,谨慎,

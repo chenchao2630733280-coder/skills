@@ -1,6 +1,6 @@
 ---
 name: "game-quality-gate"
-description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/美术后/资源代码后)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/实跑验证游戏产物'时调用。"
+description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/关卡后[Gate 2.5·关卡制]/美术后/资源代码后)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/关卡难度校验/实跑验证游戏产物'时调用。"
 ---
 
 # 游戏流水线质量门
@@ -9,7 +9,7 @@ description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(�
 
 本 skill 是 AI 游戏生成流水线的**跨阶段质检员**,解决"各 skill 自检宽松 + 实跑验证只在最后 + 错误累积到集成阶段才爆发"的结构性风险。
 
-**核心机制**:三层门禁 × 四个检查点。
+**核心机制**:三层门禁 × 六个检查点(含 Gate 0.5 与 Gate 2.5 两个条件门)。
 
 | 层 | 名称 | 职责 | 不通过行为 |
 |---|---|---|---|
@@ -23,11 +23,13 @@ description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(�
 
 **只读原则**:本 skill 不修改任何产物文件,只读 + 校验 + 输出报告。FAIL 即返回失败清单与修复建议,**修复由原产出 skill 重跑完成**,本 skill 不接管修复职责(避免职责越界与"自审自修"的伦理风险)。
 
-**质量门范围**:本 skill 只管 **Gate 0.5~3**(0.5 拆解门[仅复刻专线]/0 蓝图/1 规格/2 美术/3 产物)。**Gate 4 实跑门**(typecheck+构建+浏览器自测+数值平衡)是 game-integrate 的内置最终验收,不属于本 skill 阻断体系,本 skill 仅在 §七引用其 `docs/BUILD_REPORT.md` 作为最终判定参考。
+**质量门范围**:本 skill 只管 **Gate 0.5~3**(0.5 拆解门[仅复刻专线]/0 蓝图/1 规格/2 美术/**2.5 关卡**[关卡制必走]/3 产物)。**Gate 4 实跑门**(typecheck+构建+浏览器自测+数值平衡)是 game-integrate 的内置最终验收,不属于本 skill 阻断体系,本 skill 仅在 §七引用其 `docs/BUILD_REPORT.md` 作为最终判定参考。
 
 ---
 
-## 二、五个检查点
+## 二、六个检查点
+
+> 分类约定:Gate 0/1/2/3 各占独立章(§三~§六);两个**条件门** Gate 0.5 / 2.5 的细则统一放在本章 §2.1 / §2.2,便于集中查阅。
 
 ```
 (复刻专线,仅当存在拆解产物)
@@ -42,6 +44,10 @@ game-blueprint
 game-spec
     ↓
 [Gate 1] 规格门 ──────────────────────────── L1 + L2(PRD ↔ TECH_DESIGN)
+    ↓
+game-level-design
+    ↓
+[Gate 2.5] 关卡门 ────────────────────────── L1 + L2(levels.json ↔ PRD 关卡表)
     ↓
 game-art-spec
     ↓
@@ -58,11 +64,14 @@ game-integrate (内含 Gate 4 实跑门,由其自检;复刻模式含数值区间
 game-polish (可选)
 ```
 
+> **门编号约定**:门号沿用所属阶段号(关卡门挂在阶段 2.5 上,故编号 2.5),因此编号不严格递增。实际执行顺序为 **规格门 → 关卡门 → 美术门 → 产物门**,引用门号时以本表顺序为准。
+
 | 检查点 | 时机 | 层 | 检查内容 | 输出 |
 |---|---|---|---|---|
 | Gate 0.5 拆解门 | game-teardown 后(仅复刻专线) | L1 | 拆解产物完整性 + 假设可证伪性 | `docs/GATE_0_5_REPORT.md` |
 | Gate 0 蓝图门 | game-blueprint 后 | L1 | 蓝图字段完整性 / 引擎选择合理性 / 范围可行 | `docs/GATE_0_REPORT.md` |
 | Gate 1 规格门 | game-spec 后 | L1+L2 | PRD 节点树完整性 + TECH_DESIGN 与 PRD 引擎/目录一致 | `docs/GATE_1_REPORT.md` |
+| Gate 2.5 关卡门 | game-level-design 后(关卡制必走) | L1+L2 | 关卡产物完整 + levels.json 与 PRD 关卡表/合法范围一致 | `docs/GATE_2_5_REPORT.md` |
 | Gate 2 美术门 | game-art-spec 后 | L1+L2 | manifest 字段 + manifest 的 UI asset 与 PRD 节点树 1:1 对齐 | `docs/GATE_2_REPORT.md` |
 | Gate 3 产物门 | game-asset-forge + game-code-forge 后 | L1+L2+L3 | manifest ↔ 实际文件 + 代码 UI 节点 ↔ PRD 节点树 + typecheck 预检 | `docs/GATE_3_REPORT.md` |
 
@@ -92,6 +101,41 @@ game-polish (可选)
 **回退**:FAIL → 回 `game-teardown` 修复(补拆/补 falsifier/补替代),**不进蓝图**。
 
 **拆解产物被下游消费的检查**不在本门,分别落在:Gate 0(0.7~0.9,M/X 消费进蓝图)、Gate 1(1.17~1.18,数值/状态机进 PRD)、Gate 2(2.15,X 隔离进 manifest)、Gate 3(3.27,参数落地进代码)、Gate 4(game-integrate §10.4,数值区间与确定性)。
+
+### 2.2 Gate 2.5 关卡门(关卡制必走)
+
+**触发条件**:`docs/PRD.md` 含关卡序列/难度递进即必跑;纯单局制(无关卡序列)时,只要 `docs/LEVEL_PLAN.md` §0 写明裁剪理由即可通过,**不产出 `config/levels.json`**。
+本门在 `game-level-design` 之后、`game-art-spec` 之前执行(关卡表要先定,美术才知道要几套场景/主题),**FAIL 不进美术+资源+代码生成**。
+
+**输入**:`docs/LEVEL_PLAN.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json` + `docs/PRD.md`(关卡表)
+
+**L1 静态检查**
+
+| # | 检查项 | 判据 | 失败码 |
+|---|---|---|---|
+| 2.5.1 | 关卡设计说明存在 | `docs/LEVEL_PLAN.md` 含 §0 裁剪说明 / §1 关卡总览 / §2 阶段与目标曲线 / §3 参数口径 / §5 冲突与裁决 | `G25-01` |
+| 2.5.2 | 关卡配置可解析 | `config/levels.json` 为合法 JSON 且含 `schema_version` | `G25-02` |
+| 2.5.3 | 必填字段完整 | 每关含 `level_id/index/tag/params/target_win/difficulty_score` | `G25-03` |
+| 2.5.4 | 评审报告存在 | `docs/DIFFICULTY_REPORT.md` 含"门禁结果"与"假设、置信度"两节 | `G25-04` |
+
+**L2 契约检查**
+
+| # | 检查项 | 判据 | 失败码 |
+|---|---|---|---|
+| 2.5.5 | 关卡序列与 PRD 一致 | `levels.json` 的 `level_id` 集合与 PRD 关卡表**完全相同**(不多、不少、不改名);`index` 连续正整数 | `G25-05` |
+| 2.5.6 | 参数在合法范围内 | 每关 `params` 均落在 `legal_ranges`(缺省时以 PRD 可调参数上下限为准) | `G25-06` |
+| 2.5.7 | 门禁结论可解释 | `difficulty_gate.status=PASS`;或为 FAIL 时 `LEVEL_PLAN.md §5` 对每个阻断关卡有逐条处置 | `G25-07` |
+| 2.5.8 | 假设已声明 | `campaign.model.status` 非空,且报告"假设、置信度"章节未被删改 | `G25-08` |
+
+**防作弊**:若 `difficulty_gate.status` 由 FAIL 变 PASS,本门核对 `docs/DIFFICULTY_REVIEW.json` 的 `thresholds` 与上一版是否一致;阈值被放宽而未在 `LEVEL_PLAN.md` 记录理由的,判 `G25-07` FAIL。
+
+**回退**:FAIL → 回 `game-level-design` 修复(补产物/对齐关卡表/收窄参数/处置阻断项),重跑本门;**不允许**通过调宽阈值放行。
+
+**轻量模式豁免**(报告标注 `SIM_SKIPPED` 时):2.5.4 只要求"门禁结果"节存在,"假设、置信度"可写"未做模拟,不适用";2.5.7 的 `status` 允许为 `PASS_LIGHT`(需注明跳过模拟的理由)。其余检查项不放宽。
+
+**基准缺失降级**:若 PRD 关卡表未逐关列出(仅写"共 N 关"),2.5.5 无法做集合比较 → 标注 `LEVEL_TABLE_MISSING` 并降为 WARNING,同时要求 Gate 1 的 1.19 已在规格阶段拦下该情况。
+
+**与 Gate 3 的分工**:本门只查"配置本身对不对";`game-code-forge` 是否把关卡数值内联复制到 `src/`、是否按 `levels.json` 加载,由 Gate 3 的 3.28 项检查。
 
 ---
 
@@ -172,6 +216,7 @@ game-polish (可选)
 | 1.16 | PRD 系统边界 ↔ TECH_DESIGN 类边界 | PRD §5"边界"列的"不做"项在 TECH_DESIGN 类设计中无对应实现(防越界) | `G1-SYSTEM-BOUNDARY-VIOLATED` |
 | 1.17 | 复刻:数值来源(条件) | **仅复刻项目**:PRD §2 数值表每行带 `来源(matrix_id)` 与证据等级列;数值与 `docs/NUMERIC_MODEL.csv` 一致,无自编行 | `G1-CLONE-NUMBER-FABRICATED` |
 | 1.18 | 复刻:M 项/状态机落地(条件) | **仅复刻项目**:`in_mvp` 的 M 项全部在 PRD §5/§2 出现;§6 状态机按对象/容器/场景三套拆,`visible`/`removable` 为两字段 | `G1-CLONE-M-NOT-IN-PRD` |
+| 1.19 | 关卡表可机读(条件) | **仅关卡制项目**(PRD 含关卡序列/难度递进):PRD 关卡章必须**逐关可枚举**——每关有 `level_id`(或连续编号)+ 至少一个可验指标(目标/时限/步数);只写"共 N 关"而无逐关清单判 FAIL(否则 Gate 2.5 的 2.5.5 无基准可比) | `G1-LEVEL-TABLE-NOT-ENUMERABLE` |
 
 > **核心价值**:1.9~1.16 把原本要拖到 Gate 4 数值平衡实测才暴露的"数值/关卡/状态机/系统边界不一致"提前到规格阶段。MDA 保证"机制-体验"因果链显式;心流保证"物理可玩≠心理好玩";系统边界防止范围蔓延到代码层。
 
@@ -246,6 +291,7 @@ game-polish (可选)
 - `docs/ASSET_MANIFEST.prev.json`(如有,用于 predecessorId 追溯)
 - `assets/` 目录
 - `src/` 目录(Web 引擎)或 Godot/Unity 工程
+- `config/levels.json`(如有;3.28 的比对基准,单局制项目不存在)
 
 ### 6.2 L1 静态检查
 
@@ -267,6 +313,7 @@ game-polish (可选)
 | 3.7 | 代码资源引用 ↔ manifest | 代码中引用的资源 id 都能在 manifest 找到 | `G3-CODE-REF-MISSING` | ERROR |
 | 3.8 | manifest contentHash 一致 | assets/ 下文件与 manifest contentHash 一致(内容指纹校验) | `G3-CONTENTHASH-MISMATCH` | ERROR |
 | 3.27 | 复刻:参数落地(条件) | **仅复刻项目**:`GameConfig` 类配置文件字段名与 CSV `parameter` 列同名;抽查 high 敏感参数在业务代码中无硬编码字面量(只允许出现在 config) | `G3-CLONE-PARAM-HARDCODED` | ERROR |
+| 3.28 | 关卡数据走样(条件) | **仅关卡制项目**:关卡数据只能来自 `config/levels.json` 或其**引擎内等价副本**(Web:`src/config` 同级 import 根文件,或 `public/config/levels.json`;Godot:`res://config/levels.json`;Unity:`Assets/StreamingAssets/config/levels.json`);副本内容须与源文件一致(可 contentHash 比对);除该文件外 `src/` 中出现关卡数值字面量即失败(允许加载后计算);levels.json 必须存在且关卡数 > 0 | `G3-LEVEL-DATA-DRIFT` | ERROR |
 
 > **引擎特定 L2 检查(3.9+)**:按 PRD/TECH_DESIGN 的引擎字段读取对应 references 文件执行,检查项编号与失败码见各文件:
 >
@@ -310,7 +357,7 @@ game-polish (可选)
 
 ## 七、报告输出
 
-每个 Gate 产出 `docs/GATE_{N}_REPORT.md`,格式统一见 §3.3。Gate 0.5 例外,固定为 `docs/GATE_0_5_REPORT.md`(下划线避免与 Gate 0~3 的 {N} 模式混淆)。
+每个 Gate 产出 `docs/GATE_{N}_REPORT.md`,格式统一见 §3.3。**小数门一律用下划线**:Gate 0.5 → `docs/GATE_0_5_REPORT.md`,Gate 2.5 → `docs/GATE_2_5_REPORT.md`(避开与整数门 `{N}` 模式的混淆)。
 
 **阻断规则**:
 - Gate 报告结论为 `FAIL` → game-forge-master 不允许进入下一阶段
@@ -318,8 +365,8 @@ game-polish (可选)
 - 修复后重跑本 Gate,直到 PASS 才放行
 
 **报告归档**:
-- 复刻项目为 5 份 Gate 报告(0.5/0/1/2/3),非复刻项目为 4 份(0/1/2/3),随项目保留,作为质量追溯依据
-- game-integrate 的 `docs/BUILD_REPORT.md` 应引用 Gate 0~3 报告的结论(复刻项目含 0.5)
+- 报告份数 = 基数 4 份(`GATE_0/1/2/3`)+ 条件门:复刻专线 +1(`GATE_0_5`)、关卡制 +1(`GATE_2_5`),随项目保留,作为质量追溯依据
+- game-integrate 的 `docs/BUILD_REPORT.md` 应引用全部已生成 Gate 报告的结论(复刻含 0.5,关卡制含 2.5)
 
 ---
 
@@ -337,6 +384,8 @@ game-forge-master §七执行顺序修订为:
    → [Gate 0] 蓝图门(失败则回到 1 修复)
 2. game-spec
    → [Gate 1] 规格门(失败则回到 2 修复)
+2.5 game-level-design(关卡制必走)
+   → [Gate 2.5] 关卡门(失败则回到 2.5 修复,不进美术+资源+代码)
 3. game-art-spec
    → [Gate 2] 美术门(失败则回到 3 修复)
 4. game-asset-forge + game-code-forge(并行)
@@ -353,6 +402,7 @@ game-forge-master §七执行顺序修订为:
 |---|---|---|
 | Gate 0.5 FAIL(仅复刻专线) | **硬阻断**,**不进蓝图** | game-teardown 补拆(补 falsifier/补替代/补数值)后重跑 Gate 0.5 |
 | Gate 0/1/2 FAIL | **硬阻断**,不允许进入下一阶段 | 原产出 skill 修复后重跑 Gate |
+| Gate 2.5 FAIL(关卡产物缺失/与 PRD 关卡表不一致/参数越界/阻断项无处置) | **硬阻断**,不允许进入美术+资源+代码生成 | game-level-design 修复后重跑 Gate 2.5(禁止调宽阈值放行) |
 | Gate 3 L1/L2 FAIL | **硬阻断** | game-asset-forge / game-code-forge 修复后重跑 Gate 3 |
 | Gate 3 L3 typecheck/Godot check FAIL | **硬阻断**,返回错误日志 | game-code-forge 接手修复(沿用其自身 typecheck 修复策略,≤3 轮)后重跑 Gate 3 |
 | Gate 3 L3 Unity 跳过 | **软阻断**(标注 SKIPPED),允许进入 Gate 4,由 game-integrate 补 | — |
@@ -360,7 +410,8 @@ game-forge-master §七执行顺序修订为:
 
 ### 8.3 裁剪规则
 
-- **不可裁剪**:Gate 0/1/2/3 是流水线必走检查点,即使对应阶段被裁剪(如音频裁剪),也要跑 Gate 校验(音频裁剪时 Gate 2 检查 AUDIO_SPEC.md 标注"全部静音占位"即可通过)
+- **不可裁剪**:Gate 0/1/2.5/2/3 是流水线必走检查点,即使对应阶段被裁剪(如音频裁剪),也要跑 Gate 校验(音频裁剪时 Gate 2 检查 AUDIO_SPEC.md 标注"全部静音占位"即可通过)
+- **条件裁剪**:Gate 2.5 仅在"纯单局制、PRD 无关卡序列"时跳过,且必须由 `docs/LEVEL_PLAN.md` §0 写明裁剪理由;有任一关卡序列字段就必须跑(见 2.2 触发条件)
 - **可裁剪**:Gate 4 的浏览器自测与数值平衡实测,沿用 game-integrate 现有裁剪规则
 
 ---
@@ -369,13 +420,14 @@ game-forge-master §七执行顺序修订为:
 
 本 skill 自身的质量检查:
 
-- [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;复刻项目含 Gate 0.5)
+- [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;条件门含 Gate 0.5 / 2.5)
 - [ ] (复刻项目)Gate 0.5 的 L1 9 项都执行过,FAIL 已阻断回 game-teardown;Gate 0/1/2/3 的复刻条件检查(0.7~0.9/1.17~1.18/2.15/3.27)未遗漏
-- [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`
+- [ ] (关卡制项目)Gate 2.5 的 L1 4 项 + L2 4 项都执行过;Gate 1 的 1.19(关卡表可机读)已在规格阶段拦住"只写共 N 关"的情况
+- [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`(小数门用下划线:`GATE_0_5_REPORT.md` / `GATE_2_5_REPORT.md`)
 - [ ] 报告含失败码 / 详情 / 修复建议三要素
 - [ ] FAIL 时有阻断,无"默认通过"
 - [ ] **只读原则:本 skill 不修改任何产物文件,L3 失败仅返回日志交 game-code-forge 修复**
-- [ ] **质量门范围:Gate 0~3 由本 skill 管,Gate 4 归 game-integrate 内置**
+- [ ] **质量门范围:Gate 0/0.5/1/2.5/2/3 由本 skill 管,Gate 4 归 game-integrate 内置**
 - [ ] Unity 跳过场景有降级路径(延后到 Gate 4)
 - [ ] 增量更新场景下 predecessorId 改名不被误判为幽灵 asset(见 §5.3)
 - [ ] 占位图降级 asset 在 Gate 3 标 WARNING 而非 ERROR(见 §6.2)

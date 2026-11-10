@@ -1,0 +1,2 @@
+player_id,level_id,level_version,attempt_id,won,turns,duration_seconds,remaining_resource,booster_used,random_seed,player_segment,experiment_group
+p001,M3-001,1,a001,1,18,95,3,0,11,regular,control

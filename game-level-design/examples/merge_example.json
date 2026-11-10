@@ -1,0 +1,42 @@
+{
+  "game_type": "merge",
+  "level_id": "MG-ORDER-018",
+  "purpose": "检验中期订单的产出规划与棋盘空间管理",
+  "parameters": {
+    "order_items": [
+      {
+        "chain": "tool",
+        "tier": 7,
+        "quantity": 1
+      }
+    ],
+    "energy_budget": 95,
+    "producer_cooldown_minutes": 30,
+    "board_capacity": 49,
+    "expected_generator_yield": 0.72
+  },
+  "difficulty_dimensions": {
+    "resource_pressure": 0.68,
+    "production_wait": 0.64,
+    "board_space_pressure": 0.75,
+    "randomness": 0.42,
+    "planning_depth": 0.58
+  },
+  "evaluation_plan": {
+    "primary_metric": "order_completion_time_p50",
+    "diagnostics": [
+      "energy_per_order",
+      "board_occupancy_p90",
+      "key_item_wait_p90",
+      "generator_utilization"
+    ],
+    "guardrails": [
+      "session_continue_rate",
+      "player_fairness_survey"
+    ]
+  },
+  "notes": [
+    "产出率为示例参数，不代表实际经济平衡。",
+    "必须模拟多种随机产出序列。"
+  ]
+}

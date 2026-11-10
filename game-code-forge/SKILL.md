@@ -17,6 +17,10 @@ description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_M
 - `docs/TECH_DESIGN.md`(取目录/模块/类设计)
 - `docs/ASSET_MANIFEST.json`(取资源 ID 与路径映射)
 
+**关卡制附加输入**(存在 `config/levels.json` 时**必读**,由阶段 2.5 `game-level-design` 产出):
+- `config/levels.json`(运行期关卡配置,**唯一关卡数据源**,加载方式见 §4.1)
+- `docs/LEVEL_PLAN.md`(仅作参考:目标首通率、参数口径;**不要据此重写数值**)
+
 **复刻模式附加输入**(存在 `docs/GAME_TEARDOWN.md` 时**必读**):
 - `docs/NUMERIC_MODEL.csv`(参数唯一来源)
 - `docs/TEARDOWN_MATRIX.json`(判定基准、状态建模条目)
@@ -85,7 +89,7 @@ Unity 工程:
 │   │   ├── GameConfig.ts    # 全局配置(分辨率/物理/缩放)
 │   │   ├── AssetManifest.ts # 引用 ../assets/manifest.json 或 ../docs/ASSET_MANIFEST.json
 │   │   ├── SkinConfig.ts    # 皮肤映射
-│   │   └── LevelConfig.ts   # 关卡/数值
+│   │   └── LevelConfig.ts   # 关卡数值:存在 config/levels.json 时只读它,禁止硬编码(见 §4.1)
 │   ├── scenes/
 │   │   ├── BootScene.ts      # 资源预加载
 │   │   ├── HomeScene.ts
@@ -286,6 +290,36 @@ export const GameConfig = {
 } as const;
 ```
 
+### 4.1 关卡数据加载(存在 `config/levels.json` 时必读)
+
+关卡制项目由 `game-level-design`(阶段 2.5)产出 `config/levels.json`,它是**运行期唯一关卡数据源**。
+本 skill 只负责"读它 + 按 `level_id` 取档",**不得把 `params` 的数值抄成常量**——`game-quality-gate` 的
+3.28(`G3-LEVEL-DATA-DRIFT`)会比对 `src/` 里出现的关卡数值字面量,抄了就不一致。
+
+| 引擎 | 加载方式 | 说明 |
+|---|---|---|
+| Phaser 3 / Pixi.js / 纯 Canvas / Three.js | `import levels from '../../../config/levels.json'`(`tsconfig` 开 `resolveJsonModule`) | 打包进 bundle,构建期即可发现字段错误;`LevelConfig.ts` 做类型映射 + 按 `level_id` 取档 |
+| 同上,且需部署后热改数值 | 复制到 `public/config/levels.json`,`await fetch('/config/levels.json')` | 需处理加载失败:降级用内置默认关卡并写 `ASSET_ISSUES.md` |
+| Godot 4 | 构建时把 `config/levels.json` 复制到工程根,`JSON.parse_string(FileAccess.get_file_as_string("res://config/levels.json"))` | 解析失败要报错并回退到首关配置,不要静默崩溃 |
+| Unity | `Assets/StreamingAssets/config/levels.json` + `File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "config/levels.json"))` | WebGL 平台必须用 `UnityWebRequest` 读 StreamingAssets |
+
+`LevelConfig.ts`(或等价文件)的职责边界:
+```typescript
+import levelsRaw from '../../../config/levels.json';
+
+export type LevelParams = Record<string, number>;
+export interface LevelDef { level_id: string; index: number; tag: string; params: LevelParams; target_win: number; difficulty_score: number; }
+
+const levels = levelsRaw.levels as LevelDef[];           // 类型收窄,不改数值
+export const getLevel = (id: string) => levels.find(l => l.level_id === id);
+export const levelCount = levels.length;
+```
+> 允许:类型定义、按 id 查找、读取时做范围钳制(如 `clamp`)。
+> **禁止**:把 `params` 的字面量写成常量表、按关卡号写 `switch` 分支硬编码数值。
+
+**无 `config/levels.json` 时**(单局制被裁剪、或项目不走阶段 2.5):回退到把数值写进
+`config/GameConfig.ts` 的原有模式,并在 `docs/TECH_DESIGN.md` 注明"无关卡序列,关卡配置不适用"。
+
 ### 5. 状态机实现
 PRD 的状态转换表 → `managers/StateManager.ts`(基于 Phaser EventEmitter 或自建 EventBus):
 
@@ -333,12 +367,14 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
 ## 十二、交互约定
 
-0. **输入校验(读取前一次性)**:逐个检查 4 份输入文档是否存在,缺失则报错并列出缺失文件后退出,不进入生成流程:
+0. **输入校验(读取前一次性)**:先校验 **4 份必读**(缺失则报错并列出缺失文件后退出,不进入生成流程),再校验 **1 份条件输入**:
    - `docs/GAME_BLUEPRINT.md` 缺失 → "缺少蓝图,请先调用 game-blueprint"
    - `docs/PRD.md` 或 `docs/TECH_DESIGN.md` 缺失 → "缺少规格,请先调用 game-spec"
    - `docs/ASSET_MANIFEST.json` 缺失 → "缺少资源清单,请先调用 game-art-spec"
    - `ASSET_MANIFEST.json` 存在但非法 JSON → `JSON.parse` try-catch,报错附行号与错误信息,退出
-1. 读取 4 份输入文档后,**不要问用户**,直接生成
+   - `config/levels.json` **存在则纳入必读**(关卡制,见 §4.1);缺失则标注 `LEVELS_SKIPPED` 并继续(单局制项目合法),同时在简报中说明"未接入关卡配置"
+   - `config/levels.json` 存在但非法 JSON / 缺 `levels` 数组 → 报错退出(这是阶段 2.5 的产物缺陷,不要静默兜底)
+1. 读取 4 份必读文档 + (如有)`config/levels.json` 后,**不要问用户**,直接生成
 2. 生成过程分批 Write,每批 5-10 个文件
 3. 完成后简报:"代码生成完成,共 {N} 个 .ts 文件。下一步可调用 game-integrate 集成构建"
 4. 不要自行调用 game-integrate
@@ -359,6 +395,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十四)
 - [ ] UI 自定义容器(Panel/RustButton 等)已显式 `parent.add(panel)`,未被高 depth 蒙层遮挡(见 十七)
 - [ ] (复刻模式)数值零硬编码,GameConfig 字段名与 CSV `parameter` 同名
+- [ ] (关卡制)`config/levels.json` 只在一处被读取(`LevelConfig.ts` 或等价文件),`src/` 中无关卡数值字面量(见 §4.1)
 - [ ] (复刻模式)四维状态分离、派生态未持久化、规则未写在动画回调里、重置确定性可过
 - [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)
 

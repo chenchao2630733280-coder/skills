@@ -1,231 +1,203 @@
 {
-  "auditMode": "collection",
-  "timestamp": "2026-08-07T13:30:00+08:00",
-  "target": ["C:/Users/26307/.workbuddy/skills/ 下全部 62 个 skill"],
+  "auditMode": "pipeline",
+  "auditRound": 2,
+  "target": [
+    "C:/Users/26307/.agents/skills/game-forge-master",
+    "C:/Users/26307/.agents/skills/game-quality-gate",
+    "C:/Users/26307/.agents/skills/game-level-design",
+    "C:/Users/26307/.agents/skills/game-code-forge",
+    "C:/Users/26307/.agents/skills/game-integrate"
+  ],
   "benchmark": null,
-  "userRulings": {
-    "date": "2026-08-07",
-    "summary": "用户裁定 ISSUE-001~004 四项 CRITICAL 为理解错误/非问题,人工排除;有效 CRITICAL = 0",
-    "dismissedIssues": ["ISSUE-001", "ISSUE-002", "ISSUE-003", "ISSUE-004"]
+  "baselineReport": "docs/SKILL_AUDIT_REPORT.round1.md",
+  "round1Verification": {
+    "critical": { "total": 4, "remaining": 0 },
+    "warning": { "total": 10, "remaining": 0 },
+    "info": { "total": 5, "fixed": 3, "deferred": 2 },
+    "verifiedItems": [
+      "ISSUE-001", "ISSUE-002", "ISSUE-003", "ISSUE-004",
+      "ISSUE-005", "ISSUE-006", "ISSUE-007", "ISSUE-008", "ISSUE-009",
+      "ISSUE-010", "ISSUE-011", "ISSUE-012", "ISSUE-013", "ISSUE-014",
+      "ISSUE-017", "ISSUE-018", "ISSUE-019"
+    ],
+    "structuralRedline": {
+      "game-forge-master": 438,
+      "game-quality-gate": 433,
+      "game-code-forge": 445,
+      "game-integrate": 500,
+      "game-level-design": 181,
+      "allWithin500": true
+    }
   },
   "dimensions": {
-    "structure": { "enabled": true, "critical": 2, "warning": 4, "info": 3 },
-    "consistency": { "enabled": true, "critical": 1, "warning": 4, "info": 2 },
-    "robustness": { "enabled": true, "critical": 0, "warning": 3, "info": 1 },
-    "extensibility": { "enabled": true, "critical": 1, "warning": 1, "info": 1 },
-    "execution": { "enabled": false, "note": "无执行产物,跳过" },
-    "runtime": { "enabled": true, "critical": 0, "warning": 1, "info": 2 }
+    "structure": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 0, "info": 1 },
+      "checks": [
+        { "checkId": "1.1", "checkName": "SKILL.md 行数阈值", "passed": true, "evidence": "最大 500（game-integrate），无越线" },
+        { "checkId": "1.2", "checkName": "references 抽离完整性", "passed": true, "evidence": "validate.ps1 校验 125 条 references 路径全通过" },
+        { "checkId": "1.3", "checkName": "章节编号连续性", "passed": true, "evidence": "新增 §4.1 / §8.1 / §10.5 / §2.2 均插入既有编号内，无跳号" },
+        { "checkId": "1.4", "checkName": "description 质量", "passed": true, "evidence": "gate 已补“关卡后[Gate 2.5]”，仍 ≤200 字符" }
+      ]
+    },
+    "consistency": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 3, "info": 1 },
+      "checks": [
+        { "checkId": "2.1", "checkName": "产物路径表与实际产物一致", "passed": false, "evidence": "master:358 未登记 levels.json 的引擎内派生副本（ISSUE-023）" },
+        { "checkId": "2.2", "checkName": "命名规范跨 skill 一致", "passed": true, "evidence": "五处文档阶段顺序一致，残留 0" },
+        { "checkId": "2.3", "checkName": "CLI 命令对齐", "passed": true, "evidence": "tools/*.py 命令在 SKILL.md 与 refs13 写法一致" },
+        { "checkId": "2.4", "checkName": "JSON 工件消费链", "passed": false, "evidence": "gate §6.1 输入未列 config/levels.json（ISSUE-022）；3.28 判据未覆盖派生副本（ISSUE-021）" },
+        { "checkId": "2.5", "checkName": "frontmatter 与编排一致", "passed": true, "evidence": "gate description 已含关卡后时点" },
+        { "checkId": "2.6", "checkName": "跨 skill 引用路径正确", "passed": true, "evidence": "refs13 / §10.5 / §4.1 / §4.1.1 全部可达" }
+      ]
+    },
+    "robustness": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 1, "info": 0 },
+      "checks": [
+        { "checkId": "3.1", "checkName": "失败回退策略表", "passed": true, "evidence": "0.5/0/1/2.5/2/3 均有回退行" },
+        { "checkId": "3.2", "checkName": "降级层级完整性", "passed": true, "evidence": "轻量模式豁免 PASS_LIGHT + 基准缺失降级 LEVEL_TABLE_MISSING 已定义" },
+        { "checkId": "3.3", "checkName": "失败不阻塞原则", "passed": true, "evidence": "LEVELS_SKIPPED / LEVEL_BALANCE_SKIPPED 占位约定存在" },
+        { "checkId": "3.4", "checkName": "错误处理边界", "passed": false, "evidence": "code-forge §十二 仍只校验 4 份必读，条件输入无校验语义（ISSUE-020）" }
+      ]
+    },
+    "extensibility": {
+      "checked": true,
+      "issueCount": { "critical": 0, "warning": 0, "info": 0 },
+      "checks": [
+        { "checkId": "4.1", "checkName": "四位一体覆盖", "passed": true, "evidence": "引擎维度未变" },
+        { "checkId": "4.1.1", "checkName": "阶段接入第五位（下游消费登记）", "passed": true, "evidence": "master §8.1 七项清单 + auditor §4.1.1 已落地；levels.json 命中 5 个 SKILL.md" },
+        { "checkId": "4.3", "checkName": "决策树完备度", "passed": true, "evidence": "阶段 2.5 裁剪表 4 条触发条件未变" }
+      ]
+    }
   },
   "issues": [
     {
-      "id": "ISSUE-001",
-      "dimension": "consistency",
-      "severity": "CRITICAL",
-      "dismissed": true,
-      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
-      "description": "game-forge-master 模板索引指向不存在的 .trae/skills/game-template/ 路径,实际模板已内化到 game-code-forge/references/engine-*-template.md",
-      "evidence": { "file": "game-forge-master/SKILL.md", "line": 188, "content": ".trae/skills/game-template/   (随 skill 分发的模板参考)" },
-      "suggestion": "模板索引改为引用 game-code-forge/references/engine-{engine}-template.md",
-      "plan": ["game-forge-master/SKILL.md §五 模板索引替换为引用 game-code-forge/references/", "删除 .trae/skills/game-template 引用", "全库 grep 确认无残留"]
-    },
-    {
-      "id": "ISSUE-002",
-      "dimension": "structure",
-      "severity": "CRITICAL",
-      "dismissed": true,
-      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
-      "description": "ai-short-drama-topic-planner SKILL.md 达 1055 行,远超 500 行阈值,懒加载失败",
-      "evidence": { "file": "ai-short-drama-topic-planner/SKILL.md", "line": 1, "content": "1055 lines; 趋势雷达引擎 §六 约 273 行未抽离" },
-      "suggestion": "按趋势雷达/热点融合/评分系统拆分为 3 个 references",
-      "plan": ["创建 references/trend-radar-engine.md", "创建 references/hotspot-matrix.md", "创建 references/scoring-model.md", "SKILL.md 章节替换为索引块", "wc -l 验证 ≤500"]
-    },
-    {
-      "id": "ISSUE-003",
-      "dimension": "structure",
-      "severity": "CRITICAL",
-      "dismissed": true,
-      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
-      "description": "ai-short-drama-project-development SKILL.md 878 行,frontmatter 前有标题行且章节编号混乱",
-      "evidence": { "file": "ai-short-drama-project-development/SKILL.md", "line": 1, "content": "# AI短剧项目开发总监 位于 frontmatter 之前" },
-      "suggestion": "frontmatter 提到首行,按模块拆分 references",
-      "plan": ["frontmatter 移至首行", "拆分 role-and-defaults/development-flow/character-system 三个 references", "统一章节编号", "wc -l 验证 ≤500"]
-    },
-    {
-      "id": "ISSUE-004",
-      "dimension": "consistency",
-      "severity": "CRITICAL",
-      "dismissed": true,
-      "dismissReason": "用户裁定(2026-08-07):理解错误,非问题,人工排除",
-      "description": "skill-runtime 引用 ../game-art-spec/references/asset-manifest.schema.json 但全库不存在(schema 内联在 game-art-spec SKILL.md §三)",
-      "evidence": { "file": "skill-runtime/SKILL.md", "line": 74, "content": "schema: ../game-art-spec/references/asset-manifest.schema.json" },
-      "suggestion": "从 game-art-spec 内联 schema 抽离为独立文件",
-      "plan": ["提取 game-art-spec §三 JSON schema 写入 references/asset-manifest.schema.json", "SKILL.md §三 替换为索引块", "验证 validate_runtime.py PASS"]
-    },
-    {
-      "id": "ISSUE-005",
-      "dimension": "consistency",
-      "severity": "WARNING",
-      "description": "端类型命名跨 skill 不一致:pc-admin / pc_admin / admin_web 三种写法并存",
-      "evidence": { "file": "product-pipeline-master/SKILL.md + generate-prototype/SKILL.md + generate-html-pages/SKILL.md", "line": null, "content": "pc-admin×11, pc_admin×6, admin_web×3" },
-      "suggestion": "统一为 pc-admin(kebab-case)",
-      "plan": ["全库 pc_admin 替换为 pc-admin", "admin_web 文档化映射"]
-    },
-    {
-      "id": "ISSUE-006",
-      "dimension": "structure",
-      "severity": "WARNING",
-      "description": "15+ 个 description 超过 200 字符上限,最长 579 字符(web-static-deploy)",
-      "evidence": { "file": "web-static-deploy/SKILL.md + bid-functional-solution/SKILL.md 等", "line": 2, "content": "description 长度 579/498/433/371..." },
-      "suggestion": "description 精简至 ≤200 字符,细节移入正文",
-      "plan": ["逐个精简 15 个超标 description"]
-    },
-    {
-      "id": "ISSUE-007",
-      "dimension": "structure",
-      "severity": "WARNING",
-      "description": "rd-init frontmatter 标题前置 + description 字段重复 2 次",
-      "evidence": { "file": "rd-init/SKILL.md", "line": 1, "content": "# rd-init 在 frontmatter 前,description 出现 2 次" },
-      "suggestion": "frontmatter 提到首行,删除重复 description",
-      "plan": ["删除首行标题", "删除 L9 重复 description"]
-    },
-    {
-      "id": "ISSUE-008",
-      "dimension": "structure",
-      "severity": "WARNING",
-      "description": "16 个 skill 处于 301-500 行可接受区间,接近阈值",
-      "evidence": { "file": "game-integrate(453)/game-art-spec(444)/game-asset-forge(418) 等 16 个", "line": null, "content": "wc -l 统计" },
-      "suggestion": "逐步抽离大段代码/规则到 references",
-      "plan": ["按需抽离,不强制立即改"]
-    },
-    {
-      "id": "ISSUE-009",
-      "dimension": "robustness",
-      "severity": "WARNING",
-      "description": "短剧系列健壮性薄弱:topic-planner 全文 0 处失败/降级/回退机制",
-      "evidence": { "file": "ai-short-drama-topic-planner/SKILL.md", "line": null, "content": "grep -c 失败|降级|回退 → 0" },
-      "suggestion": "补充失败回退章节(重试 N 轮 → 降级人工推荐池)",
-      "plan": ["两个短剧 SKILL.md 各新增失败回退章节"]
-    },
-    {
-      "id": "ISSUE-010",
-      "dimension": "structure",
-      "severity": "WARNING",
-      "description": "部分 >300 行 skill 无 references 使用指引表",
-      "evidence": { "file": "game-forge-master/game-spec/game-topic-brainstorm/brainstorm-product-feature", "line": null, "content": "refs=N" },
-      "suggestion": "建立 references 使用指引表或标注无 references",
-      "plan": ["逐个补充索引表"]
-    },
-    {
-      "id": "ISSUE-011",
-      "dimension": "consistency",
-      "severity": "WARNING",
-      "description": "build-report.json 的 device 值写法不一致:device:mobile vs device=pc",
-      "evidence": { "file": "generate-html-mobile/SKILL.md L175 + generate-html-pc-admin/SKILL.md L240", "line": null, "content": "device:mobile / device=pc" },
-      "suggestion": "统一为 device: \"mobile\" / device: \"pc\"",
-      "plan": ["对齐两处描述文本"]
-    },
-    {
-      "id": "ISSUE-012",
-      "dimension": "runtime",
-      "severity": "WARNING",
-      "description": "24 个 runtime.yaml 中多数为最小声明(仅 timeout),未声明 inputs/outputs/degrade",
-      "evidence": { "file": "24 个 runtime.yaml", "line": null, "content": "schema 校验全部通过但内容精简" },
-      "suggestion": "关键流水线 skill 补齐完整契约",
-      "plan": ["优先为 game-* 补齐 inputs/outputs/degrade"]
-    },
-    {
-      "id": "ISSUE-013",
-      "dimension": "runtime",
-      "severity": "WARNING",
-      "description": "两个超大短剧 skill 未声明 runtime.yaml",
-      "evidence": { "file": "ai-short-drama-*/SKILL.md", "line": null, "content": "rt=N" },
-      "suggestion": "添加 runtime.yaml(timeout ≥600s, retry 2 轮)",
-      "plan": ["新建 2 个 runtime.yaml"]
-    },
-    {
-      "id": "ISSUE-014",
-      "dimension": "robustness",
-      "severity": "INFO",
-      "description": ".trae-cn/ 数据目录为旧工具命名,5 个子目录当前缺失(脚本会自动创建)",
-      "evidence": { "file": "~/.trae-cn/", "line": null, "content": "tuner-overrides/prompts/knowledge/codebase-index/tuner-backups MISSING" },
-      "suggestion": "暂缓,不阻塞;后续可迁移 .workbuddy 命名",
-      "plan": ["可选迁移"]
-    },
-    {
-      "id": "ISSUE-015",
-      "dimension": "structure",
-      "severity": "INFO",
-      "description": "game-art-spec 内联 schema 未抽离,随 ISSUE-004 一并处理",
-      "evidence": { "file": "game-art-spec/SKILL.md", "line": 48, "content": "§三 内联 JSON schema 约 80 行" },
-      "suggestion": "随 ISSUE-004 抽离",
-      "plan": ["同 ISSUE-004"]
-    },
-    {
-      "id": "ISSUE-016",
-      "dimension": "structure",
-      "severity": "INFO",
-      "description": "frontmatter 语言与正文不完全一致(中文 skill 用英文 description 等)",
-      "evidence": { "file": "generate-* 系列等 25 个", "line": null, "content": "frontmatter 扫描" },
-      "suggestion": "description 语言与正文一致",
-      "plan": ["按需对齐"]
-    },
-    {
-      "id": "ISSUE-017",
-      "dimension": "structure",
-      "severity": "INFO",
-      "description": "部分 skill 章节编号体系不统一(短剧系列混用 # 一、 与 ## 4.1)",
-      "evidence": { "file": "ai-short-drama-*/SKILL.md", "line": null, "content": "混用两套编号" },
-      "suggestion": "拆分时统一编号",
-      "plan": ["随 ISSUE-002/003 处理"]
-    },
-    {
-      "id": "ISSUE-018",
-      "dimension": "consistency",
-      "severity": "INFO",
-      "description": "两总纲人工确认点数(1~6 vs 1~5)与 workflow-runtime pause 语义需人工核对",
-      "evidence": { "file": "game-forge-master/SKILL.md L365 + product-pipeline-master/SKILL.md L318", "line": null, "content": "确认点 1~6 / 1~5" },
-      "suggestion": "核对确认点数与 pause 节点数一致",
-      "plan": ["人工核对"]
-    },
-    {
-      "id": "ISSUE-019",
-      "dimension": "consistency",
-      "severity": "INFO",
-      "description": "_shared 共享引用完整性良好(健康项)",
-      "evidence": { "file": "_shared/references/(18 个文件)", "line": null, "content": "MISSING_SHARED_TOTAL: 0" },
-      "suggestion": "保持现状",
-      "plan": ["无"]
-    },
-    {
       "id": "ISSUE-020",
-      "dimension": "consistency",
-      "severity": "INFO",
-      "description": "跨 skill 引用路径校验全部通过(健康项)",
-      "evidence": { "file": "generate-html-pages/references/interaction-patterns.md 等", "line": null, "content": "精确解析 0 个真幽灵(除 ISSUE-004)" },
-      "suggestion": "保持现状",
-      "plan": ["无"]
+      "dimension": "robustness",
+      "severity": "WARNING",
+      "description": "game-code-forge 的输入校验仍写“4 份输入文档”，§一 新增的 config/levels.json（条件必读）不在校验流程内，执行者照 §十二 走会跳过关卡配置，直接踩 Gate 3 的 3.28。",
+      "evidence": {
+        "file": "game-code-forge/SKILL.md",
+        "line": 370,
+        "snippet": "逐个检查 4 份输入文档是否存在,缺失则报错并列出缺失文件后退出（另见 :375）"
+      },
+      "suggestion": "拆成“4 份必读（缺失报错）+ 1 份条件（存在则必读，缺失标 LEVELS_SKIPPED）”。",
+      "plan": {
+        "steps": [
+          "§十二 第 370 行改为必读 4 份 + 条件 config/levels.json 的校验语义",
+          "第 375 行“4 份”→“4 份必读 + 可选关卡配置”",
+          "与 Gate 3 的“关卡制项目”条件口径对齐"
+        ],
+        "files": [{ "path": "game-code-forge/SKILL.md", "action": "modify", "description": "§十二 输入校验" }],
+        "expectedEffect": "可选输入不被吞掉，也不会因缺失误报错"
+      }
     },
     {
       "id": "ISSUE-021",
       "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "Gate 3 的 3.28 判据只认 `config/levels.json` 一个路径，未覆盖 code-forge 新增的 public/、res://、StreamingAssets 三条等价副本，Unity/Godot 实现可能被误判为 G3-LEVEL-DATA-DRIFT。",
+      "evidence": {
+        "file": "game-quality-gate/SKILL.md",
+        "line": 315,
+        "snippet": "代码通过 config/levels.json 加载关卡;src/ 中出现的关卡数值字面量与 levels.json 不一致即失败"
+      },
+      "suggestion": "判据补“引擎内等价副本白名单”，并要求副本与源文件内容一致。",
+      "plan": {
+        "steps": [
+          "3.28 判据改为“加载源是 config/levels.json 或其引擎内等价副本（Web 根 import / public；Godot res://；Unity StreamingAssets）”",
+          "追加“副本必须与源内容一致（可 contentHash 比对）”",
+          "失败码保持不变"
+        ],
+        "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "3.28 判据" }],
+        "expectedEffect": "合规实现不误杀，同时堵住“复制到 src/ 手改”的规避路径"
+      }
+    },
+    {
+      "id": "ISSUE-022",
+      "dimension": "consistency",
+      "severity": "WARNING",
+      "description": "Gate 3 的 §6.1 输入清单未列 config/levels.json，而 3.28 需要它作比对基准，执行者按输入节备料会漏读，检查项空转。",
+      "evidence": {
+        "file": "game-quality-gate/SKILL.md",
+        "line": 287,
+        "snippet": "### 6.1 输入（list 无 config/levels.json）｜对照 :315 3.28"
+      },
+      "suggestion": "§6.1 追加条件输入行。",
+      "plan": {
+        "steps": ["§6.1 加 `- config/levels.json（如有，3.28 比对基准；单局制项目不存在）`"],
+        "files": [{ "path": "game-quality-gate/SKILL.md", "action": "modify", "description": "§6.1 输入清单" }],
+        "expectedEffect": "3.28 输入来源明确"
+      }
+    },
+    {
+      "id": "ISSUE-023",
+      "dimension": "consistency",
       "severity": "INFO",
-      "description": "执行语义引用与 Unity BuildScript 方法链抽查通过(健康项)",
-      "evidence": { "file": "workflow-runtime/references/execution-semantics.md + game-code-forge/references/engine-unity-template.md", "line": null, "content": "BuildWindows/BuildWebGL 定义与调用一致" },
-      "suggestion": "保持现状",
-      "plan": ["无"]
+      "description": "master §八 路径表只登记 config/levels.json（阶段 2.5 产出），未登记 code-forge 构建期复制到 public/、工程根、StreamingAssets 的派生副本。",
+      "evidence": { "file": "game-forge-master/SKILL.md", "line": 358, "snippet": "| 关卡配置(运行期) | config/levels.json | game-level-design |" },
+      "suggestion": "追加一行“关卡配置副本（构建期派生）”或注明由 code-forge 按引擎复制、不单独登记。",
+      "plan": { "steps": ["§八 增一行或加括注"], "files": [{ "path": "game-forge-master/SKILL.md", "action": "modify", "description": "§八 路径表" }], "expectedEffect": "查产物时不会误以为只有一份" }
+    },
+    {
+      "id": "ISSUE-024",
+      "dimension": "structure",
+      "severity": "INFO",
+      "description": "game-integrate 恰好 500 行，贴住红线，后续任何新增都会越线且无措辞修订余量。",
+      "evidence": { "file": "game-integrate/SKILL.md", "line": 500, "snippet": "wc -l = 500" },
+      "suggestion": "下次改动前先把 §10.1/10.2 的长叙述抽到 references/，腾 30-50 行。",
+      "plan": { "steps": ["抽离 §10.1/10.2 到 references/", "SKILL.md 留索引块"], "files": [{ "path": "game-integrate/SKILL.md", "action": "modify", "description": "抽离踩坑叙述" }], "expectedEffect": "恢复改造余量" }
     }
   ],
-  "summary": {
-    "total": 26,
-    "critical": 4,
-    "warning": 13,
-    "info": 9
-  },
+  "summary": { "critical": 0, "warning": 3, "info": 2, "total": 5 },
   "topSuggestions": [
-    { "rank": 1, "title": "修复 game-forge-master 模板索引指向", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-001" },
-    { "rank": 2, "title": "抽离 asset-manifest.schema.json", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-004+015" },
-    { "rank": 3, "title": "拆分两个超大短剧 SKILL.md", "roi": "⭐⭐⭐⭐⭐", "issue": "ISSUE-002+003+013" },
-    { "rank": 4, "title": "统一端类型命名", "roi": "⭐⭐⭐⭐", "issue": "ISSUE-005" },
-    { "rank": 5, "title": "精简超长 description", "roi": "⭐⭐⭐⭐", "issue": "ISSUE-006" }
-  ]
+    {
+      "rank": 1,
+      "title": "把加载路径白名单写进 3.28，并把 levels.json 列入 §6.1 输入",
+      "roi": "high",
+      "benefit": { "level": "high", "description": "避免 Unity/Godot 合规实现被误判，3.28 不再空转" },
+      "cost": { "level": "low", "description": "改 2 处判据，约 5 分钟" },
+      "relatedIssues": ["ISSUE-021", "ISSUE-022"],
+      "quadrant": "quick-win"
+    },
+    {
+      "rank": 2,
+      "title": "code-forge 输入校验拆“必读 / 条件”",
+      "roi": "high",
+      "benefit": { "level": "high", "description": "关卡配置不会被流程吞掉，3.28 才有可查对象" },
+      "cost": { "level": "low", "description": "改 2 行，约 5 分钟" },
+      "relatedIssues": ["ISSUE-020"],
+      "quadrant": "quick-win"
+    },
+    {
+      "rank": 3,
+      "title": "路径表登记派生副本 + integrate 腾出行数余量",
+      "roi": "low",
+      "benefit": { "level": "low", "description": "维护性收益，不影响当前运行" },
+      "cost": { "level": "low", "description": "加 1 行 + 抽离 §10.1/10.2" },
+      "relatedIssues": ["ISSUE-023", "ISSUE-024"],
+      "quadrant": "low-priority"
+    }
+  ],
+  "remediation": {
+    "executedAt": "2026-11-10T17:55:00+08:00",
+    "round": 2,
+    "fixed": ["ISSUE-020", "ISSUE-021", "ISSUE-022", "ISSUE-023"],
+    "deferred": ["ISSUE-024"],
+    "summary": { "fixed": 4, "deferred": 1, "remainingCritical": 0, "remainingWarning": 0 },
+    "touchedFiles": [
+      "game-quality-gate/SKILL.md",
+      "game-code-forge/SKILL.md",
+      "game-forge-master/SKILL.md"
+    ],
+    "rootCauseHardening": "game-forge-master §8.1 新增 ④b 判据覆盖面：引入多种合法形态时，门禁判据须逐形态覆盖并给白名单",
+    "verification": {
+      "lineCounts": { "master": 439, "gate": 434, "codeForge": 447, "integrate": 500, "levelDesign": 182 },
+      "validatePs1": "全部通过"
+    }
+  },
+  "generatedAt": "2026-11-10T17:50:00+08:00",
+  "auditorVersion": "skill-auditor v1.0"
 }

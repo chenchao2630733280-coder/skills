@@ -1,0 +1,49 @@
+# runtime.yaml — game-level-design
+# 由 skill-runtime 定义契约，validate_runtime.py 校验
+timeout: 600
+retry:
+  max: 1
+  backoff: fixed
+  interval: 5
+inputs:
+  - name: PRD 与技术设计
+    type: text
+    required: true
+    description: docs/PRD.md（核心循环、关卡数量、单局时长、可调数值、失败条件、玩家分层）+ docs/TECH_DESIGN.md（配置加载方式与 config/ 路径约定）
+  - name: 拆解数值模型（可选）
+    type: text
+    required: false
+    description: docs/NUMERIC_MODEL.csv（仅复刻专线），用作 legal_ranges 与 per_unit 的初值
+  - name: 线上通关数据（可选）
+    type: text
+    required: false
+    description: attempts.csv（player_id, level_id, won[, attempt_index, segment, booster_used]），接入后做校准与预测背离检测
+outputs:
+  - path: docs/LEVEL_PLAN.md
+    type: file
+    description: 关卡设计说明（阶段划分、目标首通率区间、参数口径、裁剪说明、冲突裁决、假设清单）
+  - path: config/levels.json
+    type: file
+    description: 运行期关卡配置，game-code-forge 的唯一关卡数据源（禁止代码内联复制）
+  - path: docs/DIFFICULTY_REPORT.md
+    type: file
+    description: 难度评审报告（曲线/跳变/分层模拟/诊断/建议/预测vs实际/假设与下一步）
+  - path: docs/DIFFICULTY_REVIEW.json
+    type: file
+    description: 与报告同源的机读产物，供 Gate 2.5 与 game-integrate 数值平衡核对
+degrade:
+  - trigger: 无真实通关数据
+    action: 跑纯模型预测，报告 data_source 标注"未接入"，绝对通关率不对外承诺
+    target: docs/DIFFICULTY_REPORT.md
+  - trigger: 无 PRD 或关卡数量/目标缺失
+    action: 只问一个最关键问题（关卡数/单局时长/目标首通），其余按假设跑并标注 assumptions
+    target: docs/LEVEL_PLAN.md
+  - trigger: 时间紧或仅需微调
+    action: 只跑曲线 + 跳变，跳过模拟并在报告标注 SIM_SKIPPED
+    target: docs/DIFFICULTY_REPORT.md
+  - trigger: legal_ranges 缺失
+    action: 推荐引擎只给方向与相对幅度，不给具体数值，标注 RANGE_MISSING
+    target: docs/DIFFICULTY_REPORT.md
+  - trigger: Gate 2.5 FAIL（产物缺失或与 PRD 关卡表不一致）
+    action: 报告标注 FAIL 与差异清单，硬阻断回本阶段重跑，不降级放行
+    target: docs/LEVEL_PLAN.md
