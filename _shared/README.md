@@ -10,6 +10,7 @@ _shared/references/
 ├── pc_admin_ui_spec.md             # PC 管理端权威设计规范（vue-admin-plus / Element Plus）
 ├── engineering-constraints.md      # 工程通用约束（10 条，plan-system-implementation / build-working-system 共用）
 ├── output-conventions.md           # 交付物产出规范（初版口吻 / 程序化图形 / 注释双轨 / 记法 / 表格列宽 / 术语白名单）
+├── game-disciplines.md             # 游戏工程三条方法论（规则单一来源 / 属性归属表 / 不变式优先）；game 流水线各阶段共用
 └── schemas/
     ├── acceptance-matrix.example.json  # 验收矩阵结构（plan-system-implementation 产出）
     ├── actions.example.json            # 页面动作结构
@@ -53,6 +54,7 @@ _shared/references/
 ```text
 _shared/
 ├── validate.ps1                    # 一致性防回归校验（13 项检查；退出码 0=全过 / 1=有 FAIL）
+├── audit_stats.py                  # 全库体检：逐个 SKILL.md 报「行数 / description 字符数」并标红 >500 行、>200 字符
 ├── fix-frontmatter-name.py         # 把 SKILL.md frontmatter 的 name 批量规范为 name: "<value>"（幂等）
 ├── creative-judgment-baseline.md   # 创作判断基线（叙事/美术/表演三层检查清单）；short-drama-spec 与 short-drama-storyboard 共用
 └── references/                     # 共享参考文件（唯一事实来源），见上文

@@ -292,6 +292,31 @@ if (Test-Path $ssDir) {
     $ssFail++
 }
 
+# ---------- 14. SKILL.md 行数与 description 字符数体检（WARN，不阻断） ----------
+# 两条都是既定规范（500 行红线 / description ≤200 字符），但历史遗留较多，
+# 故只报不拦；新增或改动的 skill 应当自己保持在红线内，让这个列表逐步归零。
+$fatSkills = @()
+$longDesc = @()
+Get-ChildItem -Directory $ws | Where-Object { $_.Name -ne '_shared' } | ForEach-Object {
+    $skillMd = Join-Path $_.FullName 'SKILL.md'
+    if (-not (Test-Path $skillMd)) { return }
+    $text = Get-Content $skillMd -Raw -Encoding UTF8
+    $lc = ($text -split "`n").Count
+    if ($lc -gt 500) { $fatSkills += "$($_.Name)($lc)" }
+    $m = [regex]::Match($text, '(?m)^description:\s*"(.*)"\s*$')
+    if ($m.Success -and $m.Groups[1].Value.Length -gt 200) { $longDesc += "$($_.Name)($($m.Groups[1].Value.Length))" }
+}
+if ($fatSkills.Count -eq 0 -and $longDesc.Count -eq 0) {
+    Pass "SKILL.md 行数 ≤500 且 description ≤200 字符"
+} else {
+    if ($fatSkills.Count -gt 0) {
+        Write-Host "WARN  SKILL.md 超 500 行（不阻断，待清）：$($fatSkills -join ', ')" -ForegroundColor Yellow
+    }
+    if ($longDesc.Count -gt 0) {
+        Write-Host "WARN  description 超 200 字符（不阻断，待清）：$($longDesc -join ', ')" -ForegroundColor Yellow
+    }
+}
+
 # ---------- 汇总 ----------
 Write-Host ""
 if ($script:fail -gt 0) {
