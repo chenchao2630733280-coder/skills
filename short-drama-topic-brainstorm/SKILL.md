@@ -1,6 +1,6 @@
 ---
 name: "short-drama-topic-brainstorm"
-description: "Generate, diversify, evaluate, and rank AI short-drama topics (pipeline stage 0, optional). Use when the user has a vague one-line drama idea or asks to brainstorm short-drama topics, find directions, or get topic proposals. Outputs docs/TOPIC_PROPOSAL.md for short-drama-blueprint to consume."
+description: "Short-drama stage 0 (optional): generate, diversify and rank topics from a vague one-line idea, outputting docs/TOPIC_PROPOSAL.md for short-drama-blueprint. 用于短剧选题、找方向、选题提案。"
 ---
 
 # Short Drama Topic Brainstorm — AI 短剧选题脑暴

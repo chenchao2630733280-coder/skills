@@ -53,8 +53,10 @@ _shared/references/
 
 ```text
 _shared/
-├── validate.ps1                    # 一致性防回归校验（13 项检查；退出码 0=全过 / 1=有 FAIL）
+├── validate.ps1                    # 一致性防回归校验（14 项检查；退出码 0=全过 / 1=有 FAIL；第 14 项为告警项）
 ├── audit_stats.py                  # 全库体检：逐个 SKILL.md 报「行数 / description 字符数」并标红 >500 行、>200 字符
+├── audit_pipeline.py               # 流水线体检：产物矩阵闭合（runtime outputs vs 总纲路径表）、孤儿/悬空 reference、失败码唯一性
+├── shorten_descriptions.py         # 把超 200 字符的 description 批量收窄（幂等，带回写前自检；见下规则 5）
 ├── fix-frontmatter-name.py         # 把 SKILL.md frontmatter 的 name 批量规范为 name: "<value>"（幂等）
 ├── creative-judgment-baseline.md   # 创作判断基线（叙事/美术/表演三层检查清单）；short-drama-spec 与 short-drama-storyboard 共用
 └── references/                     # 共享参考文件（唯一事实来源），见上文
@@ -66,6 +68,14 @@ _shared/
 2. 校验入口固定为 `validate.ps1`；**改动本工作台任何 skill 后都跑一次**，改完必须回到「全部通过」。
 3. 工具脚本若涉及批量改写文件，**必须 CRLF 安全**：先切出「行体 + 行尾终止符」，只在行体上做匹配，回写保留原终止符。本仓库 `core.autocrlf=true`，混用 `\n` 切行与 `\r` 会把 CR 塞进字段值里并静默丢换行（详见 `WORKBENCH.md` 变更记录 2026-09-30）。
 4. `creative-judgment-baseline.md` 是**跨 skill 的方法论基线**（非机读契约）：被 `short-drama-spec`（§一 叙事层）与 `short-drama-storyboard`（§二 美术层 / §三 表演层 / §四 联合复核）引用。修改它需同时确认两处引用表述仍成立。
+5. **`description` 硬上限 200 字符**（平台字段限制，超了会被截断，触发准确率下降）。写作要求：保留「做什么 + 何时用」两段结构与全部触发词，优先砍并列清单，不要砍限定条件。
+   体检用 `audit_stats.py`，改写用 `shorten_descriptions.py`（改完必须复跑 `audit_stats.py` 确认归零）。
+
+   > 踩过的坑：`description` 可能写成折叠块（`>` / `|`）或跨行续写。只认单行引号的解析器会把它读成"没有描述"，
+   > 于是 **统计上合规、实际超限** —— 工具自己制造假绿。`audit_stats.py` 现在三种写法都认。
+   >
+   > 另一个坑：判定字段边界时若只按"遇到新顶层 key 才停"，frontmatter 的收尾 `---` 会被当成续行吞掉，
+   > 整段 frontmatter 失效且脚本不报错。边界要显式认 `---`，回写前再用 `sanity()` 重新解析核对。
 
 ## 历史背景
 

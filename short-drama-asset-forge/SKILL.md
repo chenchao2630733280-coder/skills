@@ -1,6 +1,6 @@
 ---
 name: "short-drama-asset-forge"
-description: "Stage 4.5 of the AI short-drama production pipeline (asset baseline lock). Reads docs/ASSET_MANIFEST.json + docs/VISUAL_SPEC.md + docs/STORYBOARD.md, materializes the baseline assets (character key-art + variants, scene plates, plot props, voice timbre samples, style baseline token), writes assets/{char,scene,prop,voice,style}/ + docs/ASSET_BASELINE.md, and writes asset status/hash/lockedAt back into docs/ASSET_MANIFEST.json. Hard prerequisite for stage 5: video-forge may only consume locked assets. Use when scheduled by short-drama-forge-master after Gate 3, or when the user asks to produce / lock the character baseline (定妆) before mass production."
+description: "Short-drama stage 4.5: lock the asset baseline. Reads ASSET_MANIFEST/VISUAL_SPEC/STORYBOARD, builds characters, scenes, props, voice and style baseline, writes back hash/lockedAt. Blocks stage 5."
 ---
 
 # Short Drama Asset Forge — 短剧资产定妆与基线锁定（阶段 4.5）

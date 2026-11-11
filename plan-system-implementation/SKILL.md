@@ -1,6 +1,6 @@
 ---
 name: "plan-system-implementation"
-description: "Creates an executable technical implementation plan from existing PRD, page specifications, prototype, and repository. Use before coding a production system or when architecture, stack, module boundaries, API contracts, and delivery increments must be decided."
+description: "Create an executable technical implementation plan from PRD, page specs, prototype and repository: architecture, stack, module boundaries, API contracts, delivery increments."
 ---
 
 # Plan System Implementation — 系统实施规划

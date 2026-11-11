@@ -1,6 +1,6 @@
 ---
 name: "short-drama-script"
-description: "Stage 3 of the AI short-drama production pipeline. Reads docs/STORY_SPEC.md and docs/EPISODE_OUTLINE.md and writes the formal vertical-screen episode scripts, one file per episode at docs/scripts/EP{01..NN}.md (1-3 min per episode, strong opening hook within 5 seconds, hard cliffhanger ending). Use when invoked by short-drama-forge-master after Gate 1, or when the user asks to write the formal scripts / 正式剧本 for a short drama."
+description: "Short-drama stage 3: read STORY_SPEC and EPISODE_OUTLINE, write formal vertical-screen scripts one file per episode at docs/scripts/EP{01..NN}.md, 1-3 min each, 5s hook, cliffhanger."
 ---
 
 # Short Drama Script — 短剧正式剧本（阶段 3）

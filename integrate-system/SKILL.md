@@ -1,6 +1,6 @@
 ---
 name: "integrate-system"
-description: "Integrates frontend, backend, database, authentication, permissions, files, asynchronous jobs, and external services into a runnable end-to-end system. Use after major layers exist or when mocks must be replaced with real flows."
+description: "Integrate frontend, backend, database, auth, permissions, files, async jobs and external services into a runnable end-to-end system. Use when replacing mocks with real flows."
 ---
 
 # Integrate System — 系统联调与集成

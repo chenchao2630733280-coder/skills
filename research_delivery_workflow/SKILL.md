@@ -1,6 +1,6 @@
 ---
 name: "research-delivery-workflow"
-description: "A general workflow skill that converts raw business research/interview/survey notes into an as-is business analysis report, product requirement pool and PRD draft with traceable product capability architecture, terminal-aware navigation and page structure, technical handoff/assessment input, and delivery plan. It preserves source traceability, separates facts from needs and open questions, and prevents unconfirmed information from being promoted into confirmed requirements."
+description: "Convert raw research/interview notes into an as-is business analysis, requirement pool, PRD draft, capability architecture, page structure, handoff input and delivery plan, with source traceability."
 ---
 
 # 调研到交付工作流 Skill

@@ -1,6 +1,6 @@
 ---
 name: "implement-backend"
-description: "Implements production backend APIs, domain services, validation, authorization, auditing, integrations, and automated tests from PRD and architecture contracts. Use when generating or completing the server side of a system."
+description: "Implement production backend APIs, domain services, validation, authorization, auditing, integrations and tests from PRD and architecture contracts. Use for the server side."
 ---
 
 # Implement Backend — 后端系统实现

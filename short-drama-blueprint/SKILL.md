@@ -1,6 +1,6 @@
 ---
 name: "short-drama-blueprint"
-description: "Turn a confirmed short-drama topic (or docs/TOPIC_PROPOSAL.md) into a one-page project blueprint (pipeline stage 1). Defines genre/tags, platform & form, core selling point & viewing motivation, production type, scope, monetization, toolchain, complexity (incl. asset count), stage trimming (asset-forge is never trimmed), and estimated artifact scale (incl. asset count and key-art output volume). Use when asked to make a blueprint, start the short-drama pipeline, or dispatched by short-drama-forge-master."
+description: "Short-drama stage 1: turn a confirmed topic into a one-page blueprint covering genre, platform, core selling point, production type, scope, monetization, toolchain, complexity and artifact scale."
 ---
 
 # Short Drama Blueprint — 短剧立项蓝图

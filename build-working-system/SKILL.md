@@ -1,6 +1,6 @@
 ---
 name: "build-working-system"
-description: "Orchestrates the complete conversion of existing PRD, page specifications, and prototypes into a runnable, tested, and deployable system. Use when the user asks to generate, build, implement, or finish the whole system rather than one technical layer."
+description: "Orchestrate the whole conversion of PRD, page specs and prototypes into a runnable, tested, deployable system. Use when asked to build or finish the entire system, not one layer."
 ---
 
 # Build Working System — 可运行系统编排器

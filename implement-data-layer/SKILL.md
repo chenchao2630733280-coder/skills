@@ -1,6 +1,6 @@
 ---
 name: "implement-data-layer"
-description: "Implements production database schemas, migrations, constraints, seed data, repositories, and transaction rules from the system data model and implementation plan. Use when building or updating the persistence layer."
+description: "Implement production schemas, migrations, constraints, seed data, repositories and transaction rules from the data model and implementation plan. Use for the persistence layer."
 ---
 
 # Implement Data Layer — 数据层实现

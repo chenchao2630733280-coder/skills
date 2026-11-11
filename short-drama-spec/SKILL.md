@@ -1,6 +1,6 @@
 ---
 name: "short-drama-spec"
-description: "Stage 2 of the AI short-drama production pipeline. Reads docs/SHORT_DRAMA_BLUEPRINT.md and expands the approved topic into a complete story spec (docs/STORY_SPEC.md: story engine, core rules, characters, secrets, story stages, emotion curve, scoring) plus a per-episode outline (docs/EPISODE_OUTLINE.md) that anchors the formal script stage. Use when invoked by short-drama-forge-master after Gate 0, or when the user asks to generate the story spec / episode outline for a short drama."
+description: "Short-drama stage 2: expand the approved topic into docs/STORY_SPEC.md (story engine, rules, characters, secrets, stages, emotion curve, scoring) plus EPISODE_OUTLINE.md per-episode outline."
 ---
 
 # Short Drama Spec — 短剧故事规格（阶段 2）

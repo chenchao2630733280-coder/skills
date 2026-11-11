@@ -1,6 +1,6 @@
 ---
 name: "ai-short-drama-topic-planner"
-description: Generate, diversify, trend-enhance, evaluate, and refine AI short-drama story topics. Use when the user asks for short-drama concepts, high-concept premises, viewing-motivation analysis, topic diversification, trend radar, future event windows, topic comparison, or continued creative branching. Includes a hard accessibility gate (one-line pitch / visualizable premise / physical payoff / no jargon) that filters out premises ordinary viewers cannot understand within 30 seconds.
+description: "Generate, diversify and evaluate AI short-drama topics with a hard accessibility gate (one-line pitch / visualizable premise / physical payoff). 用于短剧选题、高概念前提、观看动机、趋势雷达、选题对比。"
 ---
 
 # AI短剧高概念选题策划师 v2.2

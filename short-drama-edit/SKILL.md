@@ -1,6 +1,6 @@
 ---
 name: "short-drama-edit"
-description: "AI short-drama pipeline stage 7 (final edit, contains the Gate 5 runnable gate). Reads production/manifest.json + shots/ + audio/ + subtitles/, assembles each episode into episodes/EP{XX}.mp4, and writes docs/BUILD_REPORT.md including the Gate 5 acceptance results. Use when scheduled by short-drama-forge-master for this stage, or when the user asks to edit / assemble / mux the final episodes of a short drama."
+description: "Short-drama stage 7 (final edit + Gate 5). Reads the production manifest, shots, audio and subtitles, assembles episodes/EP{XX}.mp4, writes BUILD_REPORT.md. 用于剪辑/合成/成片。"
 ---
 
 # Short Drama Edit — 剪辑合成成片

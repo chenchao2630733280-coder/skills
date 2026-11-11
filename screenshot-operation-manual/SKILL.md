@@ -1,6 +1,6 @@
 ---
 name: "screenshot-operation-manual"
-description: "Generate complete PC web admin and mobile app operation manuals from screenshots, screen recordings, or screenshot folders. Use when you must analyze provided UI screenshots and produce a professional user guide/manual in DOCX/PDF/Markdown/HTML, including module descriptions, screenshots with captions, filters, buttons, list fields, form fields, operation steps, workflow use cases, mobile-specific flows, and FAQ-style appendices."
+description: "Generate PC admin and mobile operation manuals from screenshots or recordings. 产出手册/用户指南（DOCX/PDF/Markdown/HTML）：模块说明、截图配文、字段、步骤、流程、FAQ。"
 ---
 
 # Screenshot Operation Manual

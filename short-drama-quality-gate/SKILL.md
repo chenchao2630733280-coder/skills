@@ -1,6 +1,6 @@
 ---
 name: "short-drama-quality-gate"
-description: "Cross-stage quality gate for the AI short-drama production pipeline. Intervenes at 6 checkpoints (Gate 0 post-blueprint, Gate 1 post-spec, Gate 2 post-script, Gate 3 post-storyboard, Gate 3.5 post-asset-baseline, Gate 4 post-production) to run contract validation and runtime pre-checks; on FAIL it hard-blocks the pipeline and returns fix suggestions. Read-only on business artifacts (writes gate reports only). Call when short-drama-forge-master dispatches a Gate 0~4 or Gate 3.5 checkpoint, or when the user asks to validate / gate-check / inspect the short-drama production artifacts."
+description: "Cross-stage quality gate for the short-drama pipeline. Runs contract validation and runtime pre-checks at Gates 0,1,2,3,3.5,4; on FAIL it hard-blocks and returns fixes. Writes gate reports only."
 ---
 
 # 短剧流水线质量门(short-drama-quality-gate)

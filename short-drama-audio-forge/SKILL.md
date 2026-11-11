@@ -1,6 +1,6 @@
 ---
 name: "short-drama-audio-forge"
-description: "AI short-drama pipeline stage 6 (audio; runs in parallel with video-forge). Reads the script docs/scripts/EP*.md and the storyboard docs/STORYBOARD.md, produces voice-over audio/{ep}/line_{XX}.mp3, BGM audio/bgm_{name}.mp3, and subtitles subtitles/{ep}.srt. Use when scheduled by short-drama-forge-master for this stage, or when the user asks to generate dubbing / BGM / sound effects / subtitles for a short drama."
+description: "Short-drama stage 6 (audio, parallel with video-forge). Reads scripts and storyboard, produces voice-over line_{XX}.mp3, BGM and subtitles/{ep}.srt. 用于配音/BGM/音效/字幕。"
 ---
 
 # Short Drama Audio Forge — 配音 / 音乐 / 字幕

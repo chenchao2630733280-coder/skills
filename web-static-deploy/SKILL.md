@@ -1,6 +1,6 @@
 ---
 name: "web-static-deploy"
-description: "Deploy web frontends (static HTML/JS, Vite/React/Vue builds) to production. Use when a user asks how to publish, deploy, or host a web app or game, or wants to choose among GitHub Pages, Vercel, Netlify, CloudBase or COS, CloudStudio. This skill decides whether the app is PURE STATIC (no backend, browser localStorage only) or NEEDS A DATABASE (CloudBase document DB plus auth plus cloud functions), then executes the matching deploy path and covers the silent-404 failure modes (private repo, Pages source not set to GitHub Actions, TXT domain verification, CNAME persistence)."
+description: "Deploy static HTML/JS and Vite/React/Vue builds to GitHub Pages, Vercel, Netlify, CloudBase or COS. Decides PURE STATIC vs NEEDS A DATABASE, then runs the path and covers silent-404 modes."
 agent_created: true
 ---
 

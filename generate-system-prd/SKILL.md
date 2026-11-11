@@ -1,6 +1,6 @@
 ---
 name: "generate-system-prd"
-description: "Generates structured PRDs for enterprise management systems, native mobile apps, mobile web, mini programs, and multi-end products. Selects terminal-specific rules for domain models, user flows, page specs, permissions, device capabilities, and non-functional requirements."
+description: "Generate structured PRDs for enterprise systems, native apps, mobile web, mini programs and multi-end products, with terminal-specific rules for domain models, flows, pages, permissions and NFRs."
 ---
 
 # Generate System PRD — 系统产品设计文档生成器

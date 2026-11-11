@@ -1,6 +1,6 @@
 ---
 name: "ruanzhu-doc-generator"
-description: "Generate Chinese software copyright application documentation DOCX files from product screenshots for PC management backends and mobile apps/miniprograms. Use when asked to create, draft, or package 软著文档, 产品说明书, 操作说明书, 软件著作权材料, or screenshot-based documentation, especially when screenshots may contain both PC后台 and 移动端 and must be split into separate DOCX deliverables."
+description: "Generate 软著申请文档 DOCX from product screenshots for PC backends and mobile apps/mini programs. 用于软著文档、产品说明书、操作说明书；PC 与移动端拆成两份 DOCX。"
 ---
 
 # 软著文档生成器

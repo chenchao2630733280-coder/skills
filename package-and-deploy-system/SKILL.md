@@ -1,6 +1,6 @@
 ---
 name: "package-and-deploy-system"
-description: "Prepares a verified application for reproducible local and production deployment with containers, environment contracts, CI/CD, migrations, health checks, observability, backup, rollback, and release documentation."
+description: "Prepare a verified app for reproducible local and production deployment: containers, env contracts, CI/CD, migrations, health checks, observability, backup, rollback, release docs."
 ---
 
 # Package and Deploy System — 打包、部署与交付

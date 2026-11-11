@@ -1,6 +1,6 @@
 ---
 name: "brainstorm-product-feature"
-description: "Explores and refines an early-stage product feature idea before PRD writing. Invoke when the user has a rough feature concept and needs clarification questions, hidden-assumption checks, feasibility evaluation, user-flow exploration, risks, edge cases, constraints, and alternatives."
+description: "Refine an early product feature idea before PRD writing: clarification questions, hidden-assumption checks, feasibility, user flows, risks, edge cases, constraints, alternatives."
 ---
 
 # Brainstorm Product Feature — 产品功能头脑风暴与构想评估

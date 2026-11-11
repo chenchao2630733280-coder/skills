@@ -1,6 +1,6 @@
 ---
 name: "short-drama-storyboard"
-description: "Stage 4 of the AI short-drama production pipeline. Reads docs/scripts/EP{01..NN}.md and converts the script into an executable storyboard (docs/STORYBOARD.md) with per-shot text-to-image and image-to-video prompts, a visual specification (docs/VISUAL_SPEC.md) covering characters, scenes, style baseline, subtitles and safe areas, plus a machine-readable asset requirement manifest (docs/ASSET_MANIFEST.json) declaring every character/variant, scene, prop, voice and the style baseline for stage 4.5 to materialize. Use when scheduled by short-drama-forge-master after Gate 2, or when the user asks to turn a short-drama script into storyboards and visual specs."
+description: "Short-drama stage 4: turn the script into docs/STORYBOARD.md with per-shot text-to-image and image-to-video prompts, VISUAL_SPEC.md, and ASSET_MANIFEST.json declaring every asset for stage 4.5."
 ---
 
 # Short Drama Storyboard — 短剧分镜与视觉设计

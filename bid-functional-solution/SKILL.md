@@ -1,6 +1,6 @@
 ---
 name: "bid-functional-solution"
-description: "Create or revise bid/tender functional construction方案 documents from PRDs, requirement specifications, screenshot folders, prototype image sets, flowcharts, or existing DOCX files. Use when you need to turn a requirements document or a folder of screenshots into a 标书功能建设方案 module, reorganize content by 图片、功能说明、功能描述, infer functions from UI images, polish requirement language into bid-ready capability statements, remove out-of-scope functions, or generate/update a professional Word deliverable."
+description: "Create or revise 标书功能建设方案 from PRDs, requirement specs, screenshot folders, prototypes or DOCX. 用于功能说明/功能描述改写、从 UI 图推功能、裁范围、出 Word 交付件。"
 ---
 
 # Bid Functional Solution

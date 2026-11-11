@@ -1,6 +1,6 @@
 ---
 name: "short-drama-video-forge"
-description: "Stage 5 of the AI short-drama production pipeline. Reads docs/STORYBOARD.md, docs/VISUAL_SPEC.md and the LOCKED baseline docs/ASSET_MANIFEST.json, builds the machine-readable production manifest (production/manifest.json) that REFERENCES the locked assets by id+variant+hash, then generates per-shot videos shots/{ep}/shot_{XX}.mp4 (static .png with simulated camera motion on failure). Hard-gated on locked assets: it must never generate from a declared or degraded asset. Use when scheduled by short-drama-forge-master after Gate 3.5, or when the user asks to generate short-drama shots/videos from a storyboard."
+description: "Short-drama stage 5: build production/manifest.json from STORYBOARD/VISUAL_SPEC and LOCKED ASSET_MANIFEST (assets by id+variant+hash), generate shots/{ep}/shot_{XX}.mp4. Never from unlocked assets."
 ---
 
 # Short Drama Video Forge — 短剧 AI 视频生成
