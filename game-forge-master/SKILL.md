@@ -228,7 +228,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 
 ## 五、通用模板索引
 
-各下游 skill 自带 `references/` 目录,维护本阶段所需的模板和规范文件,**无统一 game-template 工程**。各 skill 的 references 清单:
+各下游 skill 自带各自的 references 目录,维护本阶段所需的模板和规范文件,**无统一 game-template 工程**。各 skill 的 references 清单:
 
 | skill | references 内容 |
 |-------|----------------|

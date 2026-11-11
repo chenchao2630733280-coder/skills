@@ -179,9 +179,9 @@ TTS:火山引擎
 
 ## 五、通用模板索引
 
-各下游 skill 自带 `references/` 与 `templates/` 目录,维护本阶段所需的模板与规范文件。references 清单:
+各下游 skill 自带各自的 references 与 templates 目录,维护本阶段所需的模板与规范文件。references 清单:
 
-| skill | references/templates 内容 |
+| skill | 自带 references 与 templates 的内容 |
 |-------|--------------------------|
 | short-drama-topic-brainstorm | 观看动力变量库、趋势雷达信号分层、选题多样性引擎 |
 | short-drama-blueprint | 立项模板、短剧类型判定细则、工具链选型表 |
@@ -427,7 +427,7 @@ short-drama-forge-master/templates/project/
 
 - **命名契约**:模板文件必须去掉 `.template` 后缀后使用,恢复为 §八 固定路径文件名;`EP01.example.md` 仅作格式参考,正式剧本按 `docs/scripts/EP{01..NN}.md` 新建
 - **模板不阻塞流水线**:即使用户没有从模板起步,各阶段 skill 照常按自己的模板/格式产出(模板模式只是加速起步,不是必经之路)
-- **模板骨架与各阶段 skill 自带 templates/ 的关系**:`project/` 提供"项目级"成套骨架;各阶段 skill 的 `references/`/`templates/` 提供"单阶段"细则模板,二者互补,内容不重复
+- **模板骨架与各阶段 skill 自带 templates/ 的关系**:`project/` 提供"项目级"成套骨架;各阶段 skill 的 references / templates 目录提供"单阶段"细则模板,二者互补,内容不重复
 - **模板模式本身不设质量门**:初始化只复制+改名,不产出业务内容,Gate 0 从蓝图填写完成后介入
 - **资产目录契约**:`assets/` 五个子目录由阶段 4.5 写入;模板中仅作结构占位(含 `.gitkeep`)。**不要手工往 `assets/` 丢图** —— 未经定妆确认与 hash 登记的图会在 Gate 3.5 被判为未锁定/无登记而阻断
 
