@@ -75,7 +75,7 @@ game-asset-forge ∥ game-code-forge
 ## 四、工作流（⓪ 选路线 → ⑦ 交门禁）
 
 ```
-⓪ 选路线      这批关卡从哪来 → 手调 / 反向生成 / 导入（判据见 references/14）
+⓪ 选路线      这批关卡从哪来 → 手调 / 生成器 / 导入（判据见 references/14；生成器内部再选反向构造或正向筛选）
 ⓪b 定生成路径 仅生成器/导入路线：五工位开关 + 四不变量 → docs/LEVEL_GENERATOR_SPEC.md（见 references/15）
 ① 抽关卡表    PRD 关卡表 + 数值表 → campaign.json（映射见 references/13）
 ② 定曲线      phases：阶段划分、形状（ramp/flat/spike/relief/wave/step）、起止目标首通率
@@ -87,7 +87,7 @@ game-asset-forge ∥ game-code-forge
 ```
 
 **⓪ 的判据只有一句**：这批关卡有没有**离散、可枚举、可序列化**的局面？没有（跑酷/平台跳跃/实时动作）就手调，
-别写生成器——连续游戏没有"初盘→终局"的反推关系，可解性也不是构造能保证的。反向生成的五步骨架、
+别写生成器——连续游戏没有"初盘→终局"的反推关系，可解性也不是构造能保证的。反向构造的五步骨架、
 四条判据（P1 可解性由构造保证 / P2 解路数下限 / P3 步骤数≠难度 / P4 初盘退化必查）见 `references/14`。
 
 **⓪b 只做一件事**：把"这个游戏需要哪几个生成工位、每站用什么算法"定下来，写进 `docs/LEVEL_GENERATOR_SPEC.md`。

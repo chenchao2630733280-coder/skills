@@ -55,7 +55,7 @@
 
 | 现象 | 回到哪 |
 |---|---|
-| Hero 持续下坠 | game-code-forge §十二 Sprite/Body 偏移排查 |
+| Hero 持续下坠 | game-code-forge §十四 Sprite/Body 偏移安全 |
 | 障碍太密跳不过 | game-spec §2.3 调 interval / speed |
 | 障碍太高跳不过 | game-spec §2.3 调 obstacle.height 或 jumpVelocity |
 | 障碍数为 0 | 先查 tick 是否被暂停/引导层拦截,再查生成器初始化顺序 |

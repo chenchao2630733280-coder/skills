@@ -439,7 +439,7 @@ PRD §2.3 与 GameConfig 顶部注释都声明了数值可玩,但:
    - `obstacles >= 1` → 障碍在生成(逻辑正常)
    - Hero 在障碍到达前能跳跃越过(手动 pointerdown 测试或看跳跃曲线)
 4. **失败处理**:
-   - Hero 持续下坠 → 回到 game-code-forge §十二 Sprite/Body 偏移排查
+   - Hero 持续下坠 → 回到 game-code-forge §十四 Sprite/Body 偏移安全
    - 障碍太密跳不过 → 回到 game-spec §2.3 调整 interval/speed
    - 障碍太高跳不过 → 回到 game-spec §2.3 调整 obstacle.height 或 jumpVelocity
 

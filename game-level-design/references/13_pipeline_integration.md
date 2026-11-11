@@ -106,6 +106,7 @@ PRD 是自由文本，映射靠人（或 AI）读出来，不靠解析器。按�
 | L2 | 6 | 参数在合法范围内 | 每关 params ⊆ `legal_ranges` | G25-06 |
 | L2 | 7 | 门禁状态可解释 | `difficulty_gate.status=PASS`，或 FAIL 项在 `LEVEL_PLAN §5` 有逐条处置 | G25-07 |
 | L2 | 8 | 假设已标注 | `model.status` 非空，且报告含"假设、置信度"章节 | G25-08 |
+| L2 | 12 | 阈值未被静默放宽（**条件触发**） | 仅当 `difficulty_gate.status` 由 FAIL 变 PASS 时：`docs/DIFFICULTY_REVIEW.json` 的 `thresholds` 与上一版逐项一致；有放宽且 `LEVEL_PLAN.md` 未记录理由即 FAIL。未做跨版本对比记 WARNING（`THRESHOLD_BASELINE_MISSING`），**不得默认通过** | G25-12 |
 
 FAIL 处理：硬阻断，回本阶段重跑；**不允许**通过改阈值把 FAIL 变 PASS（Gate 会核对阈值是否被改动过）。
 

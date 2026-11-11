@@ -349,14 +349,14 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 const SFX_TABLE = {
   'sfx-click': { osc: 'sine', freq: 880, attack: 0.012, release: 0.09, gain: 0.28 },
   'sfx-combo': { osc: 'square', freq: 520, pitchStep: 1.2, attack: 0.008, release: 0.18, gain: 0.20 },
-  // ... 与 §2.6 一一对应
+  // ... 与 AUDIO_SPEC §2.6 一一对应
 } as const;
 ```
 
-三条纪律:①`AudioContext` 懒初始化,首次 `pointerdown` 时 `resume()`;失败则 `enabled = false` 静默降级,不抛错 ②总开关走 `masterGain = 0`,不销毁节点;`visibilitychange` 隐藏时停 loop 并挂起 context ③同 ID 未播完时按 §2.6 写明的行为执行(重启/忽略),不许临场决定。
+三条纪律:①`AudioContext` 懒初始化,首次 `pointerdown` 时 `resume()`;失败则 `enabled = false` 静默降级,不抛错 ②总开关走 `masterGain = 0`,不销毁节点;`visibilitychange` 隐藏时停 loop 并挂起 context ③同 ID 未播完时按 AUDIO_SPEC §2.6 写明的行为执行(重启/忽略),不许临场决定。
 
 第四条纪律:**声明必须被触发,且两个方向都查**——
-- 正查:对 §2.6 每个 id 跑 `grep -rn "<id>" src/`,只命中 `SFX_TABLE` 定义处 = **有表无声**(声明了但业务从没播过)
+- 正查:对 AUDIO_SPEC §2.6 每个 id 跑 `grep -rn "<id>" src/`,只命中 `SFX_TABLE` 定义处 = **有表无声**(声明了但业务从没播过)
 - 反查:业务里所有 `play('xxx')` 的 id 是否都在表内 = **有声无表**(拼写漂移,查表失败后静默无声)
 
 两个方向都漏在"运行时什么都不报"上,截图和 typecheck 都绿。这就是"声明数 ≠ 实际数"在音频上的形态,不能靠人试听。
