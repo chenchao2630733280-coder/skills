@@ -101,7 +101,7 @@ PRD 是自由文本，映射靠人（或 AI）读出来，不靠解析器。按�
 | L1 | 4 | `docs/DIFFICULTY_REPORT.md` 存在 | 含"门禁结果"与"假设、置信度"两节 | G25-04 |
 | L1 | 10 | `docs/LEVEL_AUTHORING.md` 存在（关卡制） | 含上手 / 字段 / 旋钮**有效区间** / 硬约束（每条带"为什么"）/ 验收对跑 / 生产路线（选了哪条 + P1–P4 逐条裁决）六节；只有标题没有内容不算通过 | G25-10 |
 | L1 | 9 | `config/levels.json` 通过交付物校验 | `validation.status == PASS`（导出时由 `export_levels.py` 内嵌，判据实现见 `tools/validate_levels.py`）；缺该块视为未校验，记 WARNING。*编号跳到 9 是为了不给 L2 的 5~8 重排，与失败码 `G25-09` 对齐* | G25-09 |
-| L1 | 11 | `docs/LEVEL_GENERATOR_SPEC.md` 存在（**条件**：LEVEL_PLAN 声明生产路线为生成器/导入） | 与模板同构（九节）；其中 §2 五个工位开关每条有答案（开/砍 + 风险谁兜）、§4 四条不变量 I1–I4 逐条有裁决（不适用写原因）、§7 已知限制非空；手调路线记 SKIP 不记 FAIL | G25-11 |
+| L1 | 11 | `docs/LEVEL_GENERATOR_SPEC.md` 存在（**条件**：LEVEL_PLAN 声明生产路线为生成器/导入） | 与模板同构（九节）；其中 §2 的 Q1–Q5 每条有答案（开/砍 + 风险谁兜）且**工位 E 有结论**（默认开；关卡数 < 30 砍掉须在 §7 写明）、§4 四条不变量 I1–I4 逐条有裁决（不适用写原因）、§7 已知限制非空；手调路线记 SKIP 不记 FAIL | G25-11 |
 | L2 | 5 | 关卡序列与 PRD 一致 | `levels.json` 的 `level_id` 集合与 PRD 关卡表**完全相同**（不多不少不改名） | G25-05 |
 | L2 | 6 | 参数在合法范围内 | 每关 params ⊆ `legal_ranges` | G25-06 |
 | L2 | 7 | 门禁状态可解释 | `difficulty_gate.status=PASS`，或 FAIL 项在 `LEVEL_PLAN §5` 有逐条处置 | G25-07 |

@@ -356,7 +356,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 音频规范 | `docs/AUDIO_SPEC.md` | game-art-spec |
 | 关卡设计说明 | `docs/LEVEL_PLAN.md` | game-level-design |
 | 关卡作者手册 | `docs/LEVEL_AUTHORING.md` | game-level-design(人读;改关说明书,单局制可裁剪) |
-| 生成器规格(条件) | `docs/LEVEL_GENERATOR_SPEC.md` | game-level-design(仅生成器/导入路线;五工位开关 + 四条不变量裁决) |
+| 生成器规格(条件) | `docs/LEVEL_GENERATOR_SPEC.md` | game-level-design(仅生成器/导入路线;工位开关裁决 + 四条不变量裁决) |
 | 关卡配置(运行期) | `config/levels.json` | game-level-design |
 | 关卡配置副本(构建期派生) | Web:`public/config/levels.json`(或同级 import 根文件);Godot:`res://config/levels.json`;Unity:`Assets/StreamingAssets/config/levels.json` | game-code-forge(复制,内容与源一致,不手改) |
 | 难度评审报告 | `docs/DIFFICULTY_REPORT.md` | game-level-design |

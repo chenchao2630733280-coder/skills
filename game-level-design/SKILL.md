@@ -143,7 +143,7 @@ python tools/selftest.py
 - [ ] `config/levels.json` 存在且可解析，字段符合 `references/13` 的 schema（`level_id/index/tag/params/target_win/difficulty_score`）。`difficulty_score` 是 0~1 的排序/诊断分，**不是**通关率（`pred_win` 才是）。
 - [ ] `docs/DIFFICULTY_REPORT.md` 存在，`gate.status` 为 PASS，或 FAIL 项已在 `LEVEL_PLAN.md` 逐条说明处置。
 - [ ] `docs/LEVEL_AUTHORING.md` 存在，含 §1 上手 / §2 字段 / §4 旋钮有效区间 / §5 硬约束（每条带"为什么"）/ §7 两种极端策略对跑 / §6 生产路线与 P1–P4 裁决；模板见 `templates/LEVEL_AUTHORING_template.md`。
-- [ ] (走生成器/导入路线时)`docs/LEVEL_GENERATOR_SPEC.md` 存在，§2 五工位开关有答案、§4 四条不变量**逐条有裁决**（不适用也要写原因）；模板见 `templates/LEVEL_GENERATOR_SPEC_template.md`。
+- [ ] (走生成器/导入路线时)`docs/LEVEL_GENERATOR_SPEC.md` 存在，§2 的 Q1–Q5 每条有答案且工位 E 有结论、§4 四条不变量**逐条有裁决**（不适用也要写原因）；模板见 `templates/LEVEL_GENERATOR_SPEC_template.md`。
 - [ ] `levels.json` 的关卡数量、`level_id` 序列与 PRD 关卡表**完全一致**（不多不少不改名）。
 - [ ] 每关的 `params` 都落在 `legal_ranges` 内。
 - [ ] 报告中的 `spread` / θ / 权重 / `per_unit` 状态已标注（占位 or 已校准），未把占位值写成结论。
