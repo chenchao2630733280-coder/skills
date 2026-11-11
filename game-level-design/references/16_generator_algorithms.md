@@ -23,11 +23,13 @@
 ```
 to_palette(grid, palette):
     for each pixel p in grid:
-        grid[p] = argmin_i dist2(p, palette[i])      # 最近邻，无随机
+        grid[p] = argmin_i dist2(p, palette[i])      # 最近邻，无随机；平局取下标小的
     return grid
 ```
 
 确定性来自"无随机"，代价是画稿色域跨度大时会被压死。
+**平局必须取下标小的**（理由同 A-2 第 2 条）：等距像素若按浮点比较顺序取胜者，
+同一张画稿在两台机器上会量化出不同的色块边界。
 
 ### A-2 K-means（颜色数由算法决定时用）
 
@@ -217,11 +219,17 @@ reverse_generate(need, cap_lib, tray, positions, waste):
     plan = exact_partition_per_color(need, cap_lib)        # ① I1 检查点
     if plan is None: raise "需求无法精确分割"               #    宁可报错，不许向上取整
 
+    unsolvable = 0
     repeat up to attempts:
         seq    = shuffle(flatten(plan) + waste_spools)     # ② 决定消耗序
         spools = layout_from_plan(seq, positions)          # ③ I2 由构造保证
         v      = solve(spools, tray)                       # ④ 存在性 + 解路数 + 最小峰值
-        if not v.solvable: continue
+        if not v.solvable:
+            # 反向构造的解是**构造出来的**，它不可解只可能是 layout 或求解器写错了，
+            # 不是"这关不好，换一关"。当成普通淘汰 continue 会把 bug 稀释成"通过率偏低"。
+            unsolvable += 1
+            if unsolvable > 3: raise "连续不可解：查 layout 的层号方向与求解器的迁移规则"
+            continue
         if v.peak_min >= tray: continue                    # ⑤ I4：峰值顶格 = 零容错，不要
         return spools                                      #    通过条件是 peak_min ≤ tray-1
     return best_effort or raise                            # best_effort 见下方说明
