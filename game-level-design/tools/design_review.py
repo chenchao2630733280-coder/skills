@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from cdl import audit as audit_mod
 from cdl.actuals import load_attempts
 from cdl.curve import build_curve, phase_summary
 from cdl.diagnose import diagnose
@@ -74,10 +75,11 @@ def run(args) -> int:
     actuals = load_attempts(args.attempts) if args.attempts else None
     diagnostics = diagnose(campaign, records, jumps, sim, actuals)
     recs = recommend(campaign, records, diagnostics)
+    audit = audit_mod.run(campaign, records)
 
-    payload = write_all(args.out, campaign, curve, records, jumps, sim, diagnostics, recs, actuals)
+    payload = write_all(args.out, campaign, curve, records, jumps, sim, diagnostics, recs, actuals, audit)
 
-    _print_summary(campaign, curve, records, jumps, diagnostics, recs, payload, args.out)
+    _print_summary(campaign, curve, records, jumps, diagnostics, recs, payload, args.out, audit)
 
     if args.strict and payload["gate"]["status"] == "FAIL":
         print("\n[门禁] 存在 HIGH 级问题，--strict 模式下退出码 1。", file=sys.stderr)
@@ -85,7 +87,7 @@ def run(args) -> int:
     return 0
 
 
-def _print_summary(campaign, curve, records, jumps, diagnostics, recs, payload, out_dir):
+def _print_summary(campaign, curve, records, jumps, diagnostics, recs, payload, out_dir, audit=None):
     ref = campaign.ref_segment
     print(f"战役: {campaign.campaign_id}  品类: {campaign.genre}  关卡: {len(records)}  参考分层: {ref}")
     print("阶段目标:")
@@ -103,6 +105,11 @@ def _print_summary(campaign, curve, records, jumps, diagnostics, recs, payload, 
     for d in [x for x in diagnostics if x["severity"] == "HIGH"][:5]:
         print(f"  [HIGH] {d['level_id']} {TYPE_LABELS.get(d['type'], d['type'])} —— {d['detail'][:60]}")
     print(f"参数建议：{len(recs)} 关有条目（{sum(len(r['options']) for r in recs)} 个候选方案）")
+    if audit:
+        bad = [i for i in audit["issues"] if i["severity"] in ("HIGH", "WARN")]
+        print(f"量尺体检：{audit['status']}（上限 {audit['ceiling']:.2f}；提示 {len(bad)} 条）")
+        for i in bad[:4]:
+            print(f"  [{i['severity']}] {i['code']} — {i['detail'][:70]}")
     print(f"\n门禁: {payload['gate']['status']}   产物目录: {Path(out_dir).resolve()}")
 
 

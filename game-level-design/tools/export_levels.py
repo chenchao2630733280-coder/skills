@@ -24,6 +24,7 @@ from cdl.curve import build_curve
 from cdl.mapping import pass_rate
 from cdl.schema import Campaign, ConfigError
 from cdl.score import score_features
+from validate_levels import check_against_campaign, check_dominance, check_table
 
 SCHEMA_VERSION = "1.0"
 
@@ -88,6 +89,7 @@ def main(argv=None) -> int:
     parser.add_argument("--out", default="config/levels.json", help="输出路径，默认 config/levels.json")
     parser.add_argument("--require-pass", action="store_true", help="评审门禁不是 PASS 时拒绝导出")
     parser.add_argument("--indent", type=int, default=2, help="缩进，默认 2；0 表示压缩输出")
+    parser.add_argument("--allow-invalid", action="store_true", help="校验出 ERROR 时仍然写出文件（不推荐，仅供排查）")
     args = parser.parse_args(argv)
 
     try:
@@ -105,6 +107,19 @@ def main(argv=None) -> int:
         review = json.loads(review_path.read_text(encoding="utf-8"))
 
     payload = build(campaign, review)
+
+    # 导出即自检：把校验结论内嵌进 levels.json，Gate 2.5 读同一份文件即可判定
+    issues = check_table(payload) + check_against_campaign(payload, campaign) + check_dominance(payload, campaign)
+    errors = [i for i in issues if i["severity"] == "ERROR"]
+    payload["validation"] = {
+        "status": "FAIL" if errors else "PASS",
+        "error_count": len(errors),
+        "warn_count": len(issues) - len(errors),
+        "issues": issues,
+        "tool": "tools/validate_levels.py",
+        "rule": "ERROR 阻塞下游；WARN 需人工确认。只校验结构与一致性，不评价难度是否合适。",
+    }
+
     status = payload["difficulty_gate"]["status"]
     if args.require_pass and status != "PASS":
         print(f"[拒绝导出] 评审门禁状态为 {status}，先修复 HIGH 级问题或去掉 --require-pass", file=sys.stderr)
@@ -117,8 +132,15 @@ def main(argv=None) -> int:
 
     print(f"已导出 {payload['campaign']['level_count']} 关 → {out}")
     print(f"  品类 {payload['campaign']['genre']}　战役 {payload['campaign']['campaign_id']}　门禁 {status}")
+    print(f"  交付物校验 {payload['validation']['status']}（ERROR {payload['validation']['error_count']} / WARN {payload['validation']['warn_count']}）")
     if status == "FAIL":
         print(f"  注意：门禁 FAIL，阻断关卡 {payload['difficulty_gate']['blocking_levels']}", file=sys.stderr)
+    if errors:
+        for i in errors[:5]:
+            print(f"  [ERROR] {i['code']} {i['scope']} — {i['detail']}", file=sys.stderr)
+        if not args.allow_invalid:
+            print("  交付物校验未通过，导出视为失败（加 --allow-invalid 可强行写出）", file=sys.stderr)
+            return 1
     return 0
 
 

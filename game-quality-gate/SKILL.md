@@ -117,6 +117,8 @@ game-polish (可选)
 | 2.5.2 | 关卡配置可解析 | `config/levels.json` 为合法 JSON 且含 `schema_version` | `G25-02` |
 | 2.5.3 | 必填字段完整 | 每关含 `level_id/index/tag/params/target_win/difficulty_score` | `G25-03` |
 | 2.5.4 | 评审报告存在 | `docs/DIFFICULTY_REPORT.md` 含"门禁结果"与"假设、置信度"两节 | `G25-04` |
+| 2.5.9 | 关卡表通过交付物校验 | `config/levels.json` 的 `validation.status == PASS`(由 `game-level-design` 的 `export_levels.py` 导出时内嵌,判据实现 `tools/validate_levels.py`:字段/类型/id 唯一/index 连续/源↔表一致);**缺 `validation` 块**记 WARNING 而非 FAIL(兼容旧产物) | `G25-09` |
+| 2.5.10 | 关卡作者手册存在(关卡制) | `docs/LEVEL_AUTHORING.md` 含六节:①上手(文件位置/校验命令/常见坑) ②字段表 ③旋钮**有效区间**与越界后果 ④构建期硬约束(每条带"为什么存在") ⑤两种极端策略对跑验收 ⑥生产路线(**选了哪条 + P1–P4 逐条给裁决,不适用的写"不适用"而不是留空**);只有标题无内容不算通过 | `G25-10` |
 
 **L2 契约检查**
 
@@ -217,6 +219,8 @@ game-polish (可选)
 | 1.17 | 复刻:数值来源(条件) | **仅复刻项目**:PRD §2 数值表每行带 `来源(matrix_id)` 与证据等级列;数值与 `docs/NUMERIC_MODEL.csv` 一致,无自编行 | `G1-CLONE-NUMBER-FABRICATED` |
 | 1.18 | 复刻:M 项/状态机落地(条件) | **仅复刻项目**:`in_mvp` 的 M 项全部在 PRD §5/§2 出现;§6 状态机按对象/容器/场景三套拆,`visible`/`removable` 为两字段 | `G1-CLONE-M-NOT-IN-PRD` |
 | 1.19 | 关卡表可机读(条件) | **仅关卡制项目**(PRD 含关卡序列/难度递进):PRD 关卡章必须**逐关可枚举**——每关有 `level_id`(或连续编号)+ 至少一个可验指标(目标/时限/步数);只写"共 N 关"而无逐关清单判 FAIL(否则 Gate 2.5 的 2.5.5 无基准可比) | `G1-LEVEL-TABLE-NOT-ENUMERABLE` |
+| 1.20 | 机制规格完整(条件) | **仅当机制 ≥2 个或含分层/遮挡/连锁判定**:PRD §10 逐机制成节,每节六项齐全(规则/护栏/状态机/难度推导/视觉规格/扩展点);抽查「规则」写成可判定形式(不是散文)、「难度推导」用的是 `game-level-design` 的维度名 | `G1-MECHANIC-SPEC-INCOMPLETE` |
+| 1.21 | 帧与确定性契约(条件) | **仅实时/帧驱动游戏**:TECH_DESIGN §11 的「时钟与节拍」「不变式」「终局判定」三项非空;每条不变式能指到至少一条断言(在 §11 或验证脚本清单中);死锁写成**充分判据**而非"试了几步没进展" | `G1-FRAME-CONTRACT-MISSING` |
 
 > **核心价值**:1.9~1.16 把原本要拖到 Gate 4 数值平衡实测才暴露的"数值/关卡/状态机/系统边界不一致"提前到规格阶段。MDA 保证"机制-体验"因果链显式;心流保证"物理可玩≠心理好玩";系统边界防止范围蔓延到代码层。
 
@@ -252,7 +256,7 @@ game-polish (可选)
 | 2.10 | manifest role asset ↔ PRD 实体清单 | manifest 中 category=role 的 asset 与 PRD 定义的角色/敌人实体对齐 | `G2-ROLE-ENTITY-MISMATCH` |
 | 2.11 | manifest bg asset ↔ PRD 场景清单 | manifest 中 category=bg 的 asset 与 PRD 定义的背景/场景对齐 | `G2-BG-SCENE-MISMATCH` |
 | 2.12 | manifest effect asset ↔ PRD 特效清单 | manifest 中 category=effect 的 asset 与 PRD 定义的特效事件对齐 | `G2-EFFECT-MISMATCH` |
-| 2.13 | manifest audio asset ↔ AUDIO_SPEC 事件映射表 | manifest 中 category=audio 的 asset 与 AUDIO_SPEC §2.5 SFX 事件映射表对齐(每个事件 ID 有对应 audio asset,每个 asset 被至少一个事件引用) | `G2-AUDIO-EVENT-MISMATCH` |
+| 2.13 | manifest audio ↔ AUDIO_SPEC 事件映射表 | manifest 中 `audio` 数组的条目与 AUDIO_SPEC §2.5 SFX 事件映射表对齐:每个事件 ID 有对应音频条目(**有文件**:`path` 非 null;**或合成音频**:`path` 为 null 且 §2.6 有同名合成参数行),每个条目被至少一个事件引用 | `G2-AUDIO-EVENT-MISMATCH` |
 | 2.14 | ART_SPEC 风格基线声明(条件) | **仅当 PRD/TECH_DESIGN 命中已收录风格基线时检查** ART_SPEC 顶部有声明;未命中基线时跳过 | `G2-BASELINE-DECLARATION-MISSING` |
 | 2.15 | 复刻:X 项隔离 + 风格坐标(条件) | **仅复刻项目**:manifest 无任何对应 `class=X` 条目的资源(按名称/语义匹配);ART_SPEC 有 `X→替代` 标注且调板/比例对齐 GAME_TEARDOWN §7 风格坐标系 | `G2-CLONE-X-IN-MANIFEST` |
 
@@ -314,6 +318,7 @@ game-polish (可选)
 | 3.8 | manifest contentHash 一致 | assets/ 下文件与 manifest contentHash 一致(内容指纹校验) | `G3-CONTENTHASH-MISMATCH` | ERROR |
 | 3.27 | 复刻:参数落地(条件) | **仅复刻项目**:`GameConfig` 类配置文件字段名与 CSV `parameter` 列同名;抽查 high 敏感参数在业务代码中无硬编码字面量(只允许出现在 config) | `G3-CLONE-PARAM-HARDCODED` | ERROR |
 | 3.28 | 关卡数据走样(条件) | **仅关卡制项目**:关卡数据只能来自 `config/levels.json` 或其**引擎内等价副本**(Web:`src/config` 同级 import 根文件,或 `public/config/levels.json`;Godot:`res://config/levels.json`;Unity:`Assets/StreamingAssets/config/levels.json`);副本内容须与源文件一致(可 contentHash 比对);除该文件外 `src/` 中出现关卡数值字面量即失败(允许加载后计算);levels.json 必须存在且关卡数 > 0 | `G3-LEVEL-DATA-DRIFT` | ERROR |
+| 3.29 | 提示/引导契约(条件) | **仅当 PRD §1.5 非"无"**:存在提示时,求解器规则与运行时同一实现(不得有第二份 `isLegal`/`apply`),且提示解可回放;存在引导时,`skipTutorial()`/`forceStep(id)` 已实现 | `G3-HINT-CONTRACT` | ERROR |
 
 > **引擎特定 L2 检查(3.9+)**:按 PRD/TECH_DESIGN 的引擎字段读取对应 references 文件执行,检查项编号与失败码见各文件:
 >
@@ -422,7 +427,7 @@ game-forge-master §七执行顺序修订为:
 
 - [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;条件门含 Gate 0.5 / 2.5)
 - [ ] (复刻项目)Gate 0.5 的 L1 9 项都执行过,FAIL 已阻断回 game-teardown;Gate 0/1/2/3 的复刻条件检查(0.7~0.9/1.17~1.18/2.15/3.27)未遗漏
-- [ ] (关卡制项目)Gate 2.5 的 L1 4 项 + L2 4 项都执行过;Gate 1 的 1.19(关卡表可机读)已在规格阶段拦住"只写共 N 关"的情况
+- [ ] (关卡制项目)Gate 2.5 的 L1 6 项(含 2.5.9 交付物校验、2.5.10 作者手册) + L2 4 项都执行过;Gate 1 的 1.19(关卡表可机读)已在规格阶段拦住"只写共 N 关"的情况
 - [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`(小数门用下划线:`GATE_0_5_REPORT.md` / `GATE_2_5_REPORT.md`)
 - [ ] 报告含失败码 / 详情 / 修复建议三要素
 - [ ] FAIL 时有阻断,无"默认通过"

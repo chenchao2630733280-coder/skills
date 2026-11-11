@@ -1,6 +1,6 @@
 ---
 name: "game-code-forge"
-description: "AI 游戏生成流水线阶段 4b。读取 PRD+TECH_DESIGN+ASSET_MANIFEST,生成完整可运行工程代码(支持 Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js 六引擎)。存在 docs/GAME_TEARDOWN.md 时进入复刻模式:参数外置对齐 NUMERIC_MODEL.csv、四维状态分离、事务式状态更新、重置确定性。当被 game-forge-master 调度到本阶段,或用户要'生成游戏代码/工程'时调用。"
+description: "AI 游戏生成流水线阶段 4b。读 PRD+TECH_DESIGN+ASSET_MANIFEST,产出可运行工程代码(Phaser 3/Pixi.js/纯 Canvas/Godot 4/Unity/Three.js)。有 GAME_TEARDOWN.md 时进复刻模式:参数对齐 CSV、四维状态分离、重置确定性。被 game-forge-master 调度或用户要'生成游戏代码/工程'时调用。"
 ---
 
 # Game Code Forge — 代码锻造
@@ -130,6 +130,8 @@ Unity 工程:
 
 遵循 `../_shared/references/engineering-constraints.md`（项目隔离/技术栈沿用/密钥/验证/追溯/增量修改等 10 条通用工程约束，唯一事实来源）。
 
+另遵循 `../_shared/references/game-disciplines.md`（**规则单一来源 / 属性归属表 / 不变式优先**三条写作纪律）——生成求解器、状态机、验证脚本时逐条对照。
+
 ## references 使用指引
 
 本 Skill 的引擎模板、配置模板和踩坑专题已抽离到 `references/` 目录,按需读取避免全量加载。
@@ -149,6 +151,10 @@ Unity 工程:
 | `references/pitfall-atlas-frame-format.md` | Phaser 帧动画图集生成时 |
 | `references/pitfall-phaser-ui-overlay-input.md` | Phaser UI 弹窗/长按/拖拽交互与层级（自定义容器被蒙层遮挡、setInteractive 写法、长按定时器、dragMode 区分） |
 | `references/pitfall-state-visual-feedback.md` | 切换型玩法状态（潜行/加速/变身/整活/开盾）必须有可见反馈，否则玩家误判"点了没反应" |
+| `references/hint-solver.md` | PRD §1.5 有提示/引导时（求解器骨架、计划缓存、`exact` 语义、回放断言） |
+| `references/skeleton-baseline.md` | 开始写代码前：事件总线 / 存档迁移 / 音频 / 引导四件套的模板与移植规则 |
+| `references/pitfall-remove-reindex.md` | 生成"移除元素后重排"的逻辑时（列表/对象池/槽位池），禁止 `filter` 重建 |
+| `references/pitfall-event-fanout-count.md` | 一次操作波及多个对象、下游有音效/计分/埋点时，先定计数口径 |
 
 ---
 
@@ -335,6 +341,38 @@ const transitions: Record<State, Partial<Record<string, State>>> = {
 ### 6. 弹窗生成
 PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 
+### 7. 音频实现(走 AUDIO_SPEC 路线 A 时)
+
+`AUDIO_SPEC.md §2.6` 的合成参数表 → `managers/AudioManager.ts` 的 `SFX_TABLE` 常量,**逐行照抄,不重新设计音色**:
+
+```typescript
+const SFX_TABLE = {
+  'sfx-click': { osc: 'sine', freq: 880, attack: 0.012, release: 0.09, gain: 0.28 },
+  'sfx-combo': { osc: 'square', freq: 520, pitchStep: 1.2, attack: 0.008, release: 0.18, gain: 0.20 },
+  // ... 与 §2.6 一一对应
+} as const;
+```
+
+三条纪律:①`AudioContext` 懒初始化,首次 `pointerdown` 时 `resume()`;失败则 `enabled = false` 静默降级,不抛错 ②总开关走 `masterGain = 0`,不销毁节点;`visibilitychange` 隐藏时停 loop 并挂起 context ③同 ID 未播完时按 §2.6 写明的行为执行(重启/忽略),不许临场决定。
+
+第四条纪律:**声明必须被触发,且两个方向都查**——
+- 正查:对 §2.6 每个 id 跑 `grep -rn "<id>" src/`,只命中 `SFX_TABLE` 定义处 = **有表无声**(声明了但业务从没播过)
+- 反查:业务里所有 `play('xxx')` 的 id 是否都在表内 = **有声无表**(拼写漂移,查表失败后静默无声)
+
+两个方向都漏在"运行时什么都不报"上,截图和 typecheck 都绿。这就是"声明数 ≠ 实际数"在音频上的形态,不能靠人试听。
+
+> 合成路线下 `assets/audio/` 为空、`manifest.audio[].path` 为 `null`,这是合法的(见 `game-art-spec` §五 路线 A),不要为了"有文件"去生成静音占位。
+
+### 8. 提示系统实现
+
+PRD §1.5 存在且非"无"时必做。骨架与接口见 `references/hint-solver.md`,三条核心:
+
+- **规则单一来源**:求解器 import 运行时规则(状态推进 + 合法性判定),**不复制一份**。复制必然分叉,提示会给出非法解。
+- **路径是计划**:一次算出整条计划并缓存,玩家偏离计划才重算;禁止每步重算(提示会抖动,且回退后前后不一致)。
+- **`exact` 语义**:超出搜索预算时返回"方向"档并标 `exact = false`,不许把近似解当精确解返回。
+
+引导若存在(PRD §1.5 引导步骤成立),必须同时产出 `skipTutorial()` 与 `forceStep(id)`。没有旁路,引导关的自动化验证会静默假绿——点击被门控吞掉,断言在"什么都没发生"下照过。
+
 ---
 
 ## 十、配置文件生成
@@ -352,6 +390,7 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 ## 十一、生成顺序
 
 按依赖关系顺序生成(Web 引擎步骤;Godot/Unity 引擎时按对应 references 模板的目录结构生成,顺序一致但文件替换为 .gd/.cs):
+0. **骨架先行**:`utils/event-bus` / `utils/save-store` / `managers/audio-manager` / `managers/tutorial-director` 按 `references/skeleton-baseline.md` 落位(复制→改三处→不重写),再写业务。目的:每次生成的骨架一致,同一个坑不用每次重踩
 1. 工程配置文件(Web:package.json/tsconfig/vite.config/index.html;Godot:project.godot/export_presets.cfg;Unity:ProjectVersion.txt/manifest.json/.asmdef/.csproj)
 2. config/ 层(GameConfig/AssetManifest/SkinConfig)
 3. utils/ 层(eventBus/tween/storage)
@@ -395,6 +434,12 @@ PRD 每个弹窗 → 一个继承 BasePopup 的类,文件放 `src/ui/`。
 - [ ] 数值平衡已校验且 GameConfig 顶部含推导注释(见 十四)
 - [ ] UI 自定义容器(Panel/RustButton 等)已显式 `parent.add(panel)`,未被高 depth 蒙层遮挡(见 十七)
 - [ ] (复刻模式)数值零硬编码,GameConfig 字段名与 CSV `parameter` 同名
+- [ ] (PRD §1.5 非"无")提示求解器与运行时共用同一份规则,提示解可回放;引导已提供 `skipTutorial()`/`forceStep(id)`(见 `references/hint-solver.md`)
+- [ ] (AUDIO_SPEC 路线 A)`SFX_TABLE` 与 §2.6 逐行对应,无自创音色
+- [ ] 音频**双向**对过:表里每个 id 在 `src/` 有调用点(否则有表无声),业务里每个 `play(id)` 都在表内(否则有声无表)
+- [ ] 骨架四件套已按 `references/skeleton-baseline.md` 落位(`skipTutorial`/`isGating` 存在,存档有迁移链与损坏兜底)
+- [ ] 移除元素后重排用**就地压实**而非 `filter` 重建(见 `references/pitfall-remove-reindex.md`)
+- [ ] 一次操作波及多对象时,下游计数口径(按事件/按对象)已在 TECH_DESIGN 声明(见 `references/pitfall-event-fanout-count.md`)
 - [ ] (关卡制)`config/levels.json` 只在一处被读取(`LevelConfig.ts` 或等价文件),`src/` 中无关卡数值字面量(见 §4.1)
 - [ ] (复刻模式)四维状态分离、派生态未持久化、规则未写在动画回调里、重置确定性可过
 - [ ] 产物自评:本 skill 产出后,按 skill-auditor 执行后评测模式自查(可选)

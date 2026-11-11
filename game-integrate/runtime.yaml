@@ -34,6 +34,10 @@ outputs:
   - path: docs/BUILD_REPORT.md
     type: file
     description: 验收报告（内含 Gate 4 实跑门结果），报告模板见 references/build-report-template.md
+  - path: docs/screenshots/baseline/
+    type: directory
+    optional: true
+    description: 截图基线与 manifest.json（SKILL §四.5）。标可选是因为"缺基线"是合法状态（第一版），但 check 遇到缺基线会退出码 2 而不是自动收录——自动收录等于首次运行永远绿
 degrade:
   - trigger: Godot CLI 或 Unity Editor 不可用（沙箱缺失）
     action: 输出对应平台的手动构建/导出指令供用户执行，构建延后到宿主环境，不报错中断

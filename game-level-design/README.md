@@ -41,7 +41,7 @@ game-asset-forge ∥ game-code-forge  ← 后者消费 config/levels.json
 
 ## 目录
 
-- `SKILL.md`：阶段契约（位置、输入输出、七步工作流、Gate 2.5 自检、降级策略）。
+- `SKILL.md`：阶段契约（位置、输入输出、⓪–⑦ 工作流、Gate 2.5 自检、降级策略）。
 - `runtime.yaml`：skill-runtime 契约（inputs/outputs/degrade）。
 - `tools/design_review.py`：评审 CLI；`tools/export_levels.py`：运行期关卡导出；`tools/selftest.py`：20 项规则自检。
 - `tools/cdl/`：schema / score / mapping / curve / jump / sim / actuals / diagnose / recommend / report。

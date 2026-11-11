@@ -26,9 +26,10 @@
 | 产物 | 路径 | 说明 |
 |---|---|---|
 | 关卡设计说明 | `docs/LEVEL_PLAN.md` | 人读。§0 裁剪说明 / §1 关卡总览 / §2 阶段与目标曲线 / §3 参数口径与可调范围 / §4 旋钮与敏感度 / §5 冲突与裁决 / §6 假设与待校准项 |
+| 关卡作者手册 | `docs/LEVEL_AUTHORING.md` | 人读。**改关说明书**：上手步骤与常见坑 / 字段表 / 语义档位 / 旋钮有效区间与越界后果 / 构建期硬约束（每条带"为什么"）/ 生产路线 / 两种极端策略对跑验收 / 已知边界。模板 `templates/LEVEL_AUTHORING_template.md`。单局制可裁剪 |
 | 运行期配置 | `config/levels.json` | 机读。**game-code-forge 的唯一关卡数据源** |
 | 难度评审报告 | `docs/DIFFICULTY_REPORT.md` | 由 `tools/design_review.py` 生成的 `review.md` 原件或重命名副本 |
-| 机读评审判定 | `docs/DIFFICULTY_REVIEW.json` | `review.json` 副本，供 Gate 2.5 / game-integrate 读取 |
+| 机读评审判定 | `docs/DIFFICULTY_REVIEW.json` | `review.json` 副本，含 `audit`（量尺与结构性判据），供 Gate 2.5 / game-integrate 读取 |
 | 关卡门报告 | `docs/GATE_2_5_REPORT.md` | 由 `game-quality-gate` 产出，本 skill 不写 |
 
 > 不要改名、不要改路径。下游按固定路径读取。
@@ -98,6 +99,8 @@ PRD 是自由文本，映射靠人（或 AI）读出来，不靠解析器。按�
 | L1 | 2 | `config/levels.json` 存在且合法 JSON | 可解析，`schema_version` 存在 | G25-02 |
 | L1 | 3 | 必填字段完整 | 每关含 `level_id/index/tag/params/target_win/difficulty_score`（`difficulty_score` 是 0~1 的排序/诊断分，不是通关率） | G25-03 |
 | L1 | 4 | `docs/DIFFICULTY_REPORT.md` 存在 | 含"门禁结果"与"假设、置信度"两节 | G25-04 |
+| L1 | 10 | `docs/LEVEL_AUTHORING.md` 存在（关卡制） | 含上手 / 字段 / 旋钮**有效区间** / 硬约束（每条带"为什么"）/ 验收对跑 / 生产路线（选了哪条 + P1–P4 逐条裁决）六节；只有标题没有内容不算通过 | G25-10 |
+| L1 | 9 | `config/levels.json` 通过交付物校验 | `validation.status == PASS`（导出时由 `export_levels.py` 内嵌，判据实现见 `tools/validate_levels.py`）；缺该块视为未校验，记 WARNING。*编号跳到 9 是为了不给 L2 的 5~8 重排，与失败码 `G25-09` 对齐* | G25-09 |
 | L2 | 5 | 关卡序列与 PRD 一致 | `levels.json` 的 `level_id` 集合与 PRD 关卡表**完全相同**（不多不少不改名） | G25-05 |
 | L2 | 6 | 参数在合法范围内 | 每关 params ⊆ `legal_ranges` | G25-06 |
 | L2 | 7 | 门禁状态可解释 | `difficulty_gate.status=PASS`，或 FAIL 项在 `LEVEL_PLAN §5` 有逐条处置 | G25-07 |

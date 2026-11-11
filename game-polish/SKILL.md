@@ -26,6 +26,8 @@ description: "AI 游戏生成流水线阶段 6(可选)。在 game-integrate 产�
 - 适用类型(跑酷/平台/飞行/养成/解谜/通用)
 - 实现层(逻辑层/渲染层/粒子层/镜头层)
 
+> 菜单只回答"做什么"。一次事件该用几个通道、怎么错峰、给多大、什么时候不许给——见 `references/juice-timing-recipes.md`(按 P0/P1/P2 分档)。
+
 ### A. 角色生命感(⭐⭐⭐,通用)
 
 让静态/移动中的角色"活起来"。
@@ -395,3 +397,4 @@ export function detectHeadSide(texture: Phaser.Textures.Texture): number {
 |------|---------|
 | `references/asset-fix-recipes.md` | AI 生图资源常见问题修复(§十一):浏览器测试发现视觉问题时 |
 | `references/overlay-spec.md` | 弹窗与卡片蒙层规范(§十二):实现卡片/弹窗/对话框时 |
+| `references/juice-timing-recipes.md` | 给某个事件配效果时:按 P0/P1/P2 分档查通道数、时序错峰、幅度区间、归零开关与三条验收 |

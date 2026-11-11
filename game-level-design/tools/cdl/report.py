@@ -24,10 +24,15 @@ TYPE_LABELS = {
     "DATA_GAP": "样本不足",
     "PRED_ACTUAL_DIVERGENCE": "预测与实际背离",
     "BLOCKER": "流失卡点",
+    "TRIVIAL_BY_CONSTRUCTION": "结构性必赢",
+    "DIM_UNDERUSED": "维度刻度浪费",
+    "DIM_SATURATED": "维度顶格",
+    "DIM_CONSTANT": "维度恒定",
+    "SCALE_COMPRESSED": "总分刻度压缩",
 }
 
 
-def write_all(out_dir, campaign, curve, records, jumps, sim, diagnostics, recs, actuals) -> dict:
+def write_all(out_dir, campaign, curve, records, jumps, sim, diagnostics, recs, actuals, audit=None) -> dict:
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
@@ -135,7 +140,8 @@ def write_all(out_dir, campaign, curve, records, jumps, sim, diagnostics, recs, 
         "actuals": actuals or {},
         "diagnostics": diagnostics,
         "recommendations": recs,
-        "gate": _gate(diagnostics),
+        "audit": audit or {},
+        "gate": _gate(diagnostics, audit),
     }
     (out / "review.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     (out / "review.md").write_text(render_markdown(payload, campaign, curve, records, sim, actuals), encoding="utf-8")
@@ -165,10 +171,60 @@ def render_markdown(payload, campaign, curve, records, sim, actuals) -> str:
     lines.append(
         f"- 门禁结果：**{gate['status']}**（HIGH {counts['HIGH']} / WARN {counts['WARN']} / INFO {counts['INFO']}）"
     )
+    _audit = payload.get("audit") or {}
+    if _audit:
+        _ah = sum(1 for i in _audit.get("issues", []) if i["severity"] == "HIGH")
+        _aw = sum(1 for i in _audit.get("issues", []) if i["severity"] == "WARN")
+        lines.append(
+            f"- 量尺体检：**{_audit.get('status')}**（HIGH {_ah} / WARN {_aw}；加权分上限 {_audit.get('ceiling', 0):.2f}）"
+        )
     lines.append("")
     lines.append("> 本报告中的阈值、权重、θ 与模拟参数都是**待校准的占位假设**，不是行业标准。")
     lines.append("> 模拟是替代模型，用于排序和发现风险，不能替代真机测试与真实玩家数据。")
     lines.append("")
+
+    # ---- 量尺与契约体检 ----
+    audit = payload.get("audit") or {}
+    profile = audit.get("profile") or {}
+    if profile:
+        lines.append("## 0. 量尺与契约体检")
+        lines.append("")
+        lines.append("> 这一节回答的是「这套分数本身可不可信」，不是「哪一关难」。量尺坏了，后面所有异常都是噪声。")
+        lines.append("")
+        flags = {}
+        for item in audit.get("issues", []):
+            dim = (item.get("meta") or {}).get("dim")
+            if dim and item["severity"] in ("HIGH", "WARN"):
+                flags.setdefault(dim, item["code"])
+        rows = []
+        for name, p in profile.items():
+            rows.append(
+                [
+                    FEATURE_LABELS.get(name, name),
+                    f"{p['p10']:.2f}",
+                    f"{p['p50']:.2f}",
+                    f"{p['p90']:.2f}",
+                    f"{p['max']:.2f}",
+                    f"{p['contrib_share']:.0%}",
+                    TYPE_LABELS.get(flags.get(name, ""), "—" if name not in flags else flags[name]),
+                ]
+            )
+        lines.append(_table(["维度", "p10", "p50", "p90", "max", "贡献占比", "判定"], rows))
+        lines.append("")
+        hard = [i for i in audit.get("issues", []) if i["code"] == "TRIVIAL_BY_CONSTRUCTION"]
+        if hard:
+            lines.append(f"**结构性必赢 {len(hard)} 关**：这些关的参数关系让「输」在数学上不可能发生，难度分不可信；"
+                         f"注意修复方向与「加槽提难度」相反——要减槽/增色/加干扰。")
+            lines.append("")
+            lines.append(_table(["关卡", "参数关系", "含义"],
+                                [[i["scope"], f"{i['meta'].get('lhs')} {i['meta'].get('op')} {i['meta'].get('rhs')}", i["detail"].split("——")[-1].split("；")[0]]
+                                 for i in hard[:10]]))
+            lines.append("")
+        others = [i for i in audit.get("issues", []) if i["code"] != "TRIVIAL_BY_CONSTRUCTION"]
+        if others:
+            lines.append(_table(["级别", "判定", "说明"],
+                                [[i["severity"], TYPE_LABELS.get(i["code"], i["code"]), i["detail"]] for i in others]))
+            lines.append("")
 
     # ---- 摘要 ----
     lines.append("## 1. 结论摘要")
@@ -355,13 +411,16 @@ def render_markdown(payload, campaign, curve, records, sim, actuals) -> str:
     return "\n".join(lines)
 
 
-def _gate(diagnostics) -> dict:
+def _gate(diagnostics, audit=None) -> dict:
     high = [d for d in diagnostics if d["severity"] == "HIGH"]
+    audit_high = [i for i in ((audit or {}).get("issues") or []) if i["severity"] == "HIGH"]
+    blockers = {d["level_id"] for d in high} | {i["scope"] for i in audit_high if i["scope"] != "*"}
     return {
-        "status": "FAIL" if high else "PASS",
-        "high_count": len(high),
-        "blocking_levels": sorted({d["level_id"] for d in high}),
-        "rule": "存在 HIGH 级问题时评审不通过；接入 --strict 时进程以非 0 退出。",
+        "status": "FAIL" if (high or audit_high) else "PASS",
+        "high_count": len(high) + len(audit_high),
+        "blocking_levels": sorted(blockers),
+        "blocking_codes": sorted({i["code"] for i in audit_high}),
+        "rule": "存在 HIGH 级问题（含结构性必赢判据）时评审不通过；接入 --strict 时进程以非 0 退出。",
     }
 
 

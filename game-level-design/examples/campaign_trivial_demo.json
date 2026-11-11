@@ -1,0 +1,64 @@
+{
+  "_readme": "演示【结构性必赢判据】：dominance 声明 slotMax>=colors 时『输』在数学上不可能发生。L01/L02 触发，L03 不触发。用法：python tools/design_review.py --campaign examples/campaign_trivial_demo.json --out /tmp/trivial",
+  "campaign_id": "trivial_demo",
+  "genre": "match3",
+  "version": "0.1.0",
+  "data_source": "synthetic（仅演示判据，不代表任何真实项目）",
+
+  "mapping": {"spread": 4.0, "ref_segment": "regular"},
+
+  "segments": {
+    "novice": {"theta": -0.9, "theta_sd": 0.45, "target_first_try": 0.68},
+    "regular": {"theta": 0.0, "theta_sd": 0.50, "target_first_try": 0.52},
+    "skilled": {"theta": 0.95, "theta_sd": 0.45, "target_first_try": 0.38}
+  },
+
+  "feature_model": {
+    "resource_pressure": {"kind": "ratio", "num": "target_amount", "den": "moves", "lo": 70, "hi": 280},
+    "mechanic_load": {"kind": "linear", "param": "obstacle_kinds", "lo": 0, "hi": 4},
+    "strategy_depth": {"kind": "linear", "param": "objective_kinds", "lo": 1, "hi": 4},
+    "randomness": {"kind": "linear", "param": "colors", "lo": 4, "hi": 7}
+  },
+
+  "legal_ranges": {
+    "moves": [16, 30],
+    "target_amount": [1200, 7000],
+    "obstacle_kinds": [0, 4],
+    "objective_kinds": [1, 4],
+    "colors": [4, 7],
+    "slotMax": [3, 7]
+  },
+
+  "dominance": [
+    {
+      "lhs": "slotMax",
+      "op": ">=",
+      "rhs": "colors",
+      "means": "槽位不少于颜色数，每种颜色都能独占一槽，数学上不可能输"
+    }
+  ],
+
+  "levels": [
+    {
+      "level_id": "L01",
+      "index": 1,
+      "tag": "教学",
+      "params": {"moves": 20, "target_amount": 1500, "obstacle_kinds": 0, "objective_kinds": 1, "colors": 4, "slotMax": 4},
+      "notes": "4 色 4 槽：结构上必赢"
+    },
+    {
+      "level_id": "L02",
+      "index": 2,
+      "tag": "练习",
+      "params": {"moves": 22, "target_amount": 3000, "obstacle_kinds": 1, "objective_kinds": 2, "colors": 5, "slotMax": 6},
+      "notes": "5 色 6 槽：加槽过度，必赢"
+    },
+    {
+      "level_id": "L03",
+      "index": 3,
+      "tag": "组合",
+      "params": {"moves": 24, "target_amount": 5200, "obstacle_kinds": 2, "objective_kinds": 3, "colors": 7, "slotMax": 5},
+      "notes": "7 色 5 槽：正常，不触发"
+    }
+  ]
+}

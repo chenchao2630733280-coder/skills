@@ -27,7 +27,7 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 **输出**(固定路径,3 份产物):
 - `docs/ART_SPEC.md`(人读,美术约束 + 生图 prompt 模板)
 - `docs/ASSET_MANIFEST.json`(机读,资源清单,代码 skill 直接消费)
-- `docs/AUDIO_SPEC.md`(人读,音频清单 + 生成指引)
+- `docs/AUDIO_SPEC.md`(人读,音频清单 + 事件映射 + **合成参数表/音量层级**,见 §五)
 
 ---
 
@@ -145,9 +145,10 @@ description: "AI 游戏生成流水线阶段 3。读取 PRD 与技术设计,产�
 | id | 是 | 全局唯一,小写连字符 `skin0-run-1` |
 | category | 是 | role / ui / bg / effect / icon |
 | type | 是 | spriteframe / image / audio |
-| path | 是 | 相对工程根目录的路径 |
+| path | 是 | 相对工程根目录的路径;**合成音频(§五 路线 A)填 `null`,此时不落文件** |
 | size | 是 | [width, height] 像素 |
 | format | 是 | png-32 / jpg-80 / wav / mp3-128k(**期望格式**,实际见 actualFormat) |
+| synth | 否 | 合成音频参数(节点链 + 包络 + 增益),`path` 为 `null` 时**必填**;内容须与 AUDIO_SPEC §2.6 同源,下游据此生成 `SFX_TABLE` |
 | atlas | 否 | 所属图集 ID,无则 null |
 | animKey | 否 | 帧动画时所属的动画 key |
 | frameIndex | 否 | 动画中的第几帧(从 0) |
@@ -237,6 +238,8 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 - bgm:背景音乐,mp3
 - sfx:音效,wav
 - voice:语音,mp3
+
+> 走 §五 路线 A(现场合成)时本目录**为空**:音频只存在于 AUDIO_SPEC §2.6 与代码的 `SFX_TABLE`,manifest 对应条目的 `path` 为 `null`。只有路线 B/C 才落文件。
 
 ## 2. 尺寸约束
 
@@ -353,19 +356,28 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 ```markdown
 # {游戏名} - 音频规范
 
-## 1. 默认策略
-**默认走静音占位**(1 秒静音 wav/mp3),工程可跑,人工后补。
+## 1. 默认策略:优先合成,静音兜底
+
+三档路线,自上而下选:
+
+| 路线 | 适用 | 代价 | 产出 |
+|---|---|---|---|
+| **A 现场合成(默认)** | SFX、点击反馈、短 BGM、连击变调 | 无素材、无加载、无版权、包体零增长 | §2.6 参数表即实现契约 |
+| B 静音占位 | 需要人声或长 BGM 但暂无资源 | 交付的游戏是哑的,靠人工后补 | §3 |
+| C 外部素材 | 已有授权的人声/长 BGM | 需加载与体积预算 | `assets/audio/` |
+
+> A 是默认,因为**流水线生成不了可用的音频素材,但能生成可用的参数**。把"静音占位"当默认,等于把能力缺口写成策略;它只该是兜底。
 
 ## 2. 音频清单
 | ID | 类型 | 触发点 | 时长 | 循环 | 风格 | 策略 |
 |---|---|---|---|---|---|---|
-| bgm-home | BGM | 进入首页 | 30s | 是 | 欢快新年 | 静音占位 |
-| sfx-jump | SFX | 点击跳跃 | 200ms | 否 | 清脆短促 | 静音占位 |
-| sfx-crash | SFX | 撞击障碍 | 500ms | 否 | 低沉爆破 | 静音占位 |
+| bgm-home | BGM | 进入首页 | 30s | 是 | 欢快新年 | C 外部素材(长 BGM 不合成) |
+| sfx-jump | SFX | 点击跳跃 | 200ms | 否 | 清脆短促 | A 合成(见 §2.6) |
+| sfx-crash | SFX | 撞击障碍 | 500ms | 否 | 低沉爆破 | A 合成(见 §2.6) |
 
 ## 2.5 SFX 事件映射表(工程接入用,必填)
 
-供 game-code-forge 生成音频调用代码、game-quality-gate Gate 2 的 2.13"manifest audio asset ↔ AUDIO_SPEC 事件映射表"校验对齐。
+供 game-code-forge 生成音频调用代码(合成音频按 §2.6 参数表)、game-quality-gate Gate 2 的 2.13 校验对齐(有文件的看 asset,合成的看 §2.6 行)。
 
 | 事件 ID | 触发条件(PRD 状态机事件) | 音频 ID | 优先级 | 层级 | 备注 |
 |---|---|---|---|---|---|
@@ -381,15 +393,37 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 > **层级**:单次(播放一次)/ 循环(直到停止事件)/ 变调(连续触发时音调变化)。
 > **资源预算**:同时发声数 ≤ 4(移动端),P0/P1 优先播放,P2/P3 在满负荷时丢弃。
 
-## 3. 占位音频生成
-所有音频用统一的 1 秒静音文件占位:
-- wav 占位:`assets/audio/_placeholder.wav`
-- mp3 占位:`assets/audio/_placeholder.mp3`
+## 2.6 合成参数表(工程实现契约;选路线 A 时必填)
 
-各音频文件复制占位文件到目标路径,文件名按规范命名。
+一行一个音频 ID,四项写死:节点链 / 包络 / 增益 / 触发纪律。`game-code-forge` 把本表直接转成 `SFX_TABLE` 常量,**不另做判断**。
 
-## 4. 人工后补指引
-替换时直接覆盖 `assets/audio/{xxx}.wav`,**不要改文件名和路径**,代码自动加载。
+| 音频 ID | 节点链 | 包络 | 增益 |
+|---|---|---|---|
+| sfx-click | Osc(sine 880) → Gain | attack 12ms / exp release 90ms | 0.28 |
+| sfx-loop | NoiseBuffer → Biquad(bandpass 800Hz, Q=2) → Gain | 起播 100ms 淡入 / 停播 200ms 淡出 | 0.20 |
+| sfx-blocked | Osc(square 180→90Hz linearRamp) → Gain | attack 5ms / release 150ms | 0.18 |
+| sfx-combo | Osc(square, 520×1.2^n) → Gain | attack 8ms / release 180ms | 0.20 |
+| sfx-win | 3×Osc(triangle 523/659/784, 隔 180ms) + Osc(sine 1568, 540ms 起) → Gain | 每音 attack 6ms / release 160ms | 0.24 |
+| sfx-lose | Osc(triangle 440→220Hz) → Gain | attack 10ms / release 480ms | 0.20 |
+
+> **变调**:连续触发时音高 = 基频 × `1.2^min(step,6)`;`step` 取连击计数,不为此新增状态。
+> **整批只响一次**:一次操作引发 N 个同类对象时只播一次,否则糊成噪音。
+> **同 ID 叠加**:正在播放时再次触发,重启还是忽略,必须在表里写明,不许留给实现临场决定。
+
+## 2.7 音量层级
+
+| 层 | 相对增益 |
+|---|---|
+| 胜负(P0) | 1.0 |
+| 核心反馈:点击/连击(P1) | 0.8 |
+| 次要反馈(P2) | 0.5 |
+| 总输出 | ≤ 0.7(避免手机外放破音) |
+
+**实现纪律**(懒初始化 / 手势内 `resume()` / 失败静默降级 / 总开关走 `masterGain` / `visibilitychange` 停 loop)见 `game-code-forge` §九.7,此处只定音量契约。
+
+## 3. 路线 B/C 的落地
+**B 静音占位**:统一用 1 秒静音文件(`assets/audio/_placeholder.wav|mp3`),复制到目标路径,文件名按规范。
+**C 外部素材**:放 `assets/audio/{type}_{name}.{ext}`;**后补时直接覆盖同名文件,不改名不改路径**,代码自动加载。
 ```
 
 ---

@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from cdl import audit as audit_mod
 from cdl.actuals import _as_int  # noqa: F401  (确保模块可导入)
 from cdl.curve import build_curve
 from cdl.diagnose import diagnose
@@ -222,6 +223,95 @@ def test_schema_guard():
         check("特征超出 [0,1] 时报错", "goal_complexity" in str(exc), str(exc)[:40])
 
 
+def test_audit():
+    """量尺体检与结构性必赢：三条判据都要能在构造样本上触发。"""
+    print("\n-- 量尺与结构性判据 --")
+
+    # 1) 维度恒定 → DIM_CONSTANT（八维全部 0.5，加权分恒定）
+    flat = [flat_level(i, 0.5) for i in range(1, 13)]
+    cam = campaign(flat)
+    res = audit_mod.run(cam, records_of(cam))
+    codes = {i["code"] for i in res["issues"]}
+    check("恒定维度报 DIM_CONSTANT", "DIM_CONSTANT" in codes, str(sorted(codes)))
+    check("恒定维度不打 HIGH", res["status"] == "PASS", res["status"])
+
+    # 2) 维度顶格 → DIM_SATURATED（0.95~1.00 波动，p10 仍 ≥0.90）
+    hot = [flat_level(i, 0.95 if i % 2 else 1.0) for i in range(1, 13)]
+    cam = campaign(hot)
+    res = audit_mod.run(cam, records_of(cam))
+    check("顶格维度报 DIM_SATURATED", any(i["code"] == "DIM_SATURATED" for i in res["issues"]))
+
+    # 3) 维度未参与 → DIM_UNDERUSED（只填一半维度，其余为 0）
+    sparse = []
+    for i in range(1, 13):
+        row = flat_level(i, 0.4)
+        for name in FEATURES[4:]:
+            row["features"][name] = 0.0
+        sparse.append(row)
+    cam = campaign(sparse)
+    res = audit_mod.run(cam, records_of(cam))
+    check("零值维度报 DIM_UNDERUSED", any(i["code"] == "DIM_UNDERUSED" for i in res["issues"]))
+
+    # 4) 结构性必赢 → TRIVIAL_BY_CONSTRUCTION（slotMax >= colors）
+    dom = []
+    for i in range(1, 5):
+        dom.append(flat_level(i, 0.4, params={"colors": 4, "slotMax": 5}))
+    cam = campaign(dom, dominance=[{"lhs": "slotMax", "op": ">=", "rhs": "colors", "means": "槽位不少于颜色数"}])
+    res = audit_mod.run(cam, records_of(cam))
+    hits = [i for i in res["issues"] if i["code"] == "TRIVIAL_BY_CONSTRUCTION"]
+    check("支配关系成立时报 TRIVIAL_BY_CONSTRUCTION", len(hits) == 4, f"{len(hits)} 条")
+    check("结构性必赢会把门禁判 FAIL", res["status"] == "FAIL", res["status"])
+
+    # 5) 反例：关系不成立时不得误报
+    dom2 = [flat_level(i, 0.4, params={"colors": 6, "slotMax": 5}) for i in range(1, 5)]
+    cam = campaign(dom2, dominance=[{"lhs": "slotMax", "op": ">=", "rhs": "colors"}])
+    res = audit_mod.run(cam, records_of(cam))
+    check("关系不成立时不误报", not any(i["code"] == "TRIVIAL_BY_CONSTRUCTION" for i in res["issues"]))
+
+    # 6) 未声明 dominance 时完全静默（向后兼容）
+    cam = campaign([flat_level(i, 0.4, params={"colors": 4, "slotMax": 9}) for i in range(1, 5)])
+    res = audit_mod.run(cam, records_of(cam))
+    check("未声明 dominance 时不报必赢", not any(i["code"] == "TRIVIAL_BY_CONSTRUCTION" for i in res["issues"]))
+
+    # 7) 刻度压缩 → SCALE_COMPRESSED
+    low = [flat_level(i, 0.10) for i in range(1, 13)]
+    cam = campaign(low)
+    res = audit_mod.run(cam, records_of(cam))
+    check("总分过低报 SCALE_COMPRESSED", any(i["code"] == "SCALE_COMPRESSED" for i in res["issues"]))
+
+
+def test_validate_levels():
+    """交付物校验器：结构错误要挡住，合规表要放过。"""
+    import json
+    import tempfile
+
+    from validate_levels import check_table
+
+    good = {
+        "campaign": {"level_count": 2},
+        "levels": [
+            {"level_id": "L01", "index": 1, "params": {"moves": 20}, "target_win": 0.6, "difficulty_score": 0.3},
+            {"level_id": "L02", "index": 2, "params": {"moves": 22}, "target_win": 0.5, "difficulty_score": 0.4},
+        ],
+    }
+    check("合规表无 ERROR", not [i for i in check_table(good) if i["severity"] == "ERROR"])
+
+    bad = json.loads(json.dumps(good))
+    bad["levels"][1]["level_id"] = "L01"
+    bad["levels"][1]["target_win"] = 1.2
+    codes = {i["code"] for i in check_table(bad)}
+    check("重复 id 报 LEVEL_ID_DUPLICATE", "LEVEL_ID_DUPLICATE" in codes, str(sorted(codes)))
+    check("target_win 越界报 TARGET_WIN_OUT_OF_RANGE", "TARGET_WIN_OUT_OF_RANGE" in codes)
+
+    bad2 = json.loads(json.dumps(good))
+    bad2["levels"][0]["params"]["moves"] = "many"
+    bad2["levels"] = bad2["levels"][:1]
+    bad2["campaign"]["level_count"] = 2
+    codes = {i["code"] for i in check_table(bad2)}
+    check("非数值参数报 LEVEL_PARAM_NOT_NUMERIC", "LEVEL_PARAM_NOT_NUMERIC" in codes)
+    check("关卡数与声明不符报 LEVEL_COUNT_MISMATCH", "LEVEL_COUNT_MISMATCH" in codes)
+
+
 def main():
     print("cdl 自检")
     test_score_and_mapping()
@@ -230,6 +320,8 @@ def main():
     test_sim()
     test_diagnose_and_recommend()
     test_schema_guard()
+    test_audit()
+    test_validate_levels()
     print(f"\n全部通过：{len(PASSED)} 项检查")
     return 0
 

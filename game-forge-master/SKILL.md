@@ -62,7 +62,7 @@ game-spec         → docs/PRD.md + docs/TECH_DESIGN.md
        ↓
 ⏸ 人工确认点 2 (AskUserQuestion: 进入关卡设计 / 回退 / 终止)
        ↓
-game-level-design → docs/LEVEL_PLAN.md + config/levels.json + docs/DIFFICULTY_REPORT.md
+game-level-design → docs/LEVEL_PLAN.md + docs/LEVEL_AUTHORING.md + config/levels.json + docs/DIFFICULTY_REPORT.md
        ↓
 [Gate 2.5] 关卡门 → docs/GATE_2_5_REPORT.md (FAIL 则回 2.5 修复)
        ↓
@@ -301,7 +301,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
    - **调用 `game-quality-gate` Gate 1 规格门**,产出 `docs/GATE_1_REPORT.md`;FAIL 则回 2 修复
    - ⏸ **人工确认点 2**:Gate 1 PASS 后,简报 PRD 关键数值/UI 节点树,AskUserQuestion 询问"进入美术规范 / 回退修改规格 / 终止流水线"
-2.5 调用 `game-level-design`,读取 `docs/PRD.md` + `docs/TECH_DESIGN.md`(+ 可选 `docs/NUMERIC_MODEL.csv`、线上 attempts.csv),产出 `docs/LEVEL_PLAN.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json`
+2.5 调用 `game-level-design`,读取 `docs/PRD.md` + `docs/TECH_DESIGN.md`(+ 可选 `docs/NUMERIC_MODEL.csv`、线上 attempts.csv),产出 `docs/LEVEL_PLAN.md` + `docs/LEVEL_AUTHORING.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json`
    - 关卡制必走;单局制裁剪但产出 `docs/LEVEL_PLAN.md` 占位
    - **调用 `game-quality-gate` Gate 2.5 关卡门**,产出 `docs/GATE_2_5_REPORT.md`;FAIL 则回 2.5 修复(不得靠调宽阈值放行)
    - 关卡表会作为美术场景/主题数量的输入,不要跳过就进美术
@@ -355,6 +355,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 资源清单(上一版备份) | `docs/ASSET_MANIFEST.prev.json` | game-asset-forge(增量更新时产出) |
 | 音频规范 | `docs/AUDIO_SPEC.md` | game-art-spec |
 | 关卡设计说明 | `docs/LEVEL_PLAN.md` | game-level-design |
+| 关卡作者手册 | `docs/LEVEL_AUTHORING.md` | game-level-design(人读;改关说明书,单局制可裁剪) |
 | 关卡配置(运行期) | `config/levels.json` | game-level-design |
 | 关卡配置副本(构建期派生) | Web:`public/config/levels.json`(或同级 import 根文件);Godot:`res://config/levels.json`;Unity:`Assets/StreamingAssets/config/levels.json` | game-code-forge(复制,内容与源一致,不手改) |
 | 难度评审报告 | `docs/DIFFICULTY_REPORT.md` | game-level-design |
@@ -377,6 +378,7 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | Unity 导出产物 | `Build/*.{exe,html}` | game-integrate |
 | 构建产物 | `dist/**` | game-integrate |
 | 验收报告 | `docs/BUILD_REPORT.md` | game-integrate |
+| 截图与基线 | `docs/screenshots/*.png` + `docs/screenshots/baseline/manifest.json` | game-integrate(基线随内容版本一起提交,差异解释写进验收报告) |
 | 质量门报告 | `docs/GATE_{0,1,2,3}_REPORT.md` | game-quality-gate |
 | 效果优化需求(可选) | `docs/POLISH_REQUEST.md` | 用户填写 |
 | 效果代码(可选) | `src/effects/*.ts` | game-polish |

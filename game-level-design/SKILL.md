@@ -19,7 +19,7 @@ version: 3.1.0
 game-spec → docs/PRD.md + docs/TECH_DESIGN.md
    ↓ [Gate 1] 规格门
    ↓ 确认点 2
-【本 skill】game-level-design → docs/LEVEL_PLAN.md + config/levels.json + docs/DIFFICULTY_REPORT.md
+【本 skill】game-level-design → docs/LEVEL_PLAN.md + docs/LEVEL_AUTHORING.md + config/levels.json + docs/DIFFICULTY_REPORT.md
    ↓ [Gate 2.5] 关卡门（game-quality-gate 执行）
 game-art-spec → docs/ART_SPEC.md + docs/ASSET_MANIFEST.json
    ↓ [Gate 2] 美术门
@@ -41,6 +41,7 @@ game-asset-forge ∥ game-code-forge
 | 上游（可选） | `docs/NUMERIC_MODEL.csv` | 复刻专线的数值区间，作为 `legal_ranges` / `per_unit` 初值 |
 | 上游（可选） | 线上 `attempts.csv` | 真实首通/终通/道具使用，用于校准与预测背离检测 |
 | 下游 | `game-code-forge` | `config/levels.json`（唯一数据源，不得内联复制） |
+| 下游（人） | 策划 / 外包 | `docs/LEVEL_AUTHORING.md`（改关说明书：字段、档位、旋钮有效区间、硬约束、验收对跑） |
 | 下游 | `game-integrate` | Gate 4 数值平衡核对 `docs/DIFFICULTY_REPORT.md` 的目标带 |
 | 下游 | `game-quality-gate` | Gate 2.5 检查产物；Gate 3 检查代码是否走样 |
 
@@ -70,20 +71,29 @@ game-asset-forge ∥ game-code-forge
 
 ---
 
-## 四、七步工作流
+## 四、工作流（⓪ 选路线 → ⑦ 交门禁）
 
 ```
+⓪ 选路线      这批关卡从哪来 → 手调 / 反向生成 / 导入（判据见 references/14）
 ① 抽关卡表    PRD 关卡表 + 数值表 → campaign.json（映射见 references/13）
 ② 定曲线      phases：阶段划分、形状（ramp/flat/spike/relief/wave/step）、起止目标首通率
 ③ 跑评审      tools/design_review.py → 曲线/跳变/模拟/诊断/建议
 ④ 改参数      按诊断逐条单变量修正 → 复跑，直到 HIGH 清零或可解释
 ⑤ 导配置      tools/export_levels.py → config/levels.json（运行期唯一数据源）
-⑥ 写计划      docs/LEVEL_PLAN.md（人读：目标、口径、旋钮、假设、冲突裁决）
-⑦ 交门禁      Gate 2.5（L1 产物完整 + L2 与 PRD 一致）
+⑥ 写两份文档  docs/LEVEL_PLAN.md（为什么这样设计）+ docs/LEVEL_AUTHORING.md（手怎么动）
+⑦ 交门禁      tools/validate_levels.py 过 → Gate 2.5（L1 产物完整 + L2 与 PRD 一致）
 ```
+
+**⓪ 的判据只有一句**：这批关卡有没有**离散、可枚举、可序列化**的局面？没有（跑酷/平台跳跃/实时动作）就手调，
+别写生成器——连续游戏没有"初盘→终局"的反推关系，可解性也不是构造能保证的。反向生成的五步骨架、
+四条判据（P1 可解性由构造保证 / P2 解路数下限 / P3 步骤数≠难度 / P4 初盘退化必查）见 `references/14`。
 
 **关键纪律**：③→④ 至少走两轮。第一轮几乎总会暴露目标与关卡的矛盾（满屏 BAND_MISS），
 这时先怀疑目标或数值口径，而不是逐关硬调——16 关全往一个方向偏，通常是 phases 定错了。
+
+**改参数之前先看报告第 0 节**（量尺与契约体检）：它回答"这套分数本身可不可信"。
+量尺坏了（维度恒定/顶格/未参与）时，后面的 CLIFF/BAND_MISS 全是噪声；出现「结构性必赢」时，
+那几关的难度分描述的是一个不可能发生的事件，逐关调参没有意义。
 
 ---
 
@@ -104,12 +114,15 @@ python tools/design_review.py --campaign campaign.json --strict
 python tools/export_levels.py --campaign campaign.json --review review_out/review.json \
     --out config/levels.json
 
-# 规则自检（20 项断言，确认检测器本身没坏）
+# 交付物校验：config/levels.json 的结构与一致性（ERROR 阻塞，可直接当 Gate 2.5 的判据）
+python tools/validate_levels.py --levels config/levels.json --campaign campaign.json
+
+# 规则自检（34 项断言，确认检测器本身没坏）
 python tools/selftest.py
 ```
 
-产物：`review_out/review.md`（报告正文）、`review.json`（机读）、5 张表、
-`config/levels.json`（运行期配置）。
+产物：`review_out/review.md`（报告正文，第 0 节为量尺与契约体检）、`review.json`（机读，含 `audit`）、
+5 张表、`config/levels.json`（运行期配置）。
 
 ---
 
@@ -120,6 +133,7 @@ python tools/selftest.py
 - [ ] `docs/LEVEL_PLAN.md` 存在，含：阶段划分、目标首通率区间、参数口径、被裁剪项说明、冲突裁决。
 - [ ] `config/levels.json` 存在且可解析，字段符合 `references/13` 的 schema（`level_id/index/tag/params/target_win/difficulty_score`）。`difficulty_score` 是 0~1 的排序/诊断分，**不是**通关率（`pred_win` 才是）。
 - [ ] `docs/DIFFICULTY_REPORT.md` 存在，`gate.status` 为 PASS，或 FAIL 项已在 `LEVEL_PLAN.md` 逐条说明处置。
+- [ ] `docs/LEVEL_AUTHORING.md` 存在，含 §1 上手 / §2 字段 / §4 旋钮有效区间 / §5 硬约束（每条带"为什么"）/ §7 两种极端策略对跑；模板见 `templates/LEVEL_AUTHORING_template.md`。
 - [ ] `levels.json` 的关卡数量、`level_id` 序列与 PRD 关卡表**完全一致**（不多不少不改名）。
 - [ ] 每关的 `params` 都落在 `legal_ranges` 内。
 - [ ] 报告中的 `spread` / θ / 权重 / `per_unit` 状态已标注（占位 or 已校准），未把占位值写成结论。
@@ -171,11 +185,13 @@ python tools/selftest.py
 
 ## 十、文件索引
 
-- `tools/design_review.py` 评审 CLI；`tools/export_levels.py` 运行期导出；`tools/selftest.py` 规则自检。
+- `tools/design_review.py` 评审 CLI；`tools/export_levels.py` 运行期导出；
+  `tools/validate_levels.py` 交付物校验（结构 + 源↔表一致性 + 结构性必赢）；`tools/selftest.py` 规则自检。
 - `tools/cdl/`：schema / score / mapping / curve / jump / sim / actuals / diagnose / recommend / report。
 - `references/01–05`：难度模型库、评估框架、DDA 规范、关卡节奏、埋点与数据分析。
 - `references/06–08`：模拟器接口规范、玩家能力与校准、上线治理。
 - `references/09–12`：流水线契约、跳变与异常分类、推荐引擎、门禁与验收。
 - `references/13`：**与 game 流水线的接入契约**（PRD→campaign 映射、levels.json schema、Gate 2.5 细则）。
+- `references/14`：**关卡生产路线**（正向手调 / 反向生成 / 导入的适用判据、反向生成五步骨架、四条判据 P1–P4、什么时候别做这条路）。换游戏时先读它再决定用哪条路线。
 - `templates/`：campaign 模板、参数表、关卡评审表、指标字典、模型卡、验收清单。
 - `examples/`：16 关示例战役（含刻意埋入的问题）、示例通关数据、示例报告。

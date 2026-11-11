@@ -1,6 +1,6 @@
 ---
 name: "game-integrate"
-description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 assets/ 和 src/(Web 引擎)或 Godot 工程(Godot 4)或 Unity 工程(Unity),执行 npm 构建或 godot --headless --export-release 或 unity -batchmode,产出 dist/ 或 export/ 或 Build/ 和验收报告。复刻模式在 Gate 4 追加数值区间核对与重置确定性回归。当被 game-forge-master 调度到本阶段,或用户要'集成构建/联调游戏'时调用。"
+description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读 assets/ 与 src/(或 Godot/Unity 工程),跑 npm/godot/unity 构建,产出 dist//export//Build/ 与验收报告、截图基线对比。复刻模式追加数值区间核对与重置确定性回归。被 master 调度或用户要'集成构建/联调游戏'时调用。"
 ---
 
 # 游戏集成与构建
@@ -50,7 +50,9 @@ description: "AI 游戏生成流水线阶段 5(含 Gate 4 实跑门)。读取 as
 
 | 文件 | 何时读取 |
 |------|---------|
-| `references/build-report-template.md` | 产出 BUILD_REPORT.md 验收报告时 |
+| `references/build-report-template.md` | 产出 BUILD_REPORT.md 验收报告时(§3 视觉验收的三步 + 四条硬规矩) |
+| `references/numeric-playtest.md` | 做数值可玩性实测(§10.2)时:采集脚本、字段含义、"采不到就判 FAIL"的兜底 |
+| `scripts/visual_diff.py` | 跑截图基线对比(§四.5)时:`baseline` 记录 / `check` 对比 / `list` 查清单 |
 
 ---
 
@@ -245,17 +247,7 @@ npm run typecheck 2>&1 | tee /tmp/typecheck.log
 | Expected N arguments but got M | 修复调用方参数 |
 
 ### 3. 修复循环
-```
-for (let i = 0; i < 3; i++) {
-  const errors = runTypecheck();
-  if (errors.length === 0) break;
-  fixErrors(errors);  // 用 Edit 工具修复
-}
-if (stillErrors) {
-  setTsConfigStrictFalse();
-  markIssue('typecheck-failed-degraded');
-}
-```
+最多 3 轮:跑 typecheck → 空则跳出 → 用 Edit 逐条修 → 重跑。仍失败则 `setTsConfigStrictFalse()` + `markIssue('typecheck-failed-degraded')`,继续往下走(不阻塞报告)。
 
 ### 4. 降级
 3 轮修复后仍失败,修改 tsconfig.json `strict: false`,在 BUILD_REPORT 标记。
@@ -292,6 +284,22 @@ npm run dev  # 非阻塞,后台运行
 ### 4. 关闭 dev server
 用 StopCommand 停止 npm run dev。
 
+### 5. 截图基线对比(必做)
+人眼看"好像没变"是最不可靠的验收方式。用 `scripts/visual_diff.py`(纯标准库,无依赖)把"变没变、变在哪"变成数字:
+
+```bash
+python scripts/visual_diff.py baseline --dir docs/screenshots/baseline \
+  --name 02-game_l01_1280x720_juice0 --image docs/screenshots/02-game.png
+python scripts/visual_diff.py check --dir docs/screenshots/baseline \
+  --name 02-game_l01_1280x720_juice0 --image docs/screenshots/02-game.png \
+  --max-diff 0.002 --out docs/screenshots/diff
+```
+
+- 基线名 = `{图名}_{关卡id}_{视口}_{JUICE系数}`,三项缺一不可(缺了就是拿不同条件的图在比)
+- 缺基线时 `check` 直接退出码 2,**不自动收录**——自动收录等于"首次运行永远绿"
+- 动态区域(计时器/分数)用 `--mask x,y,w,h` 排除,不许用"调大阈值"糊过去
+- 工具只回答"变了几成、bbox 在哪、热点 tile 是哪几个";**为什么变必须人写**,写不出的按回归处理
+
 ---
 
 ## 五、构建
@@ -321,7 +329,7 @@ npm run build
 **必填字段概要**:
 - 总览:游戏名称、引擎、构建结果、自测结果
 - 各阶段结果表:资源/代码/构建/自测的 PASS/FAIL/SKIP
-- 浏览器自测截图(HTML5 导出时)
+- 浏览器自测截图(HTML5 导出时)+ 基线对比结果(差异占比 / bbox / 每处差异的原因)
 - Console 错误清单
 - 已知问题
 - 运行指引(Web/Godot/Unity 分别说明)
@@ -404,7 +412,8 @@ npm run build
 **通用**:
 - [ ] BUILD_REPORT.md 完整
 - [ ] 已知问题全部列出
-- [ ] 截图至少 1 张
+- [ ] 截图至少 1 张,且每张都能对上一条 `manifest.json` 基线
+- [ ] 基线对比已跑:差异占比 ≤ 阈值,超阈的每一处都写了"为什么变"(写不出 = 回归)
 - [ ] **数值平衡实测通过**(见 十)
 - [ ] (关卡制)**关卡目标带核对**已完成,偏差 ≥15% 的关卡已判定是"模型偏"还是"目标偏"(见 10.5)
 
@@ -423,21 +432,8 @@ PRD §2.3 与 GameConfig 顶部注释都声明了数值可玩,但:
 ### 10.2 实测步骤
 
 1. 导航到 dev server URL,等待 5 秒(让障碍生成)
-2. 用 browser_evaluate 采集连续 8 帧 Hero 状态:
-   ```js
-   (() => {
-     const game = window.game;
-     const scene = game?.scene?.keys?.['Game'] || game?.scene?.getScene('Game');
-     const hero = scene?.hero, body = hero?.body;
-     return {
-       heroY: Math.round(hero?.y),
-       bodyBottom: Math.round(body?.y + (body?.height || 0)),
-       blockedDown: body?.blocked?.down,
-       velocityY: Math.round(body?.velocity?.y),
-       obstacles: scene?.obstacles?.length,
-     };
-   })()
-   ```
+2. 用 browser_evaluate 连续 8 帧采集 Hero 状态,脚本与字段含义见 `references/numeric-playtest.md`
+   (采到全 `undefined` 判 FAIL,不许当通过)
 3. **判定标准**:
    - `blockedDown === true` 且 `velocityY === 0` → Hero 稳定站地面(物理正常)
    - `obstacles >= 1` → 障碍在生成(逻辑正常)
