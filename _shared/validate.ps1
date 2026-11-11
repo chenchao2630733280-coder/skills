@@ -16,9 +16,14 @@ $allowList = @(
     'generate-system-prd/references/schemas/pages.example.json'   # PRD 阶段快照，_stageNote 已说明
 )
 
-$sharedNames = Get-ChildItem -Recurse -File $sharedDir |
+$sharedNames = Get-ChildItem -Recurse -File $sharedDir -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -ne 'README.md' } |
     Select-Object -ExpandProperty Name -Unique
+# 共享目录不存在或为空时，下面的 foreach 一个都跑不到，会直接打印 PASS —— 等于"权威副本丢了反而通过"。
+$sharedOk = (Test-Path $sharedDir) -and ($sharedNames.Count -gt 0)
+if (-not $sharedOk) {
+    Fail "_shared/references 缺失或为空，第 1 项（共享文件不得本地重建）无从执行"
+}
 
 $skillRefDirs = Get-ChildItem -Directory $ws |
     Where-Object { $_.Name -ne '_shared' -and (Test-Path (Join-Path $_.FullName 'references')) } |
@@ -34,26 +39,91 @@ foreach ($dir in $skillRefDirs) {
         }
     }
 }
-if ($dupeCount -eq 0) { Pass "无共享文件的本地重复拷贝（允许清单：$($allowList.Count) 项）" }
+if ($sharedOk -and $dupeCount -eq 0) { Pass "无共享文件的本地重复拷贝（允许清单：$($allowList.Count) 项）" }
+
+# 判定一个 reference token 落在哪一档。返回本 skill / shared / cross / miss。
+# 三类特殊写法不能直接 Test-Path，否则会把"简写"当成"悬空"：
+#   1) 占位符 references/{subcommand}.md   —— 表示按参数存在多份，不该判死
+#   2) 目录引用 references/                —— 只要求目录存在
+#   3) 数字简写 references/14 与区间 references/01–05 —— 实际文件是 14_xxx.md
+function Resolve-RefToken($skillDir, $token, $globalIndex) {
+    if ($token -match '[{}]') { return 'skip' }
+    $refDir = Join-Path $skillDir 'references'
+    $rel = $token.TrimEnd('/')
+    if (Test-Path ([IO.Path]::GetFullPath((Join-Path $skillDir $rel)))) { return 'local' }
+    if ($token.EndsWith('/')) { return 'miss' }
+    if ($rel -match '^references/(\d+)$') {
+        $n = $Matches[1]
+        if (Get-ChildItem $refDir -Filter "$n*" -ErrorAction SilentlyContinue) { return 'local' }
+        return 'miss'
+    }
+    if ($rel -match '^references/(\d+)[\u2013\-\u007e](\d+)$') {
+        $a = [int]$Matches[1]; $b = [int]$Matches[2]
+        for ($i = $a; $i -le $b; $i++) {
+            $nn = $i.ToString('00')
+            if (-not (Get-ChildItem $refDir -Filter "$nn*" -ErrorAction SilentlyContinue)) { return 'miss' }
+        }
+        return 'local'
+    }
+    # 共享副本：_shared/references 是权威，skill 里引用它不算悬空
+    $leaf = Split-Path $rel -Leaf
+    if (Test-Path (Join-Path (Join-Path $PSScriptRoot 'references') $leaf)) { return 'shared' }
+    # 他处存在 = 路径写法有歧义（漏了 skill 前缀），不是文件丢了
+    if ($globalIndex.ContainsKey($leaf)) { return 'cross:' + $globalIndex[$leaf] }
+    return 'miss'
+}
 
 # ---------- 2. SKILL.md 中引用的 references 路径必须存在 ----------
+# 正则必须是 `[^`\r\n]+`（非贪婪、不跨行）。若写成 `[^`]+`，代码块的 ``` 会和正文里的
+# 单个反引号混在一起配对，匹配出"跨段落的大块正文"，导致本项对反引号多的 SKILL.md
+# 完全失效（实测 game-level-design 匹配到 0 个 reference token，仍打印 PASS）。
+# 裸文本引用（不带反引号，如表格里直接写 references/xxx.md）也要查 —— 实测 282 处，
+# 其中 20 处指向别的 skill、1 处全仓不存在，此前完全在检查视野之外。
+$globalIndex = @{}
+Get-ChildItem -Recurse -File $ws -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notlike '*node_modules*' -and $_.Extension -in '.md', '.json' } |
+    ForEach-Object { if (-not $globalIndex.ContainsKey($_.Name)) { $globalIndex[$_.Name] = $_.DirectoryName.Replace("$ws\", '').Replace('\', '/') } }
+
 $refCheck = 0
+$refFailBefore = $script:fail
+$refNoToken = @()
+$refCross = @()
 Get-ChildItem -Directory $ws | Where-Object { $_.Name -ne '_shared' } | ForEach-Object {
     $skillDir = $_.FullName
+    $skillName = $_.Name
     $skillMd = Join-Path $skillDir 'SKILL.md'
     if (-not (Test-Path $skillMd)) { return }
     $content = Get-Content $skillMd -Raw -Encoding UTF8
-    $tokens = [regex]::Matches($content, '`([^`]+)`') | ForEach-Object { $_.Groups[1].Value } |
-        Where-Object { $_ -match '^(\.\./_shared/)?references/' }
+    $raw = @()
+    $raw += [regex]::Matches($content, '`([^`\r\n]+)`') | ForEach-Object { $_.Groups[1].Value }
+    $raw += [regex]::Matches($content, '(?<![/\w`])references/([A-Za-z0-9_\-]+\.(?:md|json))') |
+        ForEach-Object { 'references/' + $_.Groups[1].Value }
+    $tokens = $raw | Where-Object { $_ -match '^(\.\./_shared/)?references/' } | Select-Object -Unique
+    $localCount = 0
     foreach ($token in $tokens) {
+        $localCount++
         $refCheck++
-        $resolved = [IO.Path]::GetFullPath((Join-Path $skillDir $token))
-        if (-not (Test-Path $resolved)) {
-            Fail "$(Split-Path $skillDir -Leaf)/SKILL.md 引用了不存在的路径：$token"
+        $verdict = Resolve-RefToken $skillDir $token $globalIndex
+        if ($verdict -eq 'skip' -or $verdict -eq 'local' -or $verdict -eq 'shared') { continue }
+        if ($verdict -like 'cross:*') {
+            $refCross += "$skillName/$token -> $($verdict.Substring(6))"
+        } else {
+            Fail "$skillName/SKILL.md 引用了不存在的路径：$token"
         }
     }
+    # 只剩"裸 references/xxx"才算异常：`../other-skill/references/xxx` 这种带 skill 前缀的
+    # 跨 skill 写法是正确的，references 前面是 /，被负向断言排除，不算解析失败。
+    if ($localCount -eq 0 -and $content -match '(?<![/\w`])references/[A-Za-z0-9_]') { $refNoToken += $skillName }
 }
-Pass "SKILL.md references 引用路径检查完成（共 $refCheck 处）"
+if ($refCross.Count -gt 0) {
+    Write-Host "WARN  跨 skill 引用写成裸相对路径（读者会以为是本 skill 的），共 $($refCross.Count) 处：" -ForegroundColor Yellow
+    $refCross | Select-Object -First 8 | ForEach-Object { Write-Host "        $_" -ForegroundColor Yellow }
+    if ($refCross.Count -gt 8) { Write-Host "        …另有 $($refCross.Count - 8) 处" -ForegroundColor Yellow }
+}
+if ($refNoToken.Count -gt 0) {
+    Write-Host "WARN  以下 SKILL.md 含 references/ 但解析出 0 个行内引用（检查可能失效）：$($refNoToken -join ', ')" -ForegroundColor Yellow
+}
+if ($script:fail -eq $refFailBefore) { Pass "SKILL.md references 引用路径检查完成（共 $refCheck 处，跨 skill 歧义 $($refCross.Count) 处另计）" }
 
 # ---------- 3. 全部 references JSON 可解析 ----------
 $jsonCount = 0; $jsonBad = 0
@@ -292,7 +362,7 @@ if (Test-Path $ssDir) {
     $ssFail++
 }
 
-# ---------- 14. SKILL.md 行数与 description 字符数体检（WARN，不阻断） ----------
+# ---------- 15. SKILL.md 行数与 description 字符数体检（WARN，不阻断） ----------
 # 两条都是既定规范（500 行红线 / description ≤200 字符），但历史遗留较多，
 # 故只报不拦；新增或改动的 skill 应当自己保持在红线内，让这个列表逐步归零。
 $fatSkills = @()
