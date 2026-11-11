@@ -120,10 +120,18 @@ def audit_skill(skill):
     # 跨文件引用（"game-spec §2.3" / "PRD §1.5" / "`docs/LEVEL_AUTHORING.md` §1 … §7"）不算悬空。
     # lead 取"该行 § 之前的全部内容"，不能只取前 N 个字符：一句话里连续列举多个 § 时，
     # 第二个之后的 § 前面已经没有文档名了，窗口写法会把它们全部误报（实测 29 条全误报）。
+    # 白名单只收**可判定的文档标识**（skill 名 / 大写文档名 / 文件名 / docs 路径）。
+    # 不收"报告/手册/模板/清单/说明"这类中文泛词：正文里到处都有，
+    # 一条 `按验收清单的要求，本关对应 §7` 就会把本文件的裸引用一起跳过——实测两条漏报。
     DOCPREFIX = re.compile(
         r"(game-[a-z-]+|PRD|TECH_DESIGN|AUDIO_SPEC|ART_SPEC|LEVEL_PLAN|LEVEL_AUTHORING|"
         r"GAME_BLUEPRINT|LEVEL_GENERATOR_SPEC|DIFFICULTY_REPORT|BUILD_REPORT|refs\d+|"
-        r"docs/|\.md`|_SPEC\.|_REPORT\.|报告|手册|模板|规范|契约|清单|蓝图|说明)")
+        r"docs/|\.md`|_SPEC\.|_REPORT\.)")
+    # 中文简称（"报告 §14" / "蓝图 §5"）确实是本项目常用指代，不能全砍；
+    # 但必须**紧贴 § 前面**才算指代，出现在句子中间不算。
+    DOC_NEAR = re.compile(r"(报告|蓝图|手册|模板|清单|规范|契约|说明)\s*的?\s*$")
+    # 表格映射（| 蓝图章节 | 拆解章节 | 下面整片 §x | §y |）：表头出现"章节"即视为文档章节映射
+    TABLE_DOC = re.compile(r"章节")
     prev = ""
     table_head = ""
     for lineno, line in enumerate(txt.splitlines(), 1):
@@ -136,11 +144,14 @@ def audit_skill(skill):
         if "§" not in line:
             prev = line
             continue
-        # 跨行引用：文档名只在上一行（"`AUDIO_SPEC.md` 的参数表 → 下文都写 §2.6"）或本表表头
-        inherit = bool(DOCPREFIX.search(prev) or DOCPREFIX.search(table_head))
+        # 跨行引用：文档名只在上一行（"`AUDIO_SPEC.md` 的参数表 → 下文都写 §2.6"）或本表表头。
+        # 中文简称只在"紧贴 §"时才算（DOC_NEAR），不参与跨行继承——否则上一行随便出现"清单"两字
+        # 就会把整段引用全放过。
+        inherit = bool(DOCPREFIX.search(prev) or DOCPREFIX.search(table_head)
+                       or TABLE_DOC.search(table_head))
         for m in re.finditer(r"§\s*([0-9]+(?:\.[0-9]+)?)", line):
             lead, ref = line[:m.start()], m.group(1)
-            if inherit or DOCPREFIX.search(lead):
+            if inherit or DOCPREFIX.search(lead) or DOC_NEAR.search(lead):
                 continue
             if ref not in hd:
                 issues.append(("E", "§%s 引用无对应标题（第 %d 行,同文件内找不到该编号）" % (ref, lineno)))
@@ -174,7 +185,51 @@ def master_table():
     return paths
 
 
+def self_test():
+    """用反例证明 § 引用检查**还活着**。
+
+    降噪有两种做法，输出完全一样：让问题消失，或让检查消失。
+    所以每次改 DOCPREFIX / DOC_NEAR / TABLE_DOC，先跑这个。
+
+    返回 True 表示全部符合预期。
+    """
+    import tempfile
+    import shutil
+    cases = [
+        # (说明, 待测那几行, 期望报出的条数)
+        ("裸引用应报", "## 段\n\n本关对应 §7 的写法。\n", 1),
+        ("中文泛词在句中不算文档名", "## 段\n\n按验收清单的要求，本关对应 §7。\n", 1),
+        ("中文简称紧贴 § 才算", "## 段\n\n拆出一条用例，写进报告 §10 里。\n", 0),
+        ("章节映射表整片继承", "## 段\n\n| 蓝图章节 | 拆解章节 |\n|---|---|\n| §0 摘要 | §1 定义 |\n", 0),
+        ("带明确文档名跳过", "## 段\n\n见 `docs/LEVEL_PLAN.md` §5 与 PRD §1.5。\n", 0),
+    ]
+    global ROOT
+    saved = ROOT
+    ok = True
+    tmp = tempfile.mkdtemp(prefix="audit_selftest_")
+    try:
+        for name, body, want in cases:
+            d = os.path.join(tmp, "tskill")
+            os.makedirs(d, exist_ok=True)
+            with open(os.path.join(d, "SKILL.md"), "w", encoding="utf-8") as f:
+                f.write('---\nname: "tskill"\ndescription: "t"\n---\n\n# t\n\n' + body)
+            ROOT = tmp
+            issues, _ = audit_skill("tskill")
+            got = len([1 for c, _ in issues if c == "E"])
+            flag = "PASS" if got == want else "FAIL"
+            if got != want:
+                ok = False
+            print("  %s  %-28s 期望 %d 实得 %d" % (flag, name, want, got))
+    finally:
+        ROOT = saved
+        shutil.rmtree(tmp, ignore_errors=True)
+    print("§ 引用检查自检：%s" % ("全部符合预期" if ok else "有偏差，检查可能已失效"))
+    return ok
+
+
 def main():
+    if "--self-test" in sys.argv:
+        sys.exit(0 if self_test() else 1)
     skills = sorted(d for d in os.listdir(ROOT)
                     if d.startswith("game-") and os.path.isdir(os.path.join(ROOT, d)))
     all_issues = {}
