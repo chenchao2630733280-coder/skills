@@ -165,4 +165,6 @@ P4 可以在现有工具里直接查：`tools/cdl/audit.py` 的 `dominance` 判�
 | 结构性必赢/必输（P4） | `tools/cdl/audit.py` + `validate_levels.py` 的 dominance |
 | 解路数（P2） | 游戏侧求解器，本 skill 不含；接口可与 `references/06` 共用但语义不同，无求解器则人工抽查并标注 |
 | 作者手册里怎么写"路线上限" | `templates/LEVEL_AUTHORING_template.md` §6 |
+| 生成路径要哪几个工位、每站用什么算法 | `references/15`（五工位选型 + 四条不变量 I1–I4） |
+| 每站具体怎么写（伪代码与反例） | `references/16`（量化/分配/布局/验证/打分 + 反向生成完整流程） |
 | 关卡表交付契约 | `references/13`（`config/levels.json` schema） |

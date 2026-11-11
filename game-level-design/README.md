@@ -41,15 +41,19 @@ game-asset-forge ∥ game-code-forge  ← 后者消费 config/levels.json
 
 ## 目录
 
-- `SKILL.md`：阶段契约（位置、输入输出、⓪–⑦ 工作流、Gate 2.5 自检、降级策略）。
+- `SKILL.md`：阶段契约（位置、输入输出、⓪/⓪b–⑦ 工作流、Gate 2.5 自检、降级策略）。
 - `runtime.yaml`：skill-runtime 契约（inputs/outputs/degrade）。
-- `tools/design_review.py`：评审 CLI；`tools/export_levels.py`：运行期关卡导出；`tools/selftest.py`：20 项规则自检。
-- `tools/cdl/`：schema / score / mapping / curve / jump / sim / actuals / diagnose / recommend / report。
+- `tools/design_review.py`：评审 CLI；`tools/export_levels.py`：运行期关卡导出（导出即自检）；
+  `tools/validate_levels.py`：交付物校验（结构 + 源↔表一致 + 结构性必赢）；`tools/selftest.py`：34 项规则自检。
+- `tools/cdl/`：schema / score / mapping / curve / jump / sim / actuals / diagnose / recommend / report / audit。
 - `references/01–05`：难度模型库、评估框架、DDA 规范、关卡节奏、埋点与数据分析。
 - `references/06–08`：模拟器接口规范、玩家能力与校准、上线治理。
 - `references/09–12`：数据契约、跳变与异常分类、推荐引擎、门禁与验收。
 - `references/13`：**流水线接入契约**（PRD→campaign 映射、levels.json schema、Gate 2.5 细则）。
-- `templates/`：campaign 模板、参数表、关卡评审表、指标字典、模型卡、验收清单。
+- `references/14`：**关卡生产路线**（手调 / 反向生成 / 导入的适用判据、反向生成五步骨架、P1–P4、什么时候别做）。
+- `references/15`：**生成路径的算法选型**（五工位开关、每站算法与"何时不用"、四条不变量 I1–I4、反向 vs 正向成本模型、何时才需要原生扩展）。
+- `references/16`：**五工位的算法伪代码**（量化/分配/布局/验证/打分 + 反向生成完整流程；三个"照抄会出错"的地方，含"精确分割下托盘压力恒为 0"的证明）。
+- `templates/`：campaign 模板、参数表、关卡评审表、指标字典、模型卡、验收清单、**关卡作者手册**、**生成器规格**。
 - `examples/`：16 关示例战役（含刻意埋入的问题）、示例通关数据、示例报告。
 
 ## 快速开始

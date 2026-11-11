@@ -279,7 +279,7 @@ game-code-forge → 读 actualFormat 优先于 format  (消费真相)
 
 ### 4.3 文字-背景对比度参考表(需叠加文字的背景图共用)
 
-> 本表是**全流水线唯一源**,game-asset-forge 的 `references/card-bg-spec.md` §12.5 与 game-polish 的 `references/asset-fix-recipes.md` §11.4 均引用本表,不再各自维护副本。
+> 本表是**全流水线唯一源**，`game-asset-forge/references/card-bg-spec.md` §12.5 与 `game-polish/references/asset-fix-recipes.md` §11.4 均引用本表，不再各自维护副本。
 >
 > **规则**:背景与文字的亮度差应 ≥ 40%(WCAG AA 标准简化版)。
 

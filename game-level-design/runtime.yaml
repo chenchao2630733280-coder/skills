@@ -34,6 +34,10 @@ outputs:
   - path: docs/DIFFICULTY_REVIEW.json
     type: file
     description: 与报告同源的机读产物，供 Gate 2.5 与 game-integrate 数值平衡核对
+  - path: docs/LEVEL_GENERATOR_SPEC.md
+    type: file
+    optional: true
+    description: 生成路径与算法规格（仅"生成器/导入"路线产出）：五工位开关、每站算法与参数、四条不变量裁决、验证器规格、已知限制。判据见 Gate 2.5 2.5.11，写法见 references/15
 degrade:
   - trigger: 无真实通关数据
     action: 跑纯模型预测，报告 data_source 标注"未接入"，绝对通关率不对外承诺

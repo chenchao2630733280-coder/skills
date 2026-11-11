@@ -42,6 +42,7 @@ game-asset-forge ∥ game-code-forge
 | 上游（可选） | 线上 `attempts.csv` | 真实首通/终通/道具使用，用于校准与预测背离检测 |
 | 下游 | `game-code-forge` | `config/levels.json`（唯一数据源，不得内联复制） |
 | 下游（人） | 策划 / 外包 | `docs/LEVEL_AUTHORING.md`（改关说明书：字段、档位、旋钮有效区间、硬约束、验收对跑） |
+| 下游（工程） | 写生成器的人 / `game-code-forge` | `docs/LEVEL_GENERATOR_SPEC.md`（生成路径与算法规格，仅生成器/导入路线产出） |
 | 下游 | `game-integrate` | Gate 4 数值平衡核对 `docs/DIFFICULTY_REPORT.md` 的目标带 |
 | 下游 | `game-quality-gate` | Gate 2.5 检查产物；Gate 3 检查代码是否走样 |
 
@@ -75,18 +76,25 @@ game-asset-forge ∥ game-code-forge
 
 ```
 ⓪ 选路线      这批关卡从哪来 → 手调 / 反向生成 / 导入（判据见 references/14）
+⓪b 定生成路径 仅生成器/导入路线：五工位开关 + 四不变量 → docs/LEVEL_GENERATOR_SPEC.md（见 references/15）
 ① 抽关卡表    PRD 关卡表 + 数值表 → campaign.json（映射见 references/13）
 ② 定曲线      phases：阶段划分、形状（ramp/flat/spike/relief/wave/step）、起止目标首通率
 ③ 跑评审      tools/design_review.py → 曲线/跳变/模拟/诊断/建议
 ④ 改参数      按诊断逐条单变量修正 → 复跑，直到 HIGH 清零或可解释
 ⑤ 导配置      tools/export_levels.py → config/levels.json（运行期唯一数据源）
-⑥ 写两份文档  docs/LEVEL_PLAN.md（为什么这样设计）+ docs/LEVEL_AUTHORING.md（手怎么动）
+⑥ 写三份文档  docs/LEVEL_PLAN.md（为什么这样设计）+ LEVEL_AUTHORING.md（手怎么动）+ LEVEL_GENERATOR_SPEC.md（仅生成器路线）
 ⑦ 交门禁      tools/validate_levels.py 过 → Gate 2.5（L1 产物完整 + L2 与 PRD 一致）
 ```
 
 **⓪ 的判据只有一句**：这批关卡有没有**离散、可枚举、可序列化**的局面？没有（跑酷/平台跳跃/实时动作）就手调，
 别写生成器——连续游戏没有"初盘→终局"的反推关系，可解性也不是构造能保证的。反向生成的五步骨架、
 四条判据（P1 可解性由构造保证 / P2 解路数下限 / P3 步骤数≠难度 / P4 初盘退化必查）见 `references/14`。
+
+**⓪b 只做一件事**：把"这个游戏需要哪几个生成工位、每站用什么算法"定下来，写进 `docs/LEVEL_GENERATOR_SPEC.md`。
+五个工位（内容量化 / 资源分配 / 布局与依赖 / 可解性验证 / 难度打分）**每个都要用游戏事实换**，
+换不到就砍掉——砍掉一站省一份实现和一份永远调不好的参数。四条不变量（容量守恒 / 需求序⊑可达序 /
+干扰项可处置 / 压力上界）必须逐条给裁决，不适用也要写"不适用 + 原因"。选型与反例见 `references/15`，
+动手写生成器时看 `references/16` 的伪代码（只给伪代码不给实现——状态表示必须按自己游戏重写）。
 
 **关键纪律**：③→④ 至少走两轮。第一轮几乎总会暴露目标与关卡的矛盾（满屏 BAND_MISS），
 这时先怀疑目标或数值口径，而不是逐关硬调——16 关全往一个方向偏，通常是 phases 定错了。
@@ -122,7 +130,8 @@ python tools/selftest.py
 ```
 
 产物：`review_out/review.md`（报告正文，第 0 节为量尺与契约体检）、`review.json`（机读，含 `audit`）、
-5 张表、`config/levels.json`（运行期配置）。
+5 张表、`config/levels.json`（运行期配置）。导出到 `docs/` 时另落 `docs/DIFFICULTY_REPORT.md`（人读）
+与 `docs/DIFFICULTY_REVIEW.json`（机读，Gate 2.5 的 2.5.7 与 `game-integrate` 的数值核对都读它）。
 
 ---
 
@@ -133,7 +142,8 @@ python tools/selftest.py
 - [ ] `docs/LEVEL_PLAN.md` 存在，含：阶段划分、目标首通率区间、参数口径、被裁剪项说明、冲突裁决。
 - [ ] `config/levels.json` 存在且可解析，字段符合 `references/13` 的 schema（`level_id/index/tag/params/target_win/difficulty_score`）。`difficulty_score` 是 0~1 的排序/诊断分，**不是**通关率（`pred_win` 才是）。
 - [ ] `docs/DIFFICULTY_REPORT.md` 存在，`gate.status` 为 PASS，或 FAIL 项已在 `LEVEL_PLAN.md` 逐条说明处置。
-- [ ] `docs/LEVEL_AUTHORING.md` 存在，含 §1 上手 / §2 字段 / §4 旋钮有效区间 / §5 硬约束（每条带"为什么"）/ §7 两种极端策略对跑；模板见 `templates/LEVEL_AUTHORING_template.md`。
+- [ ] `docs/LEVEL_AUTHORING.md` 存在，含 §1 上手 / §2 字段 / §4 旋钮有效区间 / §5 硬约束（每条带"为什么"）/ §7 两种极端策略对跑 / §6 生产路线与 P1–P4 裁决；模板见 `templates/LEVEL_AUTHORING_template.md`。
+- [ ] (走生成器/导入路线时)`docs/LEVEL_GENERATOR_SPEC.md` 存在，§2 五工位开关有答案、§4 四条不变量**逐条有裁决**（不适用也要写原因）；模板见 `templates/LEVEL_GENERATOR_SPEC_template.md`。
 - [ ] `levels.json` 的关卡数量、`level_id` 序列与 PRD 关卡表**完全一致**（不多不少不改名）。
 - [ ] 每关的 `params` 都落在 `legal_ranges` 内。
 - [ ] 报告中的 `spread` / θ / 权重 / `per_unit` 状态已标注（占位 or 已校准），未把占位值写成结论。
@@ -193,5 +203,8 @@ python tools/selftest.py
 - `references/09–12`：流水线契约、跳变与异常分类、推荐引擎、门禁与验收。
 - `references/13`：**与 game 流水线的接入契约**（PRD→campaign 映射、levels.json schema、Gate 2.5 细则）。
 - `references/14`：**关卡生产路线**（正向手调 / 反向生成 / 导入的适用判据、反向生成五步骨架、四条判据 P1–P4、什么时候别做这条路）。换游戏时先读它再决定用哪条路线。
+- `references/15`：**生成路径的算法选型**（五工位开关：内容量化/资源分配/布局与依赖/可解性验证/难度打分；每站"什么时候不用这个算法"；四条不变量 I1–I4；反向 vs 正向的成本模型；何时才需要 C++/Rust）。走生成器/导入路线时读。
+- `references/16`：**上述工位的算法伪代码**（量化/分配/布局/验证/打分五段 + 反向生成完整流程 + 三个"照抄会出错"的地方：精确分割下压力恒为 0、记忆化 key 漏字段、可见性缓存）。要动手写生成器时读。
+- `templates/LEVEL_GENERATOR_SPEC_template.md`：`docs/LEVEL_GENERATOR_SPEC.md` 的九节模板（工位开关 + 不变量裁决 + 验证器规格 + 已知限制）。
 - `templates/`：campaign 模板、参数表、关卡评审表、指标字典、模型卡、验收清单。
 - `examples/`：16 关示例战役（含刻意埋入的问题）、示例通关数据、示例报告。
