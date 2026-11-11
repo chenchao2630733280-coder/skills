@@ -117,14 +117,34 @@ def audit_skill(skill):
             issues.append(("A", "悬空 reference：references/%s 不存在" % tok))
 
     hd = headings(txt)
-    # 跨文件引用（"game-spec §2.3" / "PRD §1.5"）不算悬空，跳过
-    for m in re.finditer(r"(.{0,40}?)§\s*([0-9]+(?:\.[0-9]+)?)", txt):
-        lead, ref = m.group(1), m.group(2)
-        if re.search(r"(game-[a-z-]+|PRD|TECH_DESIGN|AUDIO_SPEC|ART_SPEC|LEVEL_PLAN|LEVEL_AUTHORING|"
-                     r"GAME_BLUEPRINT|LEVEL_GENERATOR_SPEC|DIFFICULTY_REPORT|BUILD_REPORT|refs\d+)", lead):
+    # 跨文件引用（"game-spec §2.3" / "PRD §1.5" / "`docs/LEVEL_AUTHORING.md` §1 … §7"）不算悬空。
+    # lead 取"该行 § 之前的全部内容"，不能只取前 N 个字符：一句话里连续列举多个 § 时，
+    # 第二个之后的 § 前面已经没有文档名了，窗口写法会把它们全部误报（实测 29 条全误报）。
+    DOCPREFIX = re.compile(
+        r"(game-[a-z-]+|PRD|TECH_DESIGN|AUDIO_SPEC|ART_SPEC|LEVEL_PLAN|LEVEL_AUTHORING|"
+        r"GAME_BLUEPRINT|LEVEL_GENERATOR_SPEC|DIFFICULTY_REPORT|BUILD_REPORT|refs\d+|"
+        r"docs/|\.md`|_SPEC\.|_REPORT\.|报告|手册|模板|规范|契约|清单|蓝图|说明)")
+    prev = ""
+    table_head = ""
+    for lineno, line in enumerate(txt.splitlines(), 1):
+        # 表格上下文：表头写了是哪份文档，表体里的 § 都继承它
+        if line.lstrip().startswith("|"):
+            if not table_head:
+                table_head = line
+        else:
+            table_head = ""
+        if "§" not in line:
+            prev = line
             continue
-        if ref not in hd:
-            issues.append(("E", "§%s 引用无对应标题（同文件内找不到该编号）" % ref))
+        # 跨行引用：文档名只在上一行（"`AUDIO_SPEC.md` 的参数表 → 下文都写 §2.6"）或本表表头
+        inherit = bool(DOCPREFIX.search(prev) or DOCPREFIX.search(table_head))
+        for m in re.finditer(r"§\s*([0-9]+(?:\.[0-9]+)?)", line):
+            lead, ref = line[:m.start()], m.group(1)
+            if inherit or DOCPREFIX.search(lead):
+                continue
+            if ref not in hd:
+                issues.append(("E", "§%s 引用无对应标题（第 %d 行,同文件内找不到该编号）" % (ref, lineno)))
+        prev = line
 
     rt = runtime_paths(skill)
     if rt:

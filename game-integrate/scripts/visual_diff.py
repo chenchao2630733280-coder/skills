@@ -198,7 +198,7 @@ def compare(base: tuple, cur: tuple, tolerance: int, masks: list, grid: int) -> 
     for y in range(bh):
         row = y * bw
         for x in range(bw):
-            if _in_mask(x, y, masks):
+            if masks and _in_mask(x, y, masks):
                 continue
             total += 1
             i = (row + x) * 3
