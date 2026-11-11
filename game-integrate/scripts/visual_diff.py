@@ -420,6 +420,20 @@ def main(argv=None) -> int:
     l.set_defaults(func=cmd_list)
 
     args = ap.parse_args(argv)
+    # 参数越界一律拒绝，不允许"调大一点就变绿"。这三个值写错的后果都是**静默 PASS**，
+    # 而本工具存在的意义就是不许静默 PASS，所以自己先守住。
+    if args.cmd == "check":
+        if not 0 <= args.tolerance <= 255:
+            print("[ERROR] --tolerance 必须在 0~255（当前 %d）。调大等于宣布所有像素都算相同，"
+                  "结果必然 PASS。" % args.tolerance, file=sys.stderr)
+            return 2
+        if not 0.0 <= args.max_diff <= 1.0:
+            print("[ERROR] --max-diff 是差异像素**占比**，必须在 0~1（0.002 = 0.2%%）。"
+                  "当前 %g 会让任何差异都通过。" % args.max_diff, file=sys.stderr)
+            return 2
+        if args.grid < 1:
+            print("[ERROR] --grid 必须 >= 1（当前 %d）。" % args.grid, file=sys.stderr)
+            return 2
     try:
         return args.func(args)
     except (ValueError, OSError) as exc:
