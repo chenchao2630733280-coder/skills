@@ -523,3 +523,16 @@ Skill 内引用 `../_shared/` 的文件需在分发时复制回该 Skill 的 `re
 - 依据：乌海项目 b149~b161 界面收敛（门禁三连踩）、2026-10-16 需求轮（渠道概念整体下线）、
   当日一致性审查轮（快照瞬时写回实测）。全库扫引用：README/WORKBENCH 无这四 skill 的旧口径复述，
   product-pipeline-master 引用的门禁分类法（A~H/I~K）未变，无需联动。
+
+### 2026-11-17 难度评估体系沉淀（确定性口径 + 科学验收）
+
+- **game-level-design**：新增 `references/17_deterministic_evaluation.md`（三层结构 L0 可解性 / L1 决策性 / L2 难度序 + 三条铁律、可解性证明三级强度与四条实现纪律、三态闸与豁免登记、科学验收五项：可复现/单调/可分/可证伪/锚点校准、口径治理）与 `references/18_eval_harness_contract.md`（五工具一实现、CLI 与退出码、`evaluation` schema、`repro_check` 实测读数、变异测试闸门自检、Gate 2.5 字段对接、老项目迁移六步）；新增 `templates/DIFFICULTY_EVAL_section.md`（DIFFICULTY_REPORT §0 整节模板）与 `tools/repro_check.py`（通用可复现比对器：按名剔计时、比全字段、字段数 < 10 判假 PASS）。
+  §2 新增「先定评估档位」（`deterministic` / `sampled` / `telemetry`，同批不许混用）；§四工作流加 ⓪ 定口径与 ⑦ 复现自检；§六自检 +8 项；§七新增 10 个 deterministic 轨信号（NAIVE_WINS / T_UNSOUND / PROOF_UNKNOWN / REPRO_DIFF / GATE_BLIND / SCORE_INVERSION / STAR_UNREACHABLE 等）；§八降级 +3 行；§九禁止 +6 条。version 3.1.0 → 3.2.0。
+- **game-quality-gate**：Gate 2.5 新增 2.5.13（可复现证据：`repro.verdict=pass` 且 `fields_compared ≥ 10`）/ 2.5.14（闸门有牙齿：三变异全红 + `naive` 通关必须有豁免登记）/ 2.5.15（指标有效性：单调/可分/锚点/证伪 + `basis_version`）/ 2.5.16（评估口径降级不可当放行）。2.5.16 与既有 2.5.12（阈值防放宽）并列，堵死"改尺子"的两条路。
+- **game-forge-master**：阶段 2.5 改为「先定评估档位再动关卡」，并写明 deterministic 轨执行顺序不可换（静态分 → 证明 → 三态闸 → repro → 排序，反过来会"先打分再证明"）；裁剪表 +2 行；Gate 2.5 硬阻断 +3 类失败；路径表补 `build/eval/run_{a,b}.json` 与 evaluation 块说明；确认点 3 简报改报「档位 / 通过数(含豁免) / 可复现字段数 / FAIL 关根因」；references 计数 13 → 18。
+- **game-integrate**：§10.5 增档位分叉——`deterministic` 档不存在 `pred_win`，改做「闸门结论核对」（实机重跑闸门 + 每关实机试玩 + 无脑点抽查），禁止硬套通关率目标。
+- **content-difficulty-gate**：§二加第 4 条判据（判定要能复现、闸门要能红）；§六边界表登记分工（**配方归它，证明与验收归 game-level-design**）；§七 checklist +4。
+- **game-teardown**：`references/solvability-and-difficulty.md` §3.1 补结论措辞三级强度（预算用尽 → `unknown`，不许写成「不可解」）。
+- **README**：§3.1 补阶段 2.5 行；§3.4 新增第 6 条「难度评估的科学性有硬判据」。
+- 依据：godot 苏州版画 × 蜜蜂调度项目 2026-11-17 口径换代（抽样乱点通关率当日跑出 `0.94→0.51`/`0.48→0.55`/`0.78→1.00` 三组互斥读数后废弃）。
+  实跑验证：8 关全部可解（均 12 步 witness）、`naive` 6 关也能过 → 2/8 通过；两次运行 862 字段逐一相等（剔 40 个计时、其中 24 个确实变化）；变异测试 2/3 命中（无解关报「未知+FAIL」、无决策关报「naive 也通关+FAIL」），第三类「编号序 vs 压力序」确认闸门失明并记入报告缺口。

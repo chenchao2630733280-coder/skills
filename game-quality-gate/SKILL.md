@@ -1,6 +1,6 @@
 ---
 name: "game-quality-gate"
-description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/关卡后[Gate 2.5·关卡制]/美术后/资源代码后)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/关卡难度校验/实跑验证游戏产物'时调用。"
+description: "AI 游戏生成流水线的跨阶段质量门。在关键节点(拆解后[Gate 0.5·仅复刻专线]/蓝图后/规格后/关卡后[Gate 2.5·关卡制]/美术后/资源代码后)介入做契约校验与实跑预检,不通过则阻断流水线并给出修复建议。Gate 2.5 含难度评估证据校验(评估档位/可复现字段数/闸门变异自检/指标有效性/口径是否被降级绕过)。当被 game-forge-master 调度到检查点,或用户要'校验/门禁/质量检查/关卡难度校验/实跑验证游戏产物'时调用。"
 ---
 
 # 游戏流水线质量门
@@ -71,7 +71,7 @@ game-polish (可选)
 | Gate 0.5 拆解门 | game-teardown 后(仅复刻专线) | L1 | 拆解产物完整性 + 假设可证伪性 | `docs/GATE_0_5_REPORT.md` |
 | Gate 0 蓝图门 | game-blueprint 后 | L1 | 蓝图字段完整性 / 引擎选择合理性 / 范围可行 | `docs/GATE_0_REPORT.md` |
 | Gate 1 规格门 | game-spec 后 | L1+L2 | PRD 节点树完整性 + TECH_DESIGN 与 PRD 引擎/目录一致 | `docs/GATE_1_REPORT.md` |
-| Gate 2.5 关卡门 | game-level-design 后(关卡制必走) | L1+L2 | 关卡产物完整 + levels.json 与 PRD 关卡表/合法范围一致 | `docs/GATE_2_5_REPORT.md` |
+| Gate 2.5 关卡门 | game-level-design 后(关卡制必走) | L1+L2 | 关卡产物完整 + levels.json 与 PRD 关卡表/合法范围一致 + 评估证据(可复现/闸门自检/指标有效性) | `docs/GATE_2_5_REPORT.md` |
 | Gate 2 美术门 | game-art-spec 后 | L1+L2 | manifest 字段 + manifest 的 UI asset 与 PRD 节点树 1:1 对齐 | `docs/GATE_2_REPORT.md` |
 | Gate 3 产物门 | game-asset-forge + game-code-forge 后 | L1+L2+L3 | manifest ↔ 实际文件 + 代码 UI 节点 ↔ PRD 节点树 + typecheck 预检 | `docs/GATE_3_REPORT.md` |
 
@@ -109,6 +109,11 @@ game-polish (可选)
 
 **输入**:`docs/LEVEL_PLAN.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json` + `docs/PRD.md`(关卡表);声明了生成器/导入路线时另加 `docs/LEVEL_GENERATOR_SPEC.md`(2.5.11)
 
+**本门只读文件,不跑游戏**。2.5.13~2.5.15 读 `DIFFICULTY_REVIEW.json` 的 `evaluation` 块(由 `game-level-design` 跑
+`tools/level_designer` + `tools/repro_check.py` 后写入,字段定义见 `../game-level-design/references/18_eval_harness_contract.md` §3)。
+**唯一可执行复核项**:若 `evaluation.repro` 引用的两次运行产物(`run_a.json`/`run_b.json`)仍在,
+本门可以重跑一次 `tools/repro_check.py` 复核(用法见同文件 §4)——用于抓"报告写了 pass、实际不一致"。
+
 **L1 静态检查**
 
 | # | 检查项 | 判据 | 失败码 |
@@ -120,6 +125,9 @@ game-polish (可选)
 | 2.5.9 | 关卡表通过交付物校验 | `config/levels.json` 的 `validation.status == PASS`(由 `game-level-design` 的 `export_levels.py` 导出时内嵌,判据实现 `tools/validate_levels.py`:字段/类型/id 唯一/index 连续/源↔表一致);**缺 `validation` 块**记 WARNING 而非 FAIL(兼容旧产物) | `G25-09` |
 | 2.5.10 | 关卡作者手册存在(关卡制) | `docs/LEVEL_AUTHORING.md` 与模板同构,以下六项内容齐备:**§1 上手** / **§2 字段表** / **§4 旋钮有效区间**与越界后果 / **§5 构建期硬约束**(每条带"为什么存在") / **§6 生产路线**(选了哪条 + P1–P4 逐条给裁决,不适用的写"不适用"而不是留空) / **§7 两种极端策略对跑验收**;只有标题无内容不算通过 | `G25-10` |
 | 2.5.11 | 生成器规格存在(条件:声明了生成器/导入路线) | 触发条件:`docs/LEVEL_PLAN.md` §0 或 §6 声明生产路线为"生成器/导入"(**含生成器下的反向构造与正向筛选两种策略;写成"反向生成"也按生成器处理,不因措辞漏触发**)。此时 `docs/LEVEL_GENERATOR_SPEC.md` 须与模板同构(九节),且其中:① §2 的 **Q1–Q5 每条都有答案**(开/砍 + 砍掉后风险由谁兜),且**工位 E 有明确结论**(默认开;关卡数 < 30 砍掉须在 §7 写明"难度序由人工给") ② §4 四条不变量(I1 容量守恒/I2 需求序⊑可达序/I3 干扰项可处置/I4 压力上界)**逐条有裁决**,不适用的写"不适用 + 原因" ③ §7 已知限制非空 —— 三条缺任一即 FAIL;手调路线跳过(记 SKIP 不记 FAIL) | `G25-11` |
+| 2.5.13 | 评估档位与可复现证据 | `evaluation.tier` ∈ {deterministic, sampled, telemetry};`tier=deterministic` 时 `evaluation.repro.verdict=pass` **且** `repro.fields_compared ≥ 10`(低于 10 是"比了 0 个字段的 PASS",判 FAIL),且不一致项须全部落在计时字段。**缺 `evaluation` 块记 WARNING(`EVAL_BLOCK_MISSING`),不判 FAIL**(兼容旧产物) | `G25-13` |
+| 2.5.14 | 闸门有牙齿(条件:tier=deterministic) | ① `evaluation.gate_selftest.detected` 覆盖 `unsolvable` / `no_decision` / `score_inversion` **三条**(少一条 = 闸门对该类坏关卡失明);② 逐关 `verdict` 中 `naive_lost=false` 的关,**要么**已登记豁免(`tutorial=true` 且 `LEVEL_PLAN.md` 有名有理由,总数 ≤ `max(1, ⌈10%×关卡数⌉)`),**要么** `pass=false`。存在"`naive` 通关却 `pass=true` 且无豁免登记"即 FAIL | `G25-14` |
+| 2.5.15 | 指标有效性(条件:tier=deterministic) | `evaluation.validity` 的 `monotonic` / `discriminating` / `anchored` 均为 `pass`;`validity.falsifiers` 至少 1 条且每条都能被现有工具产出观测(不是思想实验);`normalization.basis_version` 非空。任一不满足即 FAIL | `G25-15` |
 
 **L2 契约检查**
 
@@ -130,8 +138,10 @@ game-polish (可选)
 | 2.5.7 | 门禁结论可解释 | `difficulty_gate.status=PASS`;或为 FAIL 时 `LEVEL_PLAN.md §5` 对每个阻断关卡有逐条处置 | `G25-07` |
 | 2.5.8 | 假设已声明 | `campaign.model.status` 非空,且报告"假设、置信度"章节未被删改 | `G25-08` |
 | 2.5.12 | 阈值未被静默放宽(条件触发) | 仅当 `difficulty_gate.status` 由 FAIL 变 PASS 时检查:`docs/DIFFICULTY_REVIEW.json` 的 `thresholds` 与上一版逐项一致;有放宽且 `LEVEL_PLAN.md` 未记录理由即 FAIL。未跨版本对比时记 WARNING(`THRESHOLD_BASELINE_MISSING`),不得默认通过 | `G25-12` |
+| 2.5.16 | 评估口径未被降级绕过(条件触发) | 仅当 `evaluation.tier` 由 `deterministic` 降为 `sampled` 时检查(等于"改尺子以求通过"):`LEVEL_PLAN.md §5` 须写明降级理由(为什么这批局面**不可**枚举,写具体障碍而非"比较难"),且判定已改由人工试玩或线上数据承担并附证据路径。缺任一项即 FAIL;**升档不检查**(`sampled → deterministic` 永远是改进) | `G25-16` |
 
 **防作弊**:若 `difficulty_gate.status` 由 FAIL 变 PASS,本门核对 `docs/DIFFICULTY_REVIEW.json` 的 `thresholds` 与上一版是否一致;阈值被放宽而未在 `LEVEL_PLAN.md` 记录理由的,判 `G25-12` FAIL(判据见 2.5.12)。
+**两条"改尺子"的路都要堵**:放宽阈值(2.5.12)与降级评估口径(2.5.16)。前者改判据,后者改量尺——后者更隐蔽,因为它让报告"看起来还在用严格口径"。
 
 **回退**:FAIL → 回 `game-level-design` 修复(补产物/对齐关卡表/收窄参数/处置阻断项),重跑本门;**不允许**通过调宽阈值放行。
 
@@ -409,7 +419,7 @@ game-forge-master §七执行顺序修订为:
 |---|---|---|
 | Gate 0.5 FAIL(仅复刻专线) | **硬阻断**,**不进蓝图** | game-teardown 补拆(补 falsifier/补替代/补数值)后重跑 Gate 0.5 |
 | Gate 0/1/2 FAIL | **硬阻断**,不允许进入下一阶段 | 原产出 skill 修复后重跑 Gate |
-| Gate 2.5 FAIL(关卡产物缺失/与 PRD 关卡表不一致/参数越界/阻断项无处置) | **硬阻断**,不允许进入美术+资源+代码生成 | game-level-design 修复后重跑 Gate 2.5(禁止调宽阈值放行) |
+| Gate 2.5 FAIL(关卡产物缺失/与 PRD 关卡表不一致/参数越界/阻断项无处置/**评估证据缺失或不可复现**/**`naive` 能过却报 PASS 且无豁免**/**闸门自检未全红**/**降级评估口径绕过**) | **硬阻断**,不允许进入美术+资源+代码生成 | game-level-design 修复后重跑 Gate 2.5(禁止调宽阈值、禁止降档口径放行) |
 | Gate 3 L1/L2 FAIL | **硬阻断** | game-asset-forge / game-code-forge 修复后重跑 Gate 3 |
 | Gate 3 L3 typecheck/Godot check FAIL | **硬阻断**,返回错误日志 | game-code-forge 接手修复(沿用其自身 typecheck 修复策略,≤3 轮)后重跑 Gate 3 |
 | Gate 3 L3 Unity 跳过 | **软阻断**(标注 SKIPPED),允许进入 Gate 4,由 game-integrate 补 | — |
@@ -429,7 +439,8 @@ game-forge-master §七执行顺序修订为:
 
 - [ ] 全部 Gate 的检查项无遗漏(对照本 skill §二~§六;条件门含 Gate 0.5 / 2.5)
 - [ ] (复刻项目)Gate 0.5 的 L1 9 项都执行过,FAIL 已阻断回 game-teardown;Gate 0/1/2/3 的复刻条件检查(0.7~0.9/1.17~1.18/2.15/3.27)未遗漏
-- [ ] (关卡制项目)Gate 2.5 的 L1 7 项(含 2.5.9 交付物校验、2.5.10 作者手册、2.5.11 生成器规格[条件]) + L2 5 项(含 2.5.12 阈值防放宽[条件])都执行过;Gate 1 的 1.19(关卡表可机读)已在规格阶段拦住"只写共 N 关"的情况
+- [ ] (关卡制项目)Gate 2.5 的 L1 10 项(含 2.5.9 交付物校验、2.5.10 作者手册、2.5.11 生成器规格[条件]、**2.5.13 可复现证据、2.5.14 闸门有牙齿、2.5.15 指标有效性**) + L2 6 项(含 2.5.12 阈值防放宽[条件]、**2.5.16 评估口径降级[条件]**)都执行过;Gate 1 的 1.19(关卡表可机读)已在规格阶段拦住"只写共 N 关"的情况
+- [ ] **评估证据的三条不许含糊**:① `repro.fields_compared` 有具体数字(不是"已验证");② `gate_selftest.detected` 是三条全中(不是"已自测");③ `validity.falsifiers` 至少一条能被现有工具产出观测(不是"模型可靠")。任一条写成结论而无证据,按 FAIL 处理
 - [ ] 每个 Gate 都输出 `docs/GATE_{N}_REPORT.md`(小数门用下划线:`GATE_0_5_REPORT.md` / `GATE_2_5_REPORT.md`);**唯一例外是 Gate 4**:它由 `game-integrate` 内置执行,结论写在 `docs/BUILD_REPORT.md` 的 §2(各阶段结果)与 §3(视觉验收),不另出 Gate 报告
 - [ ] 报告含失败码 / 详情 / 修复建议三要素
 - [ ] FAIL 时有阻断,无"默认通过"

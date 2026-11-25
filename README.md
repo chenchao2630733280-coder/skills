@@ -40,7 +40,7 @@
 - `brainstorm-product-feature`：编写 PRD 前的产品功能脑暴与构想评估（第零阶段），不写 PRD。
 - `build-working-system`：可运行系统总编排器，将 PRD/页面规格/原型转为可运行、已测试、可部署系统。
 - `opportunity-screening`：**个人/小团队商业机会的筛选与自身适配评估方法论**。四层漏斗（商业底层逻辑 → 四维筛子 → 自身可达性体检 → 最小验证协议），核心判据为「市场价值与个人可达性必须分开评估，获客门槛不可靠努力弥补」。含确定性评分脚本与实盘案例标定。
-- `content-difficulty-gate`：**内容难度定级门**。把"这关太难/太简单"变成可复算的分数与判据——三策略求解器定口径（无脑必输 + 拟真必赢）、静态压力分定排序（容量 × (1+陷阱)）、旋钮实测表定调参方向。适用于关卡包、题库、课程章节等一切"由易到难"的内容序列。
+- `content-difficulty-gate`：**内容难度定级门**。把"这关太难/太简单"变成可复算的分数与判据——三策略求解器定口径（无脑必输 + 拟真必赢）、静态压力分定排序（容量 × (1+陷阱)）、旋钮实测表定调参方向。适用于关卡包、题库、课程章节等一切"由易到难"的内容序列。**科学验收（可复现/单调/可分/可证伪/锚点）与可解性证明见 `game-level-design/references/17`、`18`**。
 - `procedural-art-forge`：**程序化美术的可辨识度交付纪律**。画稿是代码而非位图，用「原语库 + 配方脚本 + 三级校验（字符图→PNG 预览→实机截图）」产出可复算画稿，并以六条可辨识度纪律验收（粒度预算［块状3×3/曲线7×7］/同色隔离/背景色不当前景/线宽≥2/前景不抢中景/形状表优先）。
 
 ### 7. AI Agent 体系层（2026-08-06 升级）
@@ -148,6 +148,7 @@
 | 0.5 | game-teardown(可选·复刻专线) | 12 维产品系统逆向拆解 + 三色复刻矩阵 + 数值模型 + 灰盒 MVP | 参考游戏材料、复刻档位 | `docs/GAME_TEARDOWN.md` + `docs/TEARDOWN_MATRIX.json` + `docs/NUMERIC_MODEL.csv` |
 | 1 | game-blueprint | 游戏蓝图(类型/平台/引擎/范围) | 一句话需求 | `docs/GAME_BLUEPRINT.md` |
 | 2 | game-spec | PRD + 技术设计 | 蓝图 | `docs/PRD.md` + `docs/TECH_DESIGN.md` |
+| 2.5 | game-level-design | 关卡难度设计（**先定评估档位**：离散可枚举走确定性=可解性证明+`naive`必死+静态压力分；否则走抽样/线上数据）+ 关卡配置导出 | PRD + TECH_DESIGN | `docs/LEVEL_PLAN.md` + `docs/LEVEL_AUTHORING.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json` |
 | 3 | game-art-spec | 美术规范 + 资源清单 + 音频规范 | PRD + TECH_DESIGN | `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md` |
 | 4a | game-asset-forge | AI 生图 + 切图 + 音频占位 | ASSET_MANIFEST + ART_SPEC | `assets/**` |
 | 4b | game-code-forge | 工程代码(三引擎) | PRD + TECH_DESIGN + ASSET_MANIFEST | `src/**` + 工程配置 |
@@ -212,6 +213,12 @@
    - `TEARDOWN_MATRIX.json` 的条目 ID（如 `D4-03`）是**全链路追踪键**：蓝图 §5 标注 → PRD 数值表/状态机标注 → CSV `matrix_id` 回指 → Gate 机检"M 项是否落地"
    - 下游各阶段按固定分工消费：`game-spec` 取数值与三套状态机、`game-art-spec` 取风格坐标系且 X 项禁入 manifest、`game-asset-forge` 生图 prompt 禁原作专名、`game-code-forge` 参数外置对齐 CSV、`game-integrate` 在 Gate 4 加数值区间核对与确定性回归、`game-polish` 以原作反馈节奏为基线（偏离 ≤±20%）
    - 详细消费表见 `game-teardown/SKILL.md` §15.2
+6. **难度评估的科学性有硬判据**（阶段 2.5 / Gate 2.5）：
+   - **先定档位再动关卡**：局面离散可枚举 → `deterministic`（可解性证明 L0 + `naive` 必死 L1 + 静态压力分排序 L2）；不可枚举 → `sampled`/`telemetry`（抽样只做风险筛查，**不作判定**）。同批关卡不许混用两套口径。
+   - **三条铁律**：判定只认 L0/L1，排序只认 L2；L0 未定则 L1/L2 无意义；参考列（`strict`/`greedy`）失败不构成证据。
+   - **五项科学验收**：可复现（连跑两次、剔计时、报字段数）、单调（旋钮放宽分数必不增）、可分（相邻差 > 0）、可证伪（每个指标写反例条件）、锚点（两端关卡序一致，反了改公式不改关卡）。
+   - **闸门要有牙齿**：注入无解关/无决策关/难度倒挂三种坏关卡，闸门必须全红；只有一种不红，说明闸门对该类失明，此时"全量通过"比"红"更危险。
+   - 判据实现在 `game-level-design/references/17`（方法论）与 `18`（工程契约）；通用配方与旋钮仍归 `content-difficulty-gate`。
 
 ### 3.5 产物路径总表
 

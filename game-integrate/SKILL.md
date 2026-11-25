@@ -482,6 +482,16 @@ BUILD_REPORT.md 追加:
 ```
 
 ### 10.5 关卡目标带核对(存在 `config/levels.json` 时必做)
+
+> **先看档位再选口径**(读 `docs/DIFFICULTY_REVIEW.json` 的 `evaluation.tier`):
+> - `telemetry` / `sampled` / 缺块 → 按下面「目标带核对」做。
+> - **`deterministic` → 不存在 `pred_win`,本节改为「闸门结论核对」**:
+>   ① 实机重跑一次闸门工具,逐关 `verdict` 与报告 §0.5 一致(不一致 = 关卡数据被改过,或代码与配置脱节);
+>   ② 每关实机试玩 ≥1 局,确认"报告说可解"的关在真实操作下能推进到胜利(防"求解器能过、玩家点不动");
+>   ③ 抽查 3 关的"无脑点"行为,确认实机能像报告说的那样把槽塞满失败。
+>   三项写进 `BUILD_REPORT.md` 的 `## 关卡闸门核对`,不用 `target_win` 列。
+>   **禁止**在 `deterministic` 档硬套通关率目标——那个数在这个档位不存在,套上去就是自己造指标。
+
 阶段 2.5 已定下每关目标首通率,这里是"难度设计 → 真实表现"的闭环收口点。
 **输入**:`config/levels.json`(`target_win`/`pred_win`)+ `docs/DIFFICULTY_REVIEW.json` + 实跑通关率(样本 <30 次/关标 `DATA_GAP`,不下判断)。
 

@@ -62,7 +62,7 @@ game-spec         → docs/PRD.md + docs/TECH_DESIGN.md
        ↓
 ⏸ 人工确认点 2 (AskUserQuestion: 进入关卡设计 / 回退 / 终止)
        ↓
-game-level-design → docs/LEVEL_PLAN.md + docs/LEVEL_AUTHORING.md + config/levels.json + docs/DIFFICULTY_REPORT.md(+ docs/LEVEL_GENERATOR_SPEC.md,生成器/导入路线)
+game-level-design → docs/LEVEL_PLAN.md + docs/LEVEL_AUTHORING.md + config/levels.json + docs/DIFFICULTY_REPORT.md(§0 为评估口径与可复现证据) + docs/DIFFICULTY_REVIEW.json(evaluation 块)(+ docs/LEVEL_GENERATOR_SPEC.md,生成器/导入路线)
        ↓
 [Gate 2.5] 关卡门 → docs/GATE_2_5_REPORT.md (FAIL 则回 2.5 修复)
        ↓
@@ -94,7 +94,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 - 阶段 0(game-topic-brainstorm):**可选**,用户需求模糊或要脑暴选题时调用
 - 阶段 0.5(game-teardown):**可选(复刻专线)**,需求含参考对象时调用;与阶段 0 互斥
 - 阶段 1~5(蓝图→规格→美术→资源/代码→集成):**必走**,产出可玩游戏
-- 阶段 2.5(game-level-design):**关卡制必走**,单局制可裁剪(仍需产出 LEVEL_PLAN 占位);产出关卡数值契约,早于代码生成
+- 阶段 2.5(game-level-design):**关卡制必走**,单局制可裁剪(仍需产出 LEVEL_PLAN 占位);产出关卡数值契约,早于代码生成。**先定评估档位再动关卡**:局面离散可枚举走 `deterministic`(可解性证明 + `naive` 必死 + 静态压力分排序),否则走 `sampled`/`telemetry`——档位写进 `DIFFICULTY_REVIEW.json`,同一批关卡不许混用两套口径
 - 阶段 6(game-polish):**可选**,在可玩游戏基础上叠加效果,不改玩法
 - **质量门 Gate 0~3:必走**,由 game-quality-gate 介入,FAIL 时硬阻断回原阶段修复;**复刻专线额外必走 Gate 0.5**(拆解门,在蓝图之前,FAIL 不进蓝图);**关卡制项目额外必走 Gate 2.5**(关卡门,在规格门之后、美术门之前)
 - **质量门 Gate 4:实跑门**,内置于 game-integrate,沿用其现有裁剪规则
@@ -192,7 +192,9 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 |---|---|
 | 三消/合成/解谜/塔防/跑酷关卡制、有难度递进或章节进度 | ✓ 必走 |
 | 单局制、无关卡序列(2048 / 单屏街机 / 无尽模式无阶段目标) | ✗ 裁剪,但产出 `docs/LEVEL_PLAN.md` 占位(写明"无关卡序列 + 难度靠 X 机制") |
-| 关卡数据已存在,只做微调 | ✓ 走轻量模式(只跑曲线+跳变,标注 `SIM_SKIPPED`) |
+| 关卡数据已存在,只做微调 | ✓ 走轻量模式(只跑静态分+跳变,标注 `SIM_SKIPPED`/`PROOF_SKIPPED`,报告结论记 `PASS_LIGHT`) |
+| 局面离散可枚举(能反推"初盘→终局") | ✓ **必走 `deterministic` 档**:可解性证明 + `naive` 必死 + 结构分排序。这是默认档位 |
+| 状态不可枚举 / 含随机发牌 / 连续动作 | ✓ 走 `sampled` 档:抽样只做风险筛查,**不作判定**;有线上数据则升级为 `telemetry` |
 | 已接入线上通关数据 | ✓ 必走,并用真实数据校准后重跑 |
 
 裁剪结果写入 `docs/GAME_BLUEPRINT.md` §10,追加一行:`2.5. game-level-design: 执行/裁剪(理由: ...)`。
@@ -236,7 +238,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 | game-teardown | 5 份拆解手册(12 维逐维/数值反解/状态建模/解空间与难度/合规边界)+ TEARDOWN_MATRIX schema |
 | game-blueprint | 7 个 design-principles-*.md(设计原则) |
 | game-spec | 无 references(PRD+TECH_DESIGN 内联生成) |
-| game-level-design | 13 份参考(难度模型库/评估框架/跳变分类/推荐引擎/流水线接入契约)+ campaign 与关卡评审模板 |
+| game-level-design | 18 份参考(难度模型库/评估框架/跳变分类/推荐引擎/流水线接入契约/**确定性评估的证明层与科学验收 + 评估夹具契约**)+ campaign 与关卡评审模板 |
 | game-art-spec | 2 个风格基线文件 + ASSET_MANIFEST schema |
 | game-asset-forge | format-conversion-guide.md + card-bg-spec.md |
 | game-code-forge | 6 个 engine-*-template.md(六引擎模板) + 6 个 pitfall 文件 + web-config-template.md |
@@ -262,7 +264,7 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 |---|---|---|
 | Gate 0.5 FAIL(拆解产物缺/X 无替代/推断无 falsifier/M 项未落地) | **硬阻断**,**不进蓝图** | game-teardown 补拆后重跑 Gate 0.5 |
 | Gate 0/1/2 FAIL(静态/契约) | **硬阻断**,不允许进入下一阶段 | 对应阶段 skill 修复后重跑 Gate |
-| Gate 2.5 FAIL(关卡产物缺失 / levels.json 与 PRD 关卡表不一致 / 参数越界 / 门禁结论无处置) | **硬阻断**,不允许进入美术+资源+代码生成 | game-level-design 修复后重跑 Gate 2.5(禁止调宽阈值放行) |
+| Gate 2.5 FAIL(关卡产物缺失 / levels.json 与 PRD 关卡表不一致 / 参数越界 / 门禁结论无处置 / 评估证据不可复现 / `naive` 能过却报 PASS 且无豁免 / 闸门自检未全红) | **硬阻断**,不允许进入美术+资源+代码生成 | game-level-design 修复后重跑 Gate 2.5(禁止调宽阈值、禁止降档口径放行) |
 | Gate 3 L1/L2 FAIL(文件缺失/契约不符/代码内联复制关卡数值) | **硬阻断** | game-asset-forge / game-code-forge 修复后重跑 Gate 3 |
 | Gate 3 L3 typecheck/Godot check FAIL | **硬阻断**,返回错误日志 | game-code-forge 接手修复(沿用其自身 typecheck 修复策略,≤3 轮)后重跑 Gate 3 |
 
@@ -301,13 +303,15 @@ game-polish (可选) → 视觉/手感/反馈打磨 + docs/POLISH_REPORT.md
 2. 调用 `game-spec`,读取蓝图,产出 `docs/PRD.md` + `docs/TECH_DESIGN.md`
    - **调用 `game-quality-gate` Gate 1 规格门**,产出 `docs/GATE_1_REPORT.md`;FAIL 则回 2 修复
    - ⏸ **人工确认点 2**:Gate 1 PASS 后,简报 PRD 关键数值/UI 节点树,AskUserQuestion 询问"进入美术规范 / 回退修改规格 / 终止流水线"
-2.5 调用 `game-level-design`,读取 `docs/PRD.md` + `docs/TECH_DESIGN.md`(+ 可选 `docs/NUMERIC_MODEL.csv`、线上 attempts.csv),产出 `docs/LEVEL_PLAN.md` + `docs/LEVEL_AUTHORING.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md` + `docs/DIFFICULTY_REVIEW.json`(+ `docs/LEVEL_GENERATOR_SPEC.md`,仅当路线为生成器/导入)
+2.5 调用 `game-level-design`,读取 `docs/PRD.md` + `docs/TECH_DESIGN.md`(+ 可选 `docs/NUMERIC_MODEL.csv`、线上 attempts.csv),产出 `docs/LEVEL_PLAN.md` + `docs/LEVEL_AUTHORING.md` + `config/levels.json` + `docs/DIFFICULTY_REPORT.md`(§0 = 评估口径与可复现证据) + `docs/DIFFICULTY_REVIEW.json`(含 `evaluation` 块)(+ `docs/LEVEL_GENERATOR_SPEC.md`,仅当路线为生成器/导入)
    - 关卡制必走;单局制裁剪但产出 `docs/LEVEL_PLAN.md` 占位
-   - **调用 `game-quality-gate` Gate 2.5 关卡门**,产出 `docs/GATE_2_5_REPORT.md`;FAIL 则回 2.5 修复(不得靠调宽阈值放行)
+   - **第一步定评估档位**(`deterministic` / `sampled` / `telemetry`),写出理由;档位定不下来不要动关卡
+   - `deterministic` 档的执行顺序不可换:**静态分 → 可解性证明(L0) → 三态闸(L1) → 连跑两次 `repro_check`(可复现) → 排序(L2)**。先打分再证明,会把无解关算出一个漂亮的难度分
+   - **调用 `game-quality-gate` Gate 2.5 关卡门**,产出 `docs/GATE_2_5_REPORT.md`;FAIL 则回 2.5 修复(不得靠调宽阈值或降档口径放行)
    - 关卡表会作为美术场景/主题数量的输入,不要跳过就进美术
 3. 调用 `game-art-spec`,读取 PRD + TECH_DESIGN + 可选 `config/levels.json`(关卡主题/场景清单),产出 `docs/ART_SPEC.md` + `docs/ASSET_MANIFEST.json` + `docs/AUDIO_SPEC.md`
    - **调用 `game-quality-gate` Gate 2 美术门**,产出 `docs/GATE_2_REPORT.md`;FAIL 则回 3 修复
-   - ⏸ **人工确认点 3**:Gate 2 PASS 后,简报"manifest 资源数量/风格基线 + 关卡难度摘要(N 关 / 各阶段目标首通率 / HIGH 数)",AskUserQuestion 询问"进入资源+代码生成 / 回退修改美术或关卡 / 终止流水线"
+   - ⏸ **人工确认点 3**:Gate 2 PASS 后,简报"manifest 资源数量/风格基线 + 关卡难度摘要(**N 关 / 评估档位 / 闸门通过数(含豁免数) / 可复现比对字段数 / FAIL 关及根因一句话**)",AskUserQuestion 询问"进入资源+代码生成 / 回退修改美术或关卡 / 终止流水线"
 4. **并行**调用 `game-asset-forge` 和 `game-code-forge`,分别产出 `assets/` 和 `src/`
    - **调用 `game-quality-gate` Gate 3 产物门**,产出 `docs/GATE_3_REPORT.md`;FAIL 则回 4 修复(L3 失败由 game-code-forge 接手修复,≤3 轮)
    - ⏸ **人工确认点 4**:Gate 3 PASS 后,简报资源/代码产物统计,AskUserQuestion 询问"进入集成构建 / 回退修复产物 / 终止流水线"
@@ -359,8 +363,9 @@ python ../workflow-runtime/scripts/compile_workflow.py compile-from-master --mas
 | 生成器规格(条件) | `docs/LEVEL_GENERATOR_SPEC.md` | game-level-design(仅生成器/导入路线;工位开关裁决 + 四条不变量裁决) |
 | 关卡配置(运行期) | `config/levels.json` | game-level-design |
 | 关卡配置副本(构建期派生) | Web:`public/config/levels.json`(或同级 import 根文件);Godot:`res://config/levels.json`;Unity:`Assets/StreamingAssets/config/levels.json` | game-code-forge(复制,内容与源一致,不手改) |
-| 难度评审报告 | `docs/DIFFICULTY_REPORT.md` | game-level-design |
-| 难度评审判定(机读) | `docs/DIFFICULTY_REVIEW.json` | game-level-design |
+| 难度评审报告 | `docs/DIFFICULTY_REPORT.md` | game-level-design(§0 必须是"评估口径与可复现证据",模板见该 skill 的 `templates/DIFFICULTY_EVAL_section.md`) |
+| 难度评审判定(机读) | `docs/DIFFICULTY_REVIEW.json` | game-level-design(含 `evaluation` 块:档位/可复现/闸门自检/指标有效性;Gate 2.5 的 2.5.13~2.5.16 读它) |
+| 评估可复现产物(构建期) | `build/eval/run_a.json` + `run_b.json` + `repro.json` | game-level-design(留档供 Gate 2.5 复核,不随交付物发布) |
 | 关卡门报告 | `docs/GATE_2_5_REPORT.md` | game-quality-gate |
 | 角色帧 | `assets/role/{role}/{state}_{frame:03}.png` | game-asset-forge |
 | UI 图 | `assets/ui/{page}/{element}.png` | game-asset-forge |
